@@ -3,536 +3,559 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>国际商务知识点清单</title>
+<title>背书地图 · 国际商务</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
-:root{--bg:#f4f6f9;--card:#fff;--ink:#1a1d26;--sub:#6b7280;--line:#e3e8ef;--brand:#1f4e79;--accent:#2d7f9e;--ok:#1f9d68;--warn:#d97706;--danger:#dc2626;--soft:#eef4f9}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"PingFang SC","Microsoft YaHei","WenQuanYi Micro Hei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
-body.dark{--bg:#101319;--card:#1a202b;--ink:#e6e9ef;--sub:#8b93a1;--line:#2a323f;--soft:#1f2733;--brand:#4a90d9;--accent:#5fb8d6}
-.wrap{max-width:1080px;margin:0 auto;padding:16px 14px 80px}
-header{background:linear-gradient(135deg,#1f4e79,#2d7f9e);color:#fff;border-radius:20px;padding:24px 20px;box-shadow:0 10px 28px rgba(31,78,121,.18)}
-header h1{font-size:23px}
-header p{opacity:.9;font-size:13px;margin-top:4px}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px}
-.stat{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:11px;padding:10px 6px;text-align:center}
-.stat b{display:block;font-size:17px;line-height:1.2}
-.stat span{font-size:10.5px;opacity:.9}
-.toolbar{position:sticky;top:0;z-index:30;background:rgba(244,246,249,.96);backdrop-filter:blur(8px);padding:10px 0;margin:14px 0;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--line);flex-wrap:wrap}
-body.dark .toolbar{background:rgba(16,19,25,.96)}
-.toolbar input{border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:13.5px;background:var(--card);color:var(--ink);flex:1;min-width:160px;margin:0}
-button{cursor:pointer;border:none;border-radius:10px;font-weight:600;font-size:13.5px;padding:10px 16px;background:var(--brand);color:#fff;transition:.15s;font-family:inherit}
+:root{
+ --bg:#eef1f6;--card:#ffffff;--ink:#14181f;--sub:#737b88;--line:#e2e7ef;
+ --brand:#3b5bfd;--brand2:#7b5cf0;--soft:#f4f6fb;--shadow:0 2px 12px rgba(20,24,31,.06);
+ --l5:#22c55e;--l4:#3b82f6;--l3:#a16207;--l2:#ef4444;--l1:#a855f7;--lvl:#cbd5e1;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:"PingFang SC","Microsoft YaHei","WenQuanYi Micro Hei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased}
+body.dark{--bg:#0d1015;--card:#161b23;--ink:#e8ebf0;--sub:#8992a0;--line:#262d38;--soft:#1b212c;--shadow:0 2px 16px rgba(0,0,0,.3);--lvl:#33404f}
+a{color:var(--brand);text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:11px;font-weight:600;font-size:13.5px;padding:9px 16px;background:var(--brand);color:#fff;transition:.15s}
 button:hover{opacity:.88}
 button.ghost{background:var(--card);color:var(--brand);border:1px solid var(--brand)}
-.review-box{background:linear-gradient(135deg,#fff8e6,#fef3c7);border-radius:16px;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 10px rgba(217,119,6,.12);border:1px solid #fde68a}
-body.dark .review-box{background:linear-gradient(135deg,#3a2e10,#332812);border-color:#6b4c12}
-.review-box h3{font-size:16px;margin-bottom:10px;color:#92400e}
-body.dark .review-box h3{color:#fcd34d}
-.review-box ul{list-style:none}
-.review-box li{padding:6px 0;border-bottom:1px dashed rgba(146,64,14,.25);font-size:13.5px;display:flex;gap:8px;align-items:center}
-.review-box li:last-child{border-bottom:none}
-.review-box .over{color:#dc2626;font-weight:700}
-.review-box .soon{color:#d97706;font-weight:700}
-nav{display:flex;gap:12px;overflow-x:auto;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:6px}
-nav a{color:var(--brand);text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap}
-nav a:hover{color:var(--accent)}
-section{background:var(--card);border-radius:16px;padding:20px 16px;margin-bottom:16px;box-shadow:0 2px 10px rgba(26,29,38,.05)}
-h2{font-size:19px;color:var(--brand);margin-bottom:12px;padding-left:11px;border-left:5px solid var(--accent)}
-h3{font-size:15px;margin:14px 0 8px}
-.card{background:var(--soft);border-radius:12px;padding:14px;margin:10px 0}
-.tgroup{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px 8px 8px;margin:8px 0}
-.tgroup h4{font-size:13px;color:var(--accent);margin:10px 0 4px;padding-left:6px}
-ul.items{list-style:none}
-ul.items li{display:flex;align-items:center;gap:8px;padding:8px 6px;border-bottom:1px dashed var(--line);font-size:13.5px;flex-wrap:wrap}
-ul.items li:last-child{border-bottom:none}
-ul.items li.done .nm{text-decoration:line-through;color:var(--sub)}
-.tag{display:inline-block;padding:1.5px 7px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap}
-.tm{background:#e8f5ee;color:#15803d}.ts{background:#dbeafe;color:#1d4ed8}.td{background:#fef3c7;color:#b45309}.to{background:#f3e8ff;color:#7c3aed}
+button.soft{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
+button.sm{padding:5px 10px;font-size:12px;border-radius:8px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 14px 80px}
+
+/* 倒计时条 */
+.countdown{background:linear-gradient(120deg,#3b5bfd,#7b5cf0 55%,#c14bfd);color:#fff;border-radius:20px;padding:22px 24px;margin:14px 0;box-shadow:0 12px 30px rgba(59,91,253,.25);position:relative;overflow:hidden}
+.countdown::after{content:'🎓';position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:52px;opacity:.22}
+.countdown .cd-label{font-size:13px;opacity:.9}
+.countdown .cd-num{font-size:46px;font-weight:800;letter-spacing:-1px;line-height:1.1;margin:2px 0}
+.countdown .cd-sub{font-size:12.5px;opacity:.92}
+.countdown .cd-row{display:flex;gap:24px;margin-top:14px;flex-wrap:wrap}
+.countdown .cd-cell{background:rgba(255,255,255,.16);border-radius:12px;padding:8px 16px;min-width:96px}
+.countdown .cd-cell b{display:block;font-size:20px}
+.countdown .cd-cell span{font-size:11px;opacity:.9}
+
+/* 待复习卡 */
+.due-card{background:var(--card);border-radius:18px;padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow);border-left:4px solid var(--l4)}
+.due-card h3{font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.due-list{display:flex;flex-direction:column;gap:8px}
+.due-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--soft);border-radius:12px;flex-wrap:wrap;font-size:13.5px}
+.due-item .pt-name{flex:1;min-width:160px;font-weight:600}
+.due-item .pt-meta{font-size:11.5px;color:var(--sub)}
+.lvl-btns{display:flex;gap:4px;margin-left:auto}
+.lvl-btns button{width:30px;height:26px;padding:0;font-size:11.5px;border-radius:7px;color:#fff;border:2px solid transparent}
+.lvl-btns button.l1{background:var(--l1)}.lvl-btns button.l2{background:var(--l2)}
+.lvl-btns button.l3{background:var(--l3)}.lvl-btns button.l4{background:var(--l4)}.lvl-btns button.l5{background:var(--l5)}
+.empty-due{text-align:center;padding:14px;color:var(--sub);font-size:13px}
+
+/* 热力图 */
+.heat-wrap{background:var(--card);border-radius:18px;padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow);overflow-x:auto}
+.heat-wrap h3{font-size:15px;margin-bottom:14px}
+.heat-scroll{overflow-x:auto}
+.heat-grid{display:flex;gap:4px}
+.heat-col{display:flex;flex-direction:column;gap:4px}
+.heat-cell{width:15px;height:15px;border-radius:4px;background:var(--lvl);cursor:pointer;transition:transform .12s,opacity .12s;position:relative}
+.heat-cell:hover{transform:scale(1.45);z-index:5;opacity:.9}
+.heat-cell[data-l="1"]{background:var(--l1)}.heat-cell[data-l="2"]{background:var(--l2)}
+.heat-cell[data-l="3"]{background:var(--l3)}.heat-cell[data-l="4"]{background:var(--l4)}.heat-cell[data-l="5"]{background:var(--l5)}
+.heat-month{display:flex;gap:4px;margin-bottom:4px;padding-left:32px;font-size:10.5px;color:var(--sub)}
+.heat-month span{flex:1;text-align:center}
+.heat-legend{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--sub);margin-top:12px;justify-content:flex-end;flex-wrap:wrap}
+.heat-legend i{width:12px;height:12px;border-radius:3px;display:inline-block;margin:0 2px}
+.heat-tooltip{position:fixed;z-index:99;background:#14181f;color:#fff;padding:7px 11px;border-radius:9px;font-size:12px;pointer-events:none;opacity:0;transition:opacity .12s;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.heat-tooltip.on{opacity:1}
+
+/* 章节面板 */
+.chapter{background:var(--card);border-radius:18px;padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.chapter-top{display:flex;align-items:center;gap:10px;cursor:pointer;padding:4px 0}
+.chapter-top .caret{width:16px;height:16px;flex:0 0 auto;color:var(--sub);transition:transform .2s}
+.chapter.open .chapter-top .caret{transform:rotate(90deg)}
+.chapter-top h2{font-size:16.5px;flex:1}
+.chapter-top .cnt{font-size:11.5px;color:var(--sub);background:var(--soft);padding:2px 9px;border-radius:20px}
+.chapter-body{display:none;padding-top:12px}
+.chapter.open .chapter-body{display:block}
+.point{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px dashed var(--line)}
+.point:last-child{border-bottom:none}
+.point .info{flex:1;min-width:0}
+.point .info .nm{font-weight:600;font-size:14px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.point .info .preview{font-size:12.5px;color:var(--sub);margin-top:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tag{display:inline-block;padding:1.5px 8px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap}
+.tm{background:#dcfce7;color:#15803d}.ts{background:#dbeafe;color:#1d4ed8}.td{background:#fef3c7;color:#a16207}.to{background:#f3e8ff;color:#7c3aed}
 body.dark .tm{background:#12351f;color:#4ade80}body.dark .ts{background:#172554;color:#93c5fd}body.dark .td{background:#3f2a06;color:#fbbf24}body.dark .to{background:#3b1f5c;color:#d8b4fe}
-.layer-mini{display:flex;gap:3px;margin-left:auto}
-.layer-mini button{width:26px;height:22px;padding:0;font-size:11px;border-radius:6px;background:var(--card);color:var(--sub);border:1px solid var(--line)}
-.layer-mini button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
-.next-date{font-size:11px;color:var(--sub);margin-left:auto}
-textarea,input[type=date],input[type=text]{border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13.5px;font-family:inherit;background:var(--card);color:var(--ink);margin:5px 0;width:100%}
-textarea{resize:vertical;min-height:90px}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.note{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.6}
-.chart-box{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.chart-bar{margin:10px 0}
-.chart-bar .bar-row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12.5px}
-.chart-bar .bar-track{flex:1;height:16px;background:var(--soft);border-radius:8px;overflow:hidden}
-.chart-bar .bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .4s}
-.chart-pie-wrap{display:flex;align-items:center;gap:14px;justify-content:center;padding:10px 0}
-.chart-pie-wrap svg{width:120px;height:120px;transform:rotate(-90deg)}
-.chart-pie-wrap .legend{font-size:12.5px;line-height:2}
-.chart-pie-wrap .legend span{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1d26;color:#fff;padding:11px 20px;border-radius:30px;font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;transition:.3s;z-index:99}
-.toast.show{opacity:1}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px}
-.modal-overlay.active{display:flex}
-.modal{background:var(--card);border-radius:18px;padding:22px;max-width:420px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.25)}
-.modal h3{margin:0 0 16px;font-size:18px}
-.modal label{display:block;font-size:12.5px;color:var(--sub);margin:12px 0 4px;font-weight:600}
-.modal .layer-pick{display:flex;gap:8px;margin:10px 0}
-.modal .layer-pick button{flex:1;padding:12px 0;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600}
-.modal .layer-pick button.picked{border-color:var(--brand);background:var(--soft)}
-.modal-actions{display:flex;gap:12px;margin-top:18px}
-.modal-actions button{flex:1}
-@media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.row2{grid-template-columns:1fr}.chart-box{grid-template-columns:1fr}}
+.lvl-dot{width:9px;height:9px;border-radius:50%;background:var(--lvl);flex:0 0 auto;margin-top:6px}
+.lvl-dot[data-l="1"]{background:var(--l1)}.lvl-dot[data-l="2"]{background:var(--l2)}.lvl-dot[data-l="3"]{background:var(--l3)}
+.lvl-dot[data-l="4"]{background:var(--l4)}.lvl-dot[data-l="5"]{background:var(--l5)}
+.point-actions{display:flex;gap:5px;flex-shrink:0}
+
+/* 富文本 */
+.rich{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.rich .tools{display:flex;gap:4px;padding:6px 8px;background:var(--soft);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.rich .tools button{background:var(--card);color:var(--ink);border:1px solid var(--line);padding:3px 9px;font-size:12px;border-radius:7px}
+.rich .tools button:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+.rich [contenteditable]{min-height:150px;padding:12px 14px;font-size:14px;outline:none;line-height:1.75}
+.rich [contenteditable]:empty:before{content:attr(data-ph);color:var(--sub);font-size:13px}
+.rich-view{font-size:14px;line-height:1.8;padding:2px 0}
+.rich-view p{margin:6px 0}
+.rich-view ul,.rich-view ol{padding-left:22px;margin:6px 0}
+.rich-view h1,.rich-view h2,.rich-view h3{margin:10px 0 6px}
+
+/* 模态 */
+.mask{position:fixed;inset:0;background:rgba(10,13,18,.5);backdrop-filter:blur(2px);z-index:80;display:none;align-items:flex-start;justify-content:center;padding:40px 14px;overflow-y:auto}
+.mask.on{display:flex}
+.modal{background:var(--card);border-radius:20px;padding:22px;width:100%;max-width:620px;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.modal h3{font-size:18px;margin-bottom:16px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--sub);margin-bottom:5px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:11px;font-size:14px;background:var(--card);color:var(--ink);font-family:inherit}
+.modal-acts{display:flex;gap:10px;margin-top:6px}
+.modal-acts button{flex:1}
+
+/* 顶部条 */
+.topbar{position:sticky;top:0;z-index:40;background:rgba(238,241,246,.92);backdrop-filter:blur(10px);padding:10px 0;margin-bottom:14px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--line);flex-wrap:wrap}
+body.dark .topbar{background:rgba(13,16,21,.92)}
+.topbar .brand{font-weight:800;font-size:16px;background:linear-gradient(120deg,var(--brand),var(--brand2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-right:auto}
+.topbar input{flex:1;min-width:150px;padding:9px 13px;border:1px solid var(--line);border-radius:11px;font-size:13.5px;background:var(--card);color:var(--ink);font-family:inherit;margin:0}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(12px);background:#14181f;color:#fff;padding:11px 22px;border-radius:30px;font-size:13.5px;box-shadow:0 10px 28px rgba(0,0,0,.28);opacity:0;transition:.28s;z-index:120}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border-radius:16px;padding:14px;text-align:center;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:22px;font-weight:800;background:linear-gradient(120deg,var(--brand),var(--brand2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat span{font-size:11.5px;color:var(--sub)}
+footer{text-align:center;color:var(--sub);font-size:12px;padding:22px 0}
+@media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.countdown .cd-num{font-size:38px}.heat-cell{width:12px;height:12px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header>
- <h1>国际商务 · 知识点清单</h1>
- <p>第一至第五章 · 分题型标注 · 四层评级 · 自动算下次复习日</p>
- <div class="stats">
-  <div class="stat"><b id="sTotal">0</b><span>总条目</span></div>
-  <div class="stat"><b id="sM">0</b><span>名词解释</span></div>
-  <div class="stat"><b id="sS">0</b><span>简答</span></div>
-  <div class="stat"><b id="sD">0</b><span>论述</span></div>
-  <div class="stat"><b id="sDone">0</b><span>已首背</span></div>
- </div>
-</header>
 
-<div class="review-box" id="reviewBox">
- <h3>📅 今日待复习</h3>
- <ul id="reviewList"><li style="color:var(--sub);border:none">加载中…</li></ul>
+<div class="countdown">
+ <div class="cd-label">🎯 距考研还有</div>
+ <div class="cd-num" id="cdNum">— 天</div>
+ <div class="cd-sub" id="cdSub"></div>
+ <div class="cd-row">
+  <div class="cd-cell"><b id="cdToday">0</b><span>今日背诵</span></div>
+  <div class="cd-cell"><b id="cdMastered">0</b><span>已背熟</span></div>
+  <div class="cd-cell"><b id="cdStreak">0</b><span>连续打卡</span></div>
+ </div>
 </div>
 
-<div class="toolbar">
- <input type="text" id="search" placeholder="🔍 搜索条目或章节，如：产品生命周期">
- <button class="ghost" onclick="exportData()">导出</button>
- <button class="ghost" onclick="document.getElementById('imp').click()">导入</button>
- <input type="file" id="imp" accept=".json" style="display:none" onchange="importData(event)">
- <button class="ghost" onclick="toggleDark()">🌙 暗色</button>
+<div class="stats">
+ <div class="stat"><b id="sPoint">0</b><span>知识点总数</span></div>
+ <div class="stat"><b id="sDone">0</b><span>已首背</span></div>
+ <div class="stat"><b id="sDue">0</b><span>今日待复习</span></div>
+ <div class="stat"><b id="sRate">0%</b><span>背熟率</span></div>
 </div>
 
-<nav>
- <a href="#input">录入</a>
- <a href="#chart">统计</a>
- <a href="#ch1">第一章</a>
- <a href="#ch2">第二章</a>
- <a href="#ch3">第三章</a>
- <a href="#ch4">第四章</a>
- <a href="#ch5">第五章</a>
- <a href="#dup">重复条目</a>
-</nav>
-
-<section id="input">
- <h2>录入今日背诵</h2>
- <p class="note">找到对应章节的条目 → 点卡片右侧 L1–L4 评级 → 节点自动算。<br>也可粘贴批量录入，格式：<br><b>第5章 国际直接投资与跨国公司<br>垄断优势理论的内容 第1层<br>产品生命周期理论的内容 第4层</b></p>
- <textarea id="raw" placeholder="粘贴你今天背的内容"></textarea>
- <div class="card">
-  <h3 style="margin-top:0">四层评级</h3>
-  <p style="font-size:12.5px">第1层→14天｜第2层→7天｜第3层→3天｜第4层→明天。连续2次L1拉到30天。</p>
-  <div class="row2">
-   <div><label style="font-size:12.5px;color:var(--sub)">首背日</label><input type="date" id="entryDate"></div>
-   <div><label style="font-size:12.5px;color:var(--sub)">所属章节（可空）</label><input type="text" id="entryCh" placeholder="如：第5章"></div>
-  </div>
-  <button onclick="parseInput()" style="margin-top:8px">解析并入库</button>
- </div>
-</section>
-
-<section id="chart"><h2>背诵统计</h2>
- <div class="chart-box">
-  <div class="chart-bar">
-   <h3 style="margin:0 0 4px">各章完成度</h3>
-   <div id="barChart"></div>
-  </div>
-  <div>
-   <h3 style="margin:0 0 4px">题型分布</h3>
-   <div class="chart-pie-wrap">
-    <svg id="pieSvg" viewBox="0 0 42 42"><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--soft)" stroke-width="6"></circle><circle id="pieArc" cx="21" cy="21" r="15.9" fill="none" stroke="var(--brand)" stroke-width="6" stroke-dasharray="0 100"></circle></svg>
-    <div class="legend" id="pieLegend"></div>
-   </div>
-  </div>
- </div>
- <p class="note" id="chartNote"></p>
-</section>
-
-<section id="ch1"><h2>第一章 国际贸易理论</h2><p class="note">与第2—5章重复的条目已标注 <span class="tag to">重复·以后章为主</span>，本章不再单独建档。</p><div id="ch1_body"></div></section>
-<section id="ch2"><h2>第二章 国际贸易措施</h2><div id="ch2_body"></div></section>
-<section id="ch3"><h2>第三章 货物贸易与服务贸易</h2><p class="note">⚠️ 服务贸易迅速发展的原因、我国存在的问题及应对——教材原文只有"原因"6条，<b>问题与对策需按课堂笔记自行补充</b>。</p><div id="ch3_body"></div></section>
-<section id="ch4"><h2>第四章 区域经济一体化与多边贸易体制</h2><div id="ch4_body"></div></section>
-<section id="ch5"><h2>第五章 国际直接投资与跨国公司</h2><div id="ch5_body"></div></section>
-
-<section id="dup"><h2>重复条目处理一览</h2>
- <div class="card">
-  <table style="width:100%;border-collapse:collapse;font-size:12.5px">
-   <tr style="border-bottom:1px solid var(--line)"><th style="text-align:left;padding:6px">条目</th><th style="text-align:left;padding:6px">出现在</th><th style="text-align:left;padding:6px">以哪章为主</th></tr>
-   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">进口替代工业化战略</td><td style="padding:6px">第1章 + 第2章</td><td style="padding:6px"><b>第2章</b></td></tr>
-   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">出口导向工业化战略</td><td style="padding:6px">第1章 + 第2章</td><td style="padding:6px"><b>第2章</b></td></tr>
-   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">产品生命周期理论</td><td style="padding:6px">第1章 + 第5章</td><td style="padding:6px"><b>第5章</b></td></tr>
-   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">垄断优势理论</td><td style="padding:6px">第1章 + 第5章</td><td style="padding:6px"><b>第5章</b></td></tr>
-   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">内部化理论</td><td style="padding:6px">第1章 + 第5章</td><td style="padding:6px"><b>第5章</b></td></tr>
-   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">国际生产折衷理论</td><td style="padding:6px">第1章 + 第5章</td><td style="padding:6px"><b>第5章</b></td></tr>
-   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">边际产业扩张论</td><td style="padding:6px">第1章 + 第5章</td><td style="padding:6px"><b>第5章</b></td></tr>
-   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">倾销与反倾销</td><td style="padding:6px">第1章 + 第2章</td><td style="padding:6px"><b>第2章</b></td></tr>
-   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">技术性/绿色贸易壁垒</td><td style="padding:6px">第1章 + 第2章</td><td style="padding:6px"><b>第2章</b></td></tr>
-   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">从量税/从价税/有效关税保护率</td><td style="padding:6px">第1章 + 第2章</td><td style="padding:6px"><b>第2章</b></td></tr>
-   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">贸易创造/贸易转向</td><td style="padding:6px">第1章 + 第4章</td><td style="padding:6px"><b>第4章</b></td></tr>
-   <tr><td style="padding:6px">区域一体化五层次</td><td style="padding:6px">第1章 + 第4章</td><td style="padding:6px"><b>第4章</b></td></tr>
-  </table>
- </div>
-</section>
-
-<footer style="text-align:center;color:var(--sub);font-size:12px;padding:18px 0">数据存在 Supabase，手机和电脑打开同一网址即可同步 · 默认密码 beishu2024</footer>
+<div class="due-card">
+ <h3>📌 今日待复习 <span id="dueTag" style="font-size:11.5px;color:var(--sub);font-weight:400"></span></h3>
+ <div class="due-list" id="dueList"><div class="empty-due">加载中…</div></div>
 </div>
 
-<div class="modal-overlay" id="modal"><div class="modal">
- <h3 id="modalTitle">设置背诵评级</h3>
- <p class="note" id="modalName"></p>
- <div class="layer-pick">
-  <button id="mp1" onclick="pickLayer(1)">第1层<br><small>一遍就过</small></button>
-  <button id="mp2" onclick="pickLayer(2)">第2层<br><small>几遍后顺</small></button>
-  <button id="mp3" onclick="pickLayer(3)">第3层<br><small>刚记住</small></button>
-  <button id="mp4" onclick="pickLayer(4)">第4层<br><small>等于新背</small></button>
+<div class="heat-wrap">
+ <h3>🔥 背诵热力图 <span style="font-size:11.5px;color:var(--sub);font-weight:400">（最近 24 周，颜色取当天最高掌握等级）</span></h3>
+ <div class="heat-scroll"><div class="heat-month" id="heatMonth"></div><div class="heat-grid" id="heatGrid"></div></div>
+ <div class="heat-legend">
+  <span>深绿＝背熟 L5</span><i style="background:var(--l5)"></i><i style="background:var(--l4)"></i><i style="background:var(--l3)"></i><i style="background:var(--l2)"></i><i style="background:var(--l1)"></i><span>浅＝遗忘 L1</span>
  </div>
- <div class="modal-actions">
-  <button class="ghost" onclick="closeModal()">取消</button>
-  <button onclick="saveModal()">保存</button>
- </div>
-</div></div>
+</div>
 
-<div class="toast" id="toast">已复制</div>
+<div class="topbar">
+ <span class="brand">📖 背书地图</span>
+ <input type="text" id="search" placeholder="🔍 搜索知识点名称或内容">
+ <button class="ghost" onclick="openPointModal()">＋ 知识点</button>
+ <button class="ghost" onclick="toggleDark()" id="darkBtn">🌙</button>
+</div>
+
+<div id="chapterList"></div>
+
+<footer>数据存在 Supabase，多设备打开同一网址自动同步 · 默认密码 beishu2024</footer>
+</div>
+
+<div class="mask" id="mask">
+ <div class="modal" id="modal"></div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="heat-tooltip" id="tip"></div>
 
 <script>
 /* ============ 配置 ============ */
 var SUPABASE_URL='https://jnnsmjjhjhwrcxnklonf.supabase.co';
 var SUPABASE_ANON_KEY='sb_publishable_2w2iM-cklg-Aof9dP7xB_Q_OfWQmj8V';
 var ACCESS_PASSWORD='beishu2024';
+var EXAM_DATE='2026-12-19';
+/* 艾宾浩斯节点：首日后第 n 天提醒 */
+var EB={first:0, n1:1, n2:2, n3:4, n5:7, n6:15};
+var LVL_NAME={1:'遗忘',2:'模糊',3:'熟悉',4:'背熟',5:'卡壳'};
+var LVL_COLOR={1:'var(--l1)',2:'var(--l2)',3:'var(--l3)',4:'var(--l4)',5:'var(--l5)'};
 var supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-var GAP={1:14,2:7,3:3,4:1};
-var DB={};            /* 内存缓存：name -> record */
-var DATA={};          /* 章节知识点，由 buildData() 生成 */
+
+var subjects=[];   /* [{id,name,sort_order, chapters:[...]}] */
+var chapters=[];   /* [{id,subject_id,name,sort_order}] */
+var points=[];     /* [{id,chapter_id,name,category,content,created_at}] */
+var reviews=[];    /* [{id,point_id,review_date,level,note}] */
 var today=new Date();
-var editingName=null;
-var editingCh=null;
-var pickedLayer=0;
+function todayStr(){return today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'\\&#39;');}
+function clean(s){var d=document.createElement('div');d.innerHTML=s;return d.textContent||'';}
+function addDays(dateStr,n){var d=new Date(dateStr);d.setDate(d.getDate()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function diffDays(a,b){return Math.round((new Date(b)-new Date(a))/86400000);}
 
-function fmt(d){if(!d)return '—';var x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');}
-function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return fmt(x);}
-function todayStr(){return fmt(today);}
-function esc(s){return String(s).replace(/'/g,"\\'");}
-
-/* ============ 知识点数据 ============ */
-function buildData(){
- DATA={
-  "第一章 国际贸易理论":{
-   "一、重商主义与绝对优势（其他）":["重商主义","绝对优势理论","绝对优势理论的评价"],
-   "二、比较优势（简答／论述核心）":["比较优势理论（2×2×2模型）","比较成本","两优取其重、两劣取其轻","比较优势理论的贡献与局限"],
-   "三、相互需求（简答）":["相互需求理论","提供曲线（相互需求曲线）"],
-   "四、要素禀赋理论（名词解释＋简答）":["要素丰裕度","要素密集度","H-O模型（2×2×2）","要素价格均等化（H-O-S定理）","斯托尔珀—萨缪尔森定理（SS定理）"],
-   "五、里昂惕夫之谜与解释（简答／论述）":["里昂惕夫之谜","人力资本说","自然资源说","要素密集度逆转","需求偏好相似说（对里昂惕夫之谜的解释）"],
-   "六、贸易保护理论（简答）":["幼稚产业保护论","穆勒标准","巴斯塔布尔标准","肯普标准","小岛清标准","超贸易保护主义","战略性贸易政策理论"],
-   "七、当代贸易理论（名词解释＋简答＋论述）":["规模经济与产业内贸易","垄断竞争模型","产品生命周期理论","需求偏好相似理论（林德理论）","产业内贸易指数","企业异质性（新新贸易理论）"],
-   "八、政策工具（以后章为主）":["倾销与反倾销","技术性贸易壁垒","绿色贸易壁垒","进口配额","自愿出口限制","出口补贴","从量税／从价税／有效关税保护率"],
-   "九、工业化战略（以后章为主）":["进口替代工业化战略","出口导向工业化战略","进口替代与出口导向的比较"],
-   "十、区域一体化（以后章为主）":["自由贸易区","关税同盟","共同市场","经济联盟","贸易创造／贸易转向"]
-  },
-  "第二章 国际贸易措施":{
-   "名词解释（23条）":["进口替代工业化战略","出口导向工业化战略","出口信贷","出口信贷国家担保制","出口补贴","外汇倾销","关税的概念","从量税","从价税","普遍优惠制（普惠税）","有效关税保护率","进口配额制","关税配额","自愿出口限制（自动出口配额制）","进口许可证制","倾销","反倾销","技术性贸易壁垒","绿色贸易壁垒","知识产权保护","原产地规则","补贴与反补贴","保障措施"],
-   "简答（10条）":["鼓励出口的贸易措施","关税的特点","关税的作用","关税对国际贸易的影响","从量税的四个特点","从价税的五个特点","非关税壁垒的概念与分类","非关税壁垒的特点","新贸易保护主义的主要形式","基于倾销解释企业掠夺性行为"],
-   "简答／论述（8条）":["国际贸易摩擦的含义","国际贸易摩擦的形式","绿色贸易壁垒对我国外贸的影响","中国遭受反倾销的原因","反倾销对中国出口的影响","应对反倾销我国应采取的对策","国际贸易摩擦的应对方法"]
-  },
-  "第三章 货物贸易与服务贸易":{
-   "名词解释（17条）":["国际货物贸易的概念","出口贸易","进口贸易","过境贸易","复出口与复进口","净出口与净进口","直接贸易","间接贸易","转口贸易","国际服务贸易的概念","服务外包","国际技术贸易的定义","专利","商标","工业产权","专有技术","国际劳务合作的概念"],
-   "简答（11条）":["国际货物贸易的类型（按货物移动方向）","国际货物贸易的类型（按有无第三国）","国际货物贸易的类型（按运输方式）","国际服务贸易的提供方式","国际服务贸易的特征","国际技术贸易的形式","国际技术贸易的特点","国际劳务合作的作用","服务贸易迅速发展的原因","我国服务贸易存在的问题","我国服务贸易的应对措施"],
-   "论述（2条）":["网络贸易对国际贸易的正面影响","网络贸易对国际贸易的负面影响"]
-  },
-  "第四章 区域经济一体化与多边贸易体制":{
-   "名词解释（15条）":["经济全球化的概念","区域经济一体化的概念","自由贸易区","关税同盟","共同市场","经济联盟","政治联盟","贸易转移（贸易转向）","世界贸易组织的概念","最惠国待遇","国民待遇","透明度原则","公平解决争端原则","RCEP的定义"],
-   "简答（18条）":["经济全球化的表现（内容）","经济全球化的基本特征","经济全球化的推动因素","经济全球化的影响","全球化的主要特征","反全球化的原因","非歧视性原则","关税保护原则","公平贸易原则","互惠贸易原则","市场准入原则","世界贸易组织的宗旨","区域经济一体化的机遇","区域经济一体化的挑战","欧元对欧盟经济的积极影响","欧元对欧盟经济的消极影响","RCEP对中国经济的影响"],
-   "论述（3条）":["中国参与区域合作的经济因素","中国参与区域合作的政治因素","一带一路对我国的影响"]
-  },
-  "第五章 国际直接投资与跨国公司":{
-   "名词解释（22条）":["国际直接投资的概念","垄断优势理论","产品生命周期理论","内部化理论","国际生产折衷理论（综合理论）","多点竞争战略","区位优势","边际产业扩张论（比较优势理论）","混合型投资","跨国公司的定义","资源开发型跨国公司","加工制造型跨国公司","服务提供型跨国公司","横向型跨国公司","垂直型跨国公司","混合型跨国公司","民族中心型公司","多元中心型公司","全球中心型公司","对外直接投资周期理论","技术地方化理论","小规模技术理论"],
-   "简答（6条）":["国际直接投资的特点与趋势（流量与存量的概念）","衡量外来直接投资重要性的方法","跨国公司的主要特征","跨国公司发展的原因","中国对外直接投资的现状和特点","中国对外直接投资的作用"],
-   "简答／论述":["水平型对外直接投资（概念＋经济效应）","垂直型对外直接投资（概念＋经济效应）"],
-   "新增（要背“…的内容”）":["垄断优势理论的内容","产品生命周期理论的内容","内部化理论的内容","国际生产折中理论的内容","多点竞争与区位优势的内容","边际产业扩张论的内容"]
-  }
- };
-}
-buildData();
-
-var TYPE_OF={
- "重商主义":"其他","绝对优势理论":"简答","绝对优势理论的评价":"简答","比较优势理论（2×2×2模型）":"简答","比较成本":"名词解释","两优取其重、两劣取其轻":"简答","比较优势理论的贡献与局限":"论述",
- "相互需求理论":"简答","提供曲线（相互需求曲线）":"名词解释",
- "要素丰裕度":"名词解释","要素密集度":"名词解释","H-O模型（2×2×2）":"简答","要素价格均等化（H-O-S定理）":"简答","斯托尔珀—萨缪尔森定理（SS定理）":"简答",
- "里昂惕夫之谜":"名词解释","人力资本说":"简答","自然资源说":"简答","要素密集度逆转":"简答","需求偏好相似说（对里昂惕夫之谜的解释）":"简答",
- "幼稚产业保护论":"简答","穆勒标准":"简答","巴斯塔布尔标准":"简答","肯普标准":"简答","小岛清标准":"简答","超贸易保护主义":"简答","战略性贸易政策理论":"简答",
- "规模经济与产业内贸易":"简答","垄断竞争模型":"简答","产品生命周期理论":"简答","需求偏好相似理论（林德理论）":"简答","产业内贸易指数":"名词解释","企业异质性（新新贸易理论）":"简答",
- "国际直接投资的概念":"名词解释","垄断优势理论":"简答","产品生命周期理论":"简答","内部化理论":"简答","国际生产折衷理论（综合理论）":"简答","多点竞争战略":"名词解释","区位优势":"名词解释","边际产业扩张论（比较优势理论）":"简答","混合型投资":"名词解释","跨国公司的定义":"名词解释","资源开发型跨国公司":"名词解释","加工制造型跨国公司":"名词解释","服务提供型跨国公司":"名词解释","横向型跨国公司":"名词解释","垂直型跨国公司":"名词解释","混合型跨国公司":"名词解释","民族中心型公司":"名词解释","多元中心型公司":"名词解释","全球中心型公司":"名词解释","对外直接投资周期理论":"简答","技术地方化理论":"简答","小规模技术理论":"简答",
- "国际直接投资的特点与趋势（流量与存量的概念）":"简答","衡量外来直接投资重要性的方法":"简答","跨国公司的主要特征":"简答","跨国公司发展的原因":"简答","中国对外直接投资的现状和特点":"简答","中国对外直接投资的作用":"简答",
- "垄断优势理论的内容":"简答","产品生命周期理论的内容":"简答","内部化理论的内容":"简答","国际生产折中理论的内容":"简答","多点竞争与区位优势的内容":"简答","边际产业扩张论的内容":"简答",
- "水平型对外直接投资（概念＋经济效应）":"简答","垂直型对外直接投资（概念＋经济效应）":"简答"
-};
-function typeTag(name){
- var t=TYPE_OF[name]||TYPE_OF[name.replace(/<[^>]+>/g,'')];
- if(t==="名词解释")return "<span class='tag tm'>名词解释</span>";
- if(t==="简答")return "<span class='tag ts'>简答</span>";
- if(t==="论述")return "<span class='tag td'>论述</span>";
- return "<span class='tag to'>其他</span>";
-}
-function typeOf(name){var t=TYPE_OF[name]||TYPE_OF[name.replace(/<[^>]+>/g,'')];return t||"其他";}
-
-/* ============ 同步 ============ */
-function clean(n){return String(n).replace(/<[^>]+>/g,'');}
+/* ============ 数据层 ============ */
+async function api(path,opts){opts=opts||{};var r=await fetch(SUPABASE_URL+'/rest/v1'+path,{headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},...opts});if(!r.ok){var t=await r.text();throw new Error(t||r.status);}return r.status===204?null:r.json();}
 
 async function loadAll(){
  try{
-  var r=await supabase.from('kb_items').select('*');
-  if(r.error)throw r.error;
-  DB={};
-  (r.data||[]).forEach(function(it){DB[clean(it.name)]=it;});
+  subjects=await api('/kb_subjects?select=*&order=sort_order');
+  chapters=await api('/kb_chapters?select=*&order=sort_order');
+  points=await api('/kb_points?select=*&order=created_at.desc');
+  reviews=await api('/kb_reviews?select=*&order=review_date.desc');
+  /* 若表是空的，初始化国际商务五章 */
+  if(!subjects.length)await seedData();
+  buildTree();
   render();
  }catch(e){console.error(e);toast('加载失败：'+(e.message||''));}
 }
 
-async function saveItem(rec){
- var cleaned=clean(rec.name);
- var payload={ch:rec.ch,name:cleaned,type:typeOf(cleaned),layer:rec.layer||null,first_date:rec.first_date||null,next_date:rec.next_date||null,l1_streak:rec.l1_streak||0};
- var exist=DB[cleaned];
- try{
-  if(exist&&exist.id){
-   var r=await supabase.from('kb_items').update(payload).eq('id',exist.id).select().single();
-   if(r.error)throw r.error;
-   DB[cleaned]=r.data;
-  }else{
-   var r2=await supabase.from('kb_items').insert([payload]).select().single();
-   if(r2.error)throw r2.error;
-   DB[cleaned]=r2.data;
-  }
-  render();
- }catch(e){console.error(e);toast('保存失败：'+(e.message||''));}
+async function seedData(){
+ var s=await api('/kb_subjects',{method:'POST',body:JSON.stringify({name:'国际商务',sort_order:1}),headers:{'Content-Type':'application/json','Prefer':'return=representation','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}});
+ var sid=s[0].id;
+ var chNames=['第一章 国际贸易理论','第二章 国际贸易措施','第三章 货物贸易与服务贸易','第四章 区域经济一体化与多边贸易体制','第五章 国际直接投资与跨国公司'];
+ for(var i=0;i<chNames.length;i++){
+  await api('/kb_chapters',{method:'POST',body:JSON.stringify({subject_id:sid,name:chNames[i],sort_order:i+1}),headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}});
+ }
 }
 
-async function deleteItem(name){
- var cleaned=clean(name);
- var exist=DB[cleaned];
- if(!exist||!exist.id)return;
- if(!confirm('确定删除这条记录吗？'))return;
- try{
-  var r=await supabase.from('kb_items').delete().eq('id',exist.id);
-  if(r.error)throw r.error;
-  delete DB[cleaned];render();toast('已删除');
- }catch(e){console.error(e);toast('删除失败');}
+async function savePoint(p){
+ var body=JSON.stringify({chapter_id:p.chapter_id,name:p.name,category:p.category||'简答',content:p.content||''});
+ if(p.id){
+  return api('/kb_points?id=eq.'+p.id,{method:'PATCH',body:body,headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}});
+ }else{
+  var r=await api('/kb_points',{method:'POST',body:body,headers:{'Content-Type':'application/json','Prefer':'return=representation','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}});
+  return r;
+ }
+}
+async function deletePoint(id){
+ if(!confirm('删除该知识点会同时删除其全部背诵记录，确定吗？'))return;
+ await api('/kb_reviews?point_id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}});
+ await api('/kb_points?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}});
+ reviews=reviews.filter(function(r){return r.point_id!==id;});
+ points=points.filter(function(p){return p.id!==id;});
+ buildTree();render();toast('已删除');
+}
+async function saveReview(rec){
+ var exist=reviews.filter(function(r){return r.point_id===rec.point_id&&r.review_date===rec.review_date;})[0];
+ if(exist){
+  await api('/kb_reviews?id=eq.'+exist.id,{method:'PATCH',body:JSON.stringify({level:rec.level,note:rec.note||''}),headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}});
+  exist.level=rec.level;exist.note=rec.note||'';
+ }else{
+  var r=await api('/kb_reviews',{method:'POST',body:JSON.stringify(rec),headers:{'Content-Type':'application/json','Prefer':'return=representation','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}});
+  reviews.unshift(r[0]);
+ }
+ render();
 }
 
-function setEntry(ch,name,layer,dateStr){
- var d=dateStr||todayStr();
- var exist=DB[clean(name)]||{};
- var streak=(layer===1)?((exist.l1_streak||0)+1):0;
- var rec={
-  ch:ch,name:name,layer:layer,
-  first_date:exist.first_date||d,
-  next_date:addDays(d,GAP[layer]),
-  l1_streak:streak
- };
- saveItem(rec);
+/* ============ 树结构 ============ */
+function buildTree(){
+ subjects.forEach(function(s){s.chapters=[];});
+ chapters.forEach(function(c){
+  var s=subjects.filter(function(x){return x.id===c.subject_id;})[0];
+  if(s)c.chapters.push(c);
+ });
 }
+
+/* ============ 掌握等级 ============ */
+function lastLevel(pointId){var rs=reviews.filter(function(r){return r.point_id===pointId;});if(!rs.length)return 0;return rs[0].level;}
+function levelOn(pointId,date){var r=reviews.filter(function(x){return x.point_id===pointId&&x.review_date===date;})[0];return r?r.level:0;}
+
+/* 该知识点在 date 这天是否到期需要复习 */
+function isDue(pointId,date){
+ var rs=reviews.filter(function(r){return r.point_id===pointId;}).sort(function(a,b){return a.review_date.localeCompare(b.review_date);});
+ if(!rs.length)return true;            /* 未首背，视为待背 */
+ var first=rs[0].review_date;
+ if(first>date)return false;
+ /* 已完成的节点 */
+ var done={};
+ rs.forEach(function(r){done[r.review_date]=r.level;});
+ var keys=Object.keys(done).sort();
+ var last=keys[keys.length-1];
+ /* 若今天（date）之后还有计划，不算 overdue，但这里 date 就是今天 */
+ /* 规则：从 last 往后推下一个节点，若 last 之后无节点则推 1/2/4/7/15 */
+ var seq=[1,2,4,7,15];
+ var base=new Date(last);base.setDate(base.getDate()+1);base=base.getFullYear()+'-'+String(base.getMonth()+1).padStart(2,'0')+'-'+String(base.getDate()).padStart(2,'0');
+ /* 找下一个未完成的节点 */
+ var cur=last;
+ var lvl=done[last];
+ /* 若最近一次是 L4/L5，保持 15 天节奏；否则按序列推进 */
+ var target=addDays(last, lvl>=4?15:nextNode(cur,date,keys,done));
+ return date>=target;
+}
+function nextNode(cur,date,keys,done){
+ var seq=[1,2,4,7,15];var idx=0;
+ /* 简化：距首次背诵的天数 */
+ var first=keys[0];var day=diffDays(first,date);
+ /* 找序列中第一个 > day 的节点 */
+ for(var i=0;i<seq.length;i++)if(day<seq[i])return seq[i]-day;
+ return 15; /* 全部节点已过，15 天一轮 */
+}
+/* 今天到期清单 */
+function dueList(){
+ var ts=todayStr();var out=[];
+ points.forEach(function(p){
+  if(isDue(p.id,ts))out.push({point:p,level:lastLevel(p.id),first:firstDate(p.id)});
+ });
+ return out.sort(function(a,b){return (a.first||'').localeCompare(b.first||'');});
+}
+function firstDate(pointId){var r=reviews.filter(function(x){return x.point_id===pointId;}).sort(function(a,b){return a.review_date.localeCompare(b.review_date);})[0];return r?r.review_date:null;}
 
 /* ============ 渲染 ============ */
 function render(){
- var total=0,mc=0,sc=0,dc=0,done=0;
- var counts={};
- Object.keys(DATA).forEach(function(cid){
-  counts[cid]=0;
-  var box=document.getElementById(cid_en(cid)+'_body');if(!box)return;
-  var h='';
-  Object.keys(DATA[cid]).forEach(function(g){
-   var items=DATA[cid][g];
-   total+=items.length;
-   h+="<div class='tgroup'><h4>"+g+"（"+items.length+"）</h4><ul class='items'>";
-   items.forEach(function(n){
-    var cleanN=clean(n);
-    var it=DB[cleanN];
-    if(it&&it.layer)done++;
-    var t=typeOf(cleanN);
-    if(t==='名词解释')mc++;else if(t==='简答')sc++;else if(t==='论述')dc++;
-    if(it&&it.layer)counts[cid]=(counts[cid]||0)+1;
-    var btns='';
-    for(var i=1;i<=4;i++){
-     btns+="<button class='"+(it&&it.layer==i?'on':'')+"' onclick='openModal(\""+esc(cid)+"\",\""+esc(cleanN)+"\","+i+")'>"+i+"</button>";
-    }
-    var nxt=it&&it.next_date?"<span class='next-date'>下次 "+it.next_date+"</span>":"";
-    h+="<li class='"+(it&&it.layer?"done":"")+"'>"
-      +"<span class='nm'>"+n+"</span>"
-      +typeTag(cleanN)
-      +"<span class='layer-mini'>"+btns+"</span>"
-      +nxt
-      +"</li>";
-   });
-   h+='</ul></div>';
-  });
-  box.innerHTML=h;
- });
- document.getElementById('sTotal').textContent=total;
- document.getElementById('sM').textContent=mc;
- document.getElementById('sS').textContent=sc;
- document.getElementById('sD').textContent=dc;
- document.getElementById('sDone').textContent=done;
- renderReview();
- renderChart(counts,total);
+ renderCountdown();
+ renderDue();
+ renderHeat();
+ renderStats();
+ renderChapters();
 }
 
-function cid_en(cid){
- return 'ch'+cid.replace(/[^0-9]/g,'').slice(0,1);
-}
-
-function renderReview(){
- var ul=document.getElementById('reviewList');
+function renderCountdown(){
+ var d=diffDays(todayStr(),EXAM_DATE);
+ var cd=document.getElementById('cdNum');
+ if(d>0){cd.textContent=d+' 天';document.getElementById('cdSub').textContent='2026年12月19日 · 稳住，能上';}
+ else if(d===0){cd.textContent='就是今天';document.getElementById('cdSub').textContent='去考吧，你已经准备好了';}
+ else {cd.textContent='已开考';document.getElementById('cdSub').textContent='别看了，复盘下一站';}
  var ts=todayStr();
- var due=Object.values(DB).filter(function(v){return v.next_date&&v.next_date<=ts;}).sort(function(a,b){return (a.next_date||'').localeCompare(b.next_date||'');});
- if(!due.length){ul.innerHTML="<li style='border:none;color:var(--sub)'>🎉 今天没有需要复习的条目，去新增吧</li>";return;}
- ul.innerHTML='';
- due.forEach(function(v){
-  var cls=v.next_date<ts?'over':'soon';
-  var mark=v.next_date<ts?'已逾期':'今日';
-  ul.innerHTML+="<li><span class='"+cls+"'>"+mark+"</span>｜"+v.ch+"｜"+v.name+"｜下次 "+v.next_date+"｜L"+v.layer+"</li>";
- });
+ document.getElementById('cdToday').textContent=reviews.filter(function(r){return r.review_date===ts;}).length;
+ document.getElementById('cdMastered').textContent=points.filter(function(p){return lastLevel(p.id)>=4;}).length;
+ /* 连续打卡 */
+ var streak=0;var cur=ts;
+ while(reviews.some(function(r){return r.review_date===cur;})){streak++;cur=addDays(cur,-1);}
+ document.getElementById('cdStreak').textContent=streak;
 }
 
-function renderChart(counts,total){
- var bar=document.getElementById('barBarChart');
- var max=0;Object.keys(DATA).forEach(function(c){if((counts[c]||0)>max)max=counts[c];});
+function renderDue(){
+ var list=dueList();
+ var box=document.getElementById('dueList');
+ document.getElementById('dueTag').textContent=list.length?'共 '+list.length+' 条':'今天没有';
+ if(!list.length){box.innerHTML="<div class='empty-due'>🎉 今天没有待复习的条目，去背点新的吧</div>";return;}
  var h='';
- Object.keys(DATA).forEach(function(c){
-  var got=counts[c]||0;
-  var pct=total?Math.round(got/Object.keys(DATA[c]).length*100):0;
-  h+="<div class='bar-row'><span style='width:88px'>"+c.replace(/[（(].*/,'')+"</span>"
-    +"<div class='bar-track'><div class='bar-fill' style='width:"+pct+"%'></div></div>"
-    +"<span style='width:44px;text-align:right'>"+got+"/"+Object.keys(DATA[c]).length+"</span></div>";
+ list.forEach(function(o){
+  var p=o.point;
+  h+="<div class='due-item' data-id='"+p.id+"'>"
+   +"<span class='pt-name'>"+esc(p.name)+"</span>"
+   +"<span class='pt-meta'>"+esc(chapterName(p.chapter_id))+(o.first?' · 首背 '+o.first:'')+"</span>"
+   +"<span class='lvl-btns'>"
+   +"<button class='l1' onclick='quickReview("+p.id+",1)'>遗</button>"
+   +"<button class='l2' onclick='quickReview("+p.id+",2)'>糊</button>"
+   +"<button class='l3' onclick='quickReview("+p.id+",3)'>熟</button>"
+   +"<button class='l4' onclick='quickReview("+p.id+",4)'>背</button>"
+   +"<button class='l5' onclick='quickReview("+p.id+",5)'>卡</button>"
+   +"</span></div>";
  });
- document.getElementById('barChart').innerHTML=h;
- /* 题型饼图 */
- var types={};Object.values(DB).forEach(function(v){if(v.layer)types[v.type]=(types[v.type]||0)+1;});
- var pie=document.getElementById('pieSvg');
- var leg=document.getElementById('pieLegend');
- pie.style.display=Object.keys(types).length?'block':'none';
- if(!Object.keys(types).length){leg.innerHTML="<span style='color:var(--sub)'>还没有背诵记录</span>";return;}
- var done2=0;for(var k in types)done2+=types[k];
- var acc=0;var path='';
- var color={'名词解释':'#1f9d68','简答':'#1d4ed8','论述':'#d97706','其他':'#7c3aed'};
- leg.innerHTML='';
- for(var k2 in types){
-  var frac=types[k2]/done2;
-  var dash=frac*100;
-  path+="<circle cx='21' cy='21' r='15.9' fill='none' stroke='"+(color[k2]||'#999')+"' stroke-width='6' stroke-dasharray='"+dash+" "+(100-dash)+"' stroke-dashoffset='"+(100-acc)+"'></circle>";
-  acc+=dash;
-  leg.innerHTML+="<div><span style='background:"+(color[k2]||'#999')+"'></span>"+k2+"："+types[k2]+"</div>";
+ box.innerHTML=h;
+}
+
+function renderStats(){
+ var ts=todayStr();
+ document.getElementById('sPoint').textContent=points.length;
+ document.getElementById('sDone').textContent=points.filter(function(p){return lastLevel(p.id)>0;}).length;
+ document.getElementById('sDue').textContent=dueList().length;
+ var done=points.filter(function(p){return lastLevel(p.id)>0;}).length;
+ var m=points.filter(function(p){return lastLevel(p.id)>=4;}).length;
+ document.getElementById('sRate').textContent=done?Math.round(m/done*100)+'%':'0%';
+}
+
+function renderHeat(){
+ var grid=document.getElementById('heatGrid');var mon=document.getElementById('heatMonth');
+ grid.innerHTML='';mon.innerHTML='';
+ var start=new Date(today);start.setDate(today.getDate()-23 * 7);start.setDate(start.getDate()-start.getDay());
+ /* 计算每天的最高等级 */
+ var dayMap={};
+ reviews.forEach(function(r){
+  var k=r.review_date;
+  if(!dayMap[k]||dayMap[k]<r.level)dayMap[k]=r.level;
+ });
+ var weeks=[];var ml=[];var lastM=-1;
+ for(var w=0;w<24;w++){
+  var week=[];var d0=new Date(start);d0.setDate(start.getDate()+w*7);
+  for(var dow=0;dow<7;dow++){var d=new Date(start);d.setDate(start.getDate()+w*7+dow);week.push(d);}
+  weeks.push(week);
+  var m=d0.getMonth();
+  ml.push(m!==lastM?d0.toLocaleDateString('zh-CN',{month:'short'}):'');lastM=m;
  }
- document.getElementById('pieArc').outerHTML=path;
-}
-
-/* ============ 录入 ============ */
-function parseInput(){
- var raw=document.getElementById('raw').value.trim();
- if(!raw){toast('先输入内容');return;}
- var dateStr=document.getElementById('entryDate').value||todayStr();
- var curCh=document.getElementById('entryCh').value.trim();
- var cnt=0;
- raw.split(/\n+/).forEach(function(line){
-  line=line.trim();if(!line)return;
-  var m=/^(第?[一二三四五六七八九十\d]+章)[^\s：:]*\s*[：:]?\s*(.*)$/.exec(line);
-  if(m&&(!m[2]||m[2].length<2)){curCh=m[1];return;}
-  var name=(m?m[2]:line).trim().replace(/\s*(第[1234]层|[Ll]\d)\s*$/,'');
-  if(!name)return;
-  cnt++;
-  /* 未选层时弹内联选择 */
-  openModal(curCh||"第五章 国际直接投资与跨国公司",name,0,true);
+ ml.forEach(function(m){mon.innerHTML+='<span>'+m+'</span>';});
+ weeks.forEach(function(week){
+  var col='<div class="heat-col">';
+  week.forEach(function(d){
+   var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+   var l=dayMap[k]||0;
+   var cnt=reviews.filter(function(r){return r.review_date===k;}).length;
+   col+='<div class="heat-cell'+(l?'" data-l="'+l+'"':'"')+' data-date="'+k+'" data-cnt="'+cnt+'" data-lvl="'+(l?LVL_NAME[l]:'未背')+'"></div>';
+  });
+  col+='</div>';grid.innerHTML+=col;
  });
- if(cnt===0)toast('没有解析到条目');
+ bindHeatTip();
 }
 
-var pendingBulk=false;
-function openModal(ch,name,layer,fromBulk){
- pendingBulk=!!fromBulk;
- editingCh=ch;editingName=name;pickedLayer=layer||0;
- document.getElementById('modalTitle').textContent=fromBulk?'为「'+name+'」选层':'设置背诵评级';
- document.getElementById('modalName').textContent=ch+' · '+name;
- [1,2,3,4].forEach(function(i){document.getElementById('mp'+i).className=i===pickedLayer?'picked':'';});
- document.getElementById('modal').classList.add('active');
+function bindHeatTip(){
+ var cells=document.querySelectorAll('.heat-cell');var tip=document.getElementById('tip');
+ cells.forEach(function(c){
+  c.addEventListener('mouseenter',function(e){
+   tip.innerHTML=c.dataset.date+' · '+c.dataset.cnt+' 条 · 最高 '+c.dataset.lvl;
+   tip.classList.add('on');
+  });
+  c.addEventListener('mousemove',function(e){tip.style.left=e.clientX+12+'px';tip.style.top=e.clientY-30+'px';});
+  c.addEventListener('mouseleave',function(){tip.classList.remove('on');});
+  c.addEventListener('click',function(){
+   document.getElementById('search').value=c.dataset.date;doSearch(c.dataset.date);
+  });
+ });
 }
-function pickLayer(l){pickedLayer=l;[1,2,3,4].forEach(function(i){document.getElementById('mp'+i).className=i===l?'picked':'';});}
-function closeModal(){document.getElementById('modal').classList.remove('active');editingName=null;pendingBulk=false;}
-async function saveModal(){
- if(!pickedLayer){toast('请先选第几层');return;}
- var dateStr=document.getElementById('entryDate').value||todayStr();
- setEntry(editingCh,editingName,pickedLayer,dateStr);
- closeModal();
- if(pendingBulk)toast('已记录 '+editingName);
+
+function renderChapters(){
+ var box=document.getElementById('chapterList');var h='';
+ subjects.forEach(function(s){
+  s.chapters.forEach(function(c){
+   var cps=points.filter(function(p){return p.chapter_id===c.id;});
+   var done=cps.filter(function(p){return lastLevel(p.id)>0;}).length;
+   h+="<div class='chapter' id='chwrap_"+c.id+"'>"
+    +"<div class='chapter-top' onclick='toggleChapter("+c.id+")'>"
+    +"<svg class='caret' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5'><polyline points='9 18 15 12 9 6'/></svg>"
+    +"<h2>"+esc(c.name)+"</h2>"
+    +"<span class='cnt'>"+done+'/'+cps.length+" 已背</span>"
+    +"<button class='soft sm' onclick='event.stopPropagation();openPointModal("+c.id+")'>＋</button>"
+    +"</div>"
+    +"<div class='chapter-body'><div class='point-list' id='plist_"+c.id+"'>";
+   if(!cps.length){h+="<div style='text-align:center;padding:18px;color:var(--sub);font-size:13px'>本章还没有知识点，点右上角添加</div>";}
+   cps.forEach(function(p){
+    var l=lastLevel(p.id);
+    h+="<div class='point'>"
+     +"<span class='lvl-dot'"+(l?' data-l="'+l+'"':'')+"></span>"
+     +"<div class='info'>"
+     +"<div class='nm'>"+esc(p.name)+" "+tagOf(p.category)+"</div>"
+     +"<div class='preview'>"+(clean(p.content)||'<span style="color:var(--sub)">还没有内容，点编辑添加</span>')+"</div>"
+     +"</div>"
+     +"<div class='point-actions'>"
+     +"<button class='ghost sm' onclick='openPointModal(null,null,"+p.id+")'>编辑</button>"
+     +"<button class='soft sm' onclick='quickReview("+p.id+",4)'>背熟</button>"
+     +"<button class='soft sm' style='color:var(--l2)' onclick='deletePoint("+p.id+")'>删</button>"
+     +"</div></div>";
+   });
+   h+="</div></div></div>";
+  });
+ });
+ box.innerHTML=h;
 }
-document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+function tagOf(c){if(c==='名词解释')return "<span class='tag tm'>名词解释</span>";if(c==='简答')return "<span class='tag ts'>简答</span>";if(c==='论述')return "<span class='tag td'>论述</span>";return "<span class='tag to'>其他</span>";}
+function chapterName(id){var c=chapters.filter(function(x){return x.id===id;})[0];return c?c.name:'';}
+
+function toggleChapter(id){
+ var el=document.getElementById('chwrap_'+id);
+ el.classList.toggle('open');
+}
+
+/* ============ 模态：知识点 ============ */
+var curPoint=null;
+function openPointModal(chapterId,forceCh,pointId){
+ var modal=document.getElementById('modal');
+ var p=pointId?points.filter(function(x){return x.id===pointId;})[0]:null;
+ curPoint=p||null;
+ var chSel='<select id="fCh">'+(p?('<option value="'+p.chapter_id+'">'+esc(chapterName(p.chapter_id))+'</option>'):'')+'</select>';
+ /* 只能选已有章节 */
+ var opts='';chapters.forEach(function(c){opts+='<option value="'+c.id+'"'+( (p&&p.chapter_id===c.id)||(!p&&chapterId===c.id)?' selected':'')+'>'+esc(c.name)+'</option>';});
+ var html=''
+  +"<h3>"+(p?'编辑知识点':'新增知识点')+"</h3>"
+  +"<div class='field'><label>所属章节</label><select id='fCh'>"+opts+"</select></div>"
+  +"<div class='field'><label>知识点名称</label><input id='fName' value='"+(p?esc(p.name):'')+"' placeholder='如：产品生命周期理论的内容'></div>"
+  +"<div class='field'><label>题型分类</label><select id='fCat'>"
+  +['名词解释','简答','论述','其他'].map(function(c){return '<option'+( (p&&p.category===c)||(!p&&c==='简答')?' selected':'')+'>'+c+'</option>';}).join('')
+  +"</select></div>"
+  +"<div class='field'><label>具体内容（富文本）</label><div class='rich'>"
+  +"<div class='tools'>"
+  +"<button onclick='fmt(\"bold\")'><b>B</b></button>"
+  +"<button onclick='fmt(\"italic\")'><i>I</i></button>"
+  +"<button onclick='fmt(\"underline\")'><u>U</u></button>"
+  +"<button onclick='fmt(\"insertUnorderedList\")'>• 列表</button>"
+  +"<button onclick='fmt(\"insertOrderedList\")'>1. 列表</button>"
+  +"<button onclick='fmt(\"formatBlock\",\"h3\")'>H</button>"
+  +"<button onclick='fmt(\"formatBlock\",\"p\")'>P</button>"
+  +"</div>"
+  +"<div id='fContent' contenteditable data-ph='在这里写知识点的具体内容，可加粗、列表…'>"+(p?p.content:'')+"</div>"
+  +"</div></div>"
+  +"<div class='modal-acts'>"
+  +"<button class='ghost' onclick='closeModal()'>取消</button>"
+  +"<button onclick='submitPoint()'>"+(p?'保存':'添加')+"</button>"
+  +"</div>";
+ modal.innerHTML=html;
+ document.getElementById('mask').classList.add('on');
+}
+function fmt(cmd,val){document.execCommand(cmd,false,val||null);document.getElementById('fContent').focus();}
+async function submitPoint(){
+ var chapter_id=+document.getElementById('fCh').value;
+ var name=document.getElementById('fName').value.trim();
+ var category=document.getElementById('fCat').value;
+ var content=document.getElementById('fContent').innerHTML.trim();
+ if(!name){toast('请填写知识点名称');return;}
+ if(curPoint){
+  curPoint.chapter_id=chapter_id;curPoint.name=name;curPoint.category=category;curPoint.content=content;
+  await savePoint(curPoint);
+  toast('已更新');
+ }else{
+  await savePoint({chapter_id:chapter_id,name:name,category:category,content:content});
+  toast('已添加');
+ }
+ /* 新增即视为首背，记录 L4 */
+ if(!curPoint){
+  var np=points.filter(function(p){return p.name===name&&p.chapter_id===chapter_id;})[0];
+  if(np)await saveReview({point_id:np.id,review_date:todayStr(),level:4,note:'首背'});
+ }
+ closeModal();loadAll();
+}
+function closeModal(){document.getElementById('mask').classList.remove('on');curPoint=null;}
+
+/* ============ 复习 ============ */
+async function quickReview(pointId,level){
+ await saveReview({point_id:pointId,review_date:todayStr(),level:level,note:''});
+ toast('已记录 '+LVL_NAME[level]);
+}
 
 /* ============ 搜索 ============ */
-document.getElementById('search').addEventListener('input',function(e){
- var q=e.target.value.trim().toLowerCase();
- document.querySelectorAll('.tgroup').forEach(function(tg){
+document.getElementById('search').addEventListener('input',function(e){doSearch(e.target.value.trim());});
+function doSearch(q){
+ q=(q||'').toLowerCase();
+ document.querySelectorAll('.chapter').forEach(function(ch){
   var hit=false;
-  tg.querySelectorAll('ul.items li').forEach(function(li){
-   var ok=!q||li.textContent.toLowerCase().indexOf(q)>-1||(tg.previousElementSibling&&tg.previousElementSibling.textContent.toLowerCase().indexOf(q)>-1);
-   li.style.display=ok?'':'none';
+  ch.querySelectorAll('.point').forEach(function(p){
+   var txt=p.textContent.toLowerCase();
+   var ok=!q||txt.indexOf(q)>-1;
+   p.style.display=ok?'':'none';
    if(ok)hit=true;
   });
-  tg.style.display=hit||!q?'':'none';
+  var bd=ch.querySelector('.chapter-body');
+  ch.classList.add('open');bd.style.display='block';
+  ch.style.display=hit||!q?'':'none';
  });
- document.querySelectorAll('section[id^="ch"]').forEach(function(s){
-  var any=[].slice.call(s.querySelectorAll('.tgroup')).some(function(t){return t.style.display!=='none';});
-  s.style.display=(any||!q)?'':'none';
- });
-});
-
-/* ============ 导入导出 ============ */
-function exportData(){
- var data={version:1,exported_at:new Date().toISOString(),items:Object.values(DB)};
- var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
- var url=URL.createObjectURL(blob);
- var a=document.createElement('a');a.href=url;a.download='beishu-kb-'+todayStr()+'.json';
- document.body.appendChild(a);a.click();document.body.removeChild(a);
- setTimeout(function(){URL.revokeObjectURL(url);},1000);
- toast('已导出');
-}
-async function importData(ev){
- var file=ev.target.files[0];if(!file)return;
- var text=await file.text();
- try{
-  var json=JSON.parse(text);
-  var items=json.items||json;
-  if(!Array.isArray(items))throw new Error('格式不对');
-  var cnt=0;
-  for(var i=0;i<items.length;i++){
-   var it=items[i];if(!it.name||!it.ch)continue;
-   await saveItem({ch:it.ch,name:it.name,layer:it.layer,first_date:it.first_date,next_date:it.next_date,l1_streak:it.l1_streak||0});
-   cnt++;
-  }
-  toast('已导入 '+cnt+' 条');
- }catch(e){toast('导入失败：'+e.message);}
- ev.target.value='';
 }
 
-/* ============ 暗色模式 ============ */
+/* ============ 暗色 ============ */
 function toggleDark(){
  document.body.classList.toggle('dark');
  localStorage.setItem('kb_dark',document.body.classList.contains('dark')?'1':'0');
 }
 if(localStorage.getItem('kb_dark')==='1')document.body.classList.add('dark');
 
-/* ============ 登录 ============ */
-function askPassword(){
+/* ============ 提示 ============ */
+var toastTimer=null;
+function toast(m){
+ var t=document.getElementById('toast');t.textContent=m;t.classList.add('on');
+ clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove('on');},1800);
+}
+
+/* ============ 启动 ============ */
+if(localStorage.getItem('kb_logged_in')==='1'){init();}
+else{
  var p=prompt('请输入访问密码（默认 beishu2024）','');
- if(p!==ACCESS_PASSWORD){toast('密码错误');setTimeout(askPassword,300);return;}
- localStorage.setItem('kb_logged_in','1');
- document.getElementById('loginScreen').style.display='none';
- init();
+ if(p===ACCESS_PASSWORD){localStorage.setItem('kb_logged_in','1');init();}
+ else{toast('密码错误');setTimeout(function(){location.reload();},600);}
 }
-function init(){
- document.getElementById('entryDate').value=todayStr();
- loadAll();
-}
-if(localStorage.getItem('kb_logged_in')==='1'){document.getElementById('loginScreen').style.display='none';init();}
-else askPassword();
+function init(){loadAll();}
 </script>
 </body>
 </html>
