@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>背书地图</title>
 <style>
-:root{--bg:#08090c;--card:rgba(20,23,30,.6);--ink:#eaecf2;--sub:#858d9c;--line:rgba(255,255,255,.07);--brand:#7c9bff;--brand2:#b07cff;--accent:#3fd6ab;--shadow:0 10px 40px rgba(0,0,0,.4);--l5:#22c55e;--l4:#3b82f6;--l3:#e0a82e;--l2:#f87171;--l1:#c084fc}
+:root{--bg:#08090c;--card:rgba(20,23,30,.6);--card-solid:#13161c;--ink:#eaecf2;--sub:#858d9c;--line:rgba(255,255,255,.07);--brand:#7c9bff;--brand2:#b07cff;--accent:#3fd6ab;--shadow:0 10px 40px rgba(0,0,0,.4);--l5:#22c55e;--l4:#3b82f6;--l3:#e0a82e;--l2:#f87171;--l1:#c084fc}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
 body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","WenQuanYi Micro Hei",sans-serif;color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;background:radial-gradient(1000px 600px at 8% -10%,rgba(124,155,255,.16),transparent 62%),radial-gradient(900px 700px at 92% 4%,rgba(176,124,255,.13),transparent 62%),radial-gradient(800px 600px at 50% 108%,rgba(63,214,171,.09),transparent 62%),#08090c;background-attachment:fixed}
-body.light{--bg:#f4f6fa;--card:rgba(255,255,255,.78);--ink:#14181f;--sub:#6b7280;--line:rgba(20,24,31,.07);--shadow:0 10px 34px rgba(20,24,31,.07)}
+body.light{--bg:#f4f6fa;--card:rgba(255,255,255,.78);--card-solid:#fff;--ink:#14181f;--sub:#6b7280;--line:rgba(20,24,31,.07);--shadow:0 10px 34px rgba(20,24,31,.07)}
 button{font-family:inherit;cursor:pointer;border:none;border-radius:14px;font-weight:600;font-size:14px;padding:11px 20px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;transition:.18s;box-shadow:0 5px 18px rgba(124,155,255,.3)}
 button:hover{transform:translateY(-2px);box-shadow:0 9px 26px rgba(124,155,255,.42)}
 button:active{transform:translateY(0)}
@@ -108,8 +108,7 @@ body.light .rich .tb button{background:#fff}
 .rich [contenteditable]:empty:before{content:attr(data-ph);color:var(--sub);font-size:13.5px}
 .mask{position:fixed;inset:0;background:rgba(4,5,8,.66);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:80;display:none;align-items:flex-start;justify-content:center;padding:48px 16px;overflow-y:auto}
 .mask.on{display:flex}
-.modal{background:#13161c;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:26px;padding:26px;width:100%;max-width:660px;box-shadow:0 28px 80px rgba(0,0,0,.55)}
-body.light .modal{background:#fff}
+.modal{background:var(--card-solid);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:26px;padding:26px;width:100%;max-width:660px;box-shadow:0 28px 80px rgba(0,0,0,.55)}
 .modal h3{font-size:19px;margin-bottom:18px;font-weight:800}
 .field{margin-bottom:15px}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:6px;letter-spacing:.8px}
@@ -159,6 +158,10 @@ footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter
 <div class="card">
  <div class="card-h"><span class="ic">&#128204;</span>今日待复习 <span id="dueTag" style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px"></span></div>
  <div id="dueList"><div class="empty">加载中</div></div>
+</div>
+<div class="card">
+ <div class="card-h"><span class="ic">&#128214;</span>待首背 <span id="newTag" style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px"></span></div>
+ <div class="cat-grid" id="newList"><div class="empty">加载中</div></div>
 </div>
 <div class="card">
  <div class="card-h"><span class="ic">&#128214;</span>章节</div>
@@ -250,11 +253,14 @@ function gapAfter(lastDate,first){
 }
 function dueList(){
  var out=[];
- points.forEach(function(p){if(isDue(p.id))out.push({point:p,level:lastLevel(p.id),first:firstDate(p.id)});});
+ points.forEach(function(p){
+  if(!firstDate(p.id))return;
+  if(isDue(p.id))out.push({point:p,level:lastLevel(p.id),first:firstDate(p.id)});
+ });
  out.sort(function(a,b){return (a.first||'').localeCompare(b.first||'');});
  return out;
 }
-function render(){renderCountdown();renderDue();renderCats();renderHeat();renderStats();}
+function render(){renderCountdown();renderDue();renderNew();renderCats();renderHeat();renderStats();}
 function renderCountdown(){
  var exam=new Date(EXAM_Y,EXAM_M,EXAM_D);exam.setHours(0,0,0,0);
  var days=Math.ceil((exam-today)/86400000);
@@ -274,17 +280,42 @@ function renderDue(){
  var list=dueList();
  var box=document.getElementById('dueList');
  document.getElementById('dueTag').textContent=list.length?'共 '+list.length+' 条':'今天没有';
- if(!list.length){box.innerHTML='<div class="empty">今天没有待复习的条目 去背点新的吧</div>';return;}
+ if(!list.length){box.innerHTML='<div class="empty">今天没有按记忆曲线到点的复习 去首背几个新的吧</div>';return;}
  var h='';
  list.forEach(function(o){
   var p=o.point;var overdue=o.first&&o.first<ts()&&lastLevel(p.id)>0;
-  h+='<div class="due-item"><span class="nm">'+esc(p.name)+'</span><span class="meta '+(lastLevel(p.id)===0||overdue?'over':'soon')+'">'+esc(chName(p.chapter_id))+(o.first?' 首背 '+o.first:' 待首背')+(overdue?' 已逾期':'')+'</span><span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span></div>';
+  h+='<div class="due-item"><span class="nm">'+esc(p.name)+'</span><span class="meta '+(lastLevel(p.id)===0||overdue?'over':'soon')+'">'+esc(chName(p.chapter_id))+' 首背 '+o.first+(overdue?' 已逾期':'')+'</span><span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span></div>';
  });
  box.innerHTML=h;
 }
+function renderNew(){
+ var box=document.getElementById('newList');
+ var groups=[];
+ chapters.forEach(function(c){
+  var cps=points.filter(function(p){return p.chapter_id===c.id&&!firstDate(p.id);});
+  if(cps.length)groups.push({c:c,cps:cps});
+ });
+ document.getElementById('newTag').textContent=groups.length?'有 '+groups.length+' 章未首背':'已全部首背过';
+ if(!groups.length){box.innerHTML='<div class="empty">全部知识点都首背过了 可以去复习了</div>';return;}
+ var h='';
+ groups.forEach(function(g){
+  h+='<div class="cat-card" onclick="openNew(\''+g.c.id+'\')" style="padding:18px 20px"><h3 style="font-size:15px">'+esc(g.c.name)+'</h3><div class="cnt" style="margin-top:6px">'+g.cps.length+' 条待首背</div><span class="arrow">→</span></div>';
+ });
+ box.innerHTML=h;
+}
+function openNew(id){
+ var c=chapters.filter(function(x){return x.id===id;})[0];if(!c)return;
+ var cps=points.filter(function(p){return p.chapter_id===id&&!firstDate(p.id);});
+ var h='<div class="card"><div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px"><h2 style="font-size:22px">'+esc(c.name)+'</h2><span style="color:var(--sub);font-size:13px">'+cps.length+' 条待首背</span></div></div>';
+ cps.forEach(function(p){
+  h+='<div class="card" style="padding:16px 20px"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-weight:600;font-size:14.5px;flex:1;min-width:140px">'+esc(p.name)+'</span><span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span></div></div>';
+ });
+ document.getElementById('chapterDetail').innerHTML=h;
+ go('chapter');
+}
 function renderStats(){
  document.getElementById('sPoint').textContent=points.length;
- var done=points.filter(function(p){return lastLevel(p.id)>0;}).length;
+ var done=points.filter(function(p){return firstDate(p.id);}).length;
  document.getElementById('sDone').textContent=done;
  var m=points.filter(function(p){return lastLevel(p.id)>=4;}).length;
  document.getElementById('sRate').textContent=done?Math.round(m/done*100)+'%':'0%';
@@ -294,13 +325,9 @@ function renderCats(){
  var box=document.getElementById('catGrid');var h='';
  chapters.forEach(function(c){
   var cps=points.filter(function(p){return p.chapter_id===c.id;});
-  var done=cps.filter(function(p){return lastLevel(p.id)>0;}).length;
+  var done=cps.filter(function(p){return firstDate(p.id);}).length;
   var pct=cps.length?Math.round(done/cps.length*100):0;
-  h+='<div class="cat-card" onclick="openChapter('+c.id+')">'
-   +'<h3>'+esc(c.name)+'</h3>'
-   +'<div class="bar"><i style="width:'+pct+'%"></i></div>'
-   +'<div class="cnt">'+done+' / '+cps.length+' 已首背 '+pct+'%</div>'
-   +'<span class="arrow">→</span></div>';
+  h+='<div class="cat-card" onclick="openChapter('+c.id+')"><h3>'+esc(c.name)+'</h3><div class="bar"><i style="width:'+pct+'%"></i></div><div class="cnt">'+done+' / '+cps.length+' 已首背 '+pct+'%</div><span class="arrow">→</span></div>';
  });
  box.innerHTML=h;
 }
@@ -341,9 +368,8 @@ function bindTip(){
 function openChapter(id){
  var c=chapters.filter(function(x){return x.id===id;})[0];if(!c)return;
  var cps=points.filter(function(p){return p.chapter_id===id;});
- var done=cps.filter(function(p){return lastLevel(p.id)>0;}).length;
- var pct=cps.length?Math.round(done/cps.length*100):0;
- var h='<div class="card"><div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px"><h2 style="font-size:22px">'+esc(c.name)+'</h2><span style="color:var(--sub);font-size:13px">'+done+' / '+cps.length+' 已首背</span></div><div style="height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden;margin:14px 0 4px"><i style="display:block;height:100%;width:'+pct+'%;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:8px"></i></div></div>';
+ var todo=cps.filter(function(p){return !firstDate(p.id);});
+ var h='<div class="card"><div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px"><h2 style="font-size:22px">'+esc(c.name)+'</h2><span style="color:var(--sub);font-size:13px">'+todo.length+' 条待首背</span></div><div style="height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden;margin:14px 0 4px"><i style="display:block;height:100%;width:'+(cps.length?Math.round((cps.length-todo.length)/cps.length*100):0)+'%;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:8px"></i></div></div>';
  h+=groupHtml(cps,'名词解释')+groupHtml(cps,'简答')+groupHtml(cps,'简答／论述')+groupHtml(cps,'论述')+groupHtml(cps,'新增');
  document.getElementById('chapterDetail').innerHTML=h;
  go('chapter');
@@ -442,19 +468,19 @@ function doSearch(q){
  q=(q||'').toLowerCase();
  go('home');
  document.querySelectorAll('[id^="searchWrap_"]').forEach(function(n){n.remove();});
- if(!q){renderCats();return;}
- var frag=document.createElement('div');
+ if(!q){return;}
  chapters.forEach(function(c){
   var cps=points.filter(function(p){return p.chapter_id===c.id;});
-  var done=cps.filter(function(p){return lastLevel(p.id)>0;}).length;
-  var h='<div class="card"><h4 style="font-size:14px;color:var(--ink);font-weight:700;margin:0 0 14px;padding-left:10px;border-left:3px solid var(--brand)">'+esc(c.name)+' <span style="float:right;color:var(--sub);font-weight:400;font-size:12px">'+done+'/'+cps.length+'</span></h4>';
-  cps.forEach(function(p){
+  var hit=cps.filter(function(p){return (p.name||'').toLowerCase().indexOf(q)>-1||(p.content||'').toLowerCase().indexOf(q)>-1;});
+  if(!hit.length)return;
+  var done=hit.filter(function(p){return firstDate(p.id);}).length;
+  var h='<div class="card" id="searchWrap_'+c.id+'"><h4 style="font-size:14px;color:var(--ink);font-weight:700;margin:0 0 14px;padding-left:10px;border-left:3px solid var(--brand)">'+esc(c.name)+' <span style="float:right;color:var(--sub);font-weight:400;font-size:12px">'+done+'/'+hit.length+' 已首背</span></h4>';
+  hit.forEach(function(p){
    var l=lastLevel(p.id);
    h+='<div class="point" id="pt_'+p.id+'" onclick="togglePoint('+p.id+')"><span class="lvl"'+(l?' data-l="'+l+'"':'')+'></span><div class="info"><div class="nm">'+esc(p.name)+' '+tagOf(p.category)+'</div><div class="prev">'+(clean(p.content)||'暂无内容')+'</div></div><div class="acts" onclick="event.stopPropagation()"><button class="ghost sm" onclick="openPointModal('+p.id+')">编辑</button><button class="soft sm" onclick="quickReview('+p.id+',4)">背熟</button></div></div>';
   });
   h+='</div>';
-  var tmp=document.createElement('div');tmp.innerHTML=h;tmp.id='searchWrap_'+c.id;tmp.style.marginTop='14px';
-  document.getElementById('catGrid').parentNode.appendChild(tmp);
+  document.getElementById('catGrid').parentNode.insertAdjacentHTML('beforeend',h);
  });
 }
 function toggleTheme(){
