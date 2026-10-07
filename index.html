@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>背书记录</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --primary: #6C63FF;
+    --primary-light: #A5A0F8;
+    --bg: #F5F5F7;
+    --card: #FFFFFF;
+    --text: #1D1D1F;
+    --text-sec: #86868B;
+    --border: #E5E5EA;
+    --green: #34C759;
+    --orange: #FF9500;
+    --red: #FF3B30;
+    --radius: 16px;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 480px; margin: 0 auto; padding: 16px 16px 100px; }
+
+  /* Login Screen */
+  .login-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
+  .login-screen .logo { font-size: 64px; margin-bottom: 16px; }
+  .login-screen h1 {
+    font-size: 28px; font-weight: 800; margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--primary), #A855F7);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .login-screen p { color: var(--text-sec); font-size: 14px; margin-bottom: 40px; text-align: center; }
+  .login-screen input {
+    width: 100%; max-width: 320px; padding: 14px 18px;
+    border: 2px solid var(--border); border-radius: 14px;
+    font-size: 17px; text-align: center; outline: none;
+    margin-bottom: 16px; transition: border-color 0.2s;
+  }
+  .login-screen input:focus { border-color: var(--primary); }
+  .login-screen button {
+    width: 100%; max-width: 320px; padding: 14px;
+    background: linear-gradient(135deg, var(--primary), #A855F7);
+    color: white; border: none; border-radius: 14px;
+    font-size: 17px; font-weight: 700; cursor: pointer;
+  }
+  .login-screen button:active { opacity: 0.85; }
+  .login-tip {
+    margin-top: 24px; font-size: 12px; color: var(--text-sec); text-align: center;
+    background: var(--card); padding: 12px 16px; border-radius: 10px; max-width: 320px;
+  }
+
+  /* App Screen */
+  .app-screen { display: none; }
+  .app-screen.active { display: block; }
+
+  header { text-align: center; padding: 24px 0 16px; position: relative; }
+  header h1 {
+    font-size: 28px; font-weight: 800; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--primary), #A855F7);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  header p { color: var(--text-sec); font-size: 14px; margin-top: 4px; }
+  .sync-indicator {
+    position: absolute; top: 28px; right: 0; font-size: 11px;
+    color: var(--green); display: flex; align-items: center; gap: 3px;
+  }
+  .sync-indicator.syncing { color: var(--orange); }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .stat-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 18px 16px; text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .stat-card .num { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1.2; }
+  .stat-card .label { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
+  .stat-card.wide { grid-column: span 2; }
+
+  /* Section Title */
+  .section-title {
+    font-size: 16px; font-weight: 700; margin: 24px 0 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .section-title::before { content: ''; width: 4px; height: 16px; background: var(--primary); border-radius: 2px; }
+
+  /* Progress */
+  .progress-list { display: flex; flex-direction: column; gap: 10px; }
+  .progress-item {
+    background: var(--card); border-radius: var(--radius);
+    padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .progress-item .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .progress-item .name { font-weight: 600; font-size: 15px; }
+  .progress-item .pct { font-size: 13px; color: var(--text-sec); font-weight: 600; }
+  .progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, var(--primary), #A855F7);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-sec); margin-top: 6px; }
+
+  /* Heatmap */
+  .heatmap-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow-x: auto;
+  }
+  .heatmap-months { display: flex; gap: 2px; margin-bottom: 6px; padding-left: 26px; }
+  .heatmap-months span { font-size: 10px; color: var(--text-sec); flex: 1; text-align: center; }
+  .heatmap-grid { display: flex; gap: 3px; }
+  .heatmap-col { display: flex; flex-direction: column; gap: 3px; }
+  .heatmap-cell { width: 12px; height: 12px; border-radius: 3px; background: #EBEDF0; cursor: pointer; transition: transform 0.15s; }
+  .heatmap-cell:hover { transform: scale(1.3); }
+  .heatmap-cell.l1 { background: #D4CAFF; }
+  .heatmap-cell.l2 { background: #A5A0F8; }
+  .heatmap-cell.l3 { background: #7C73F5; }
+  .heatmap-cell.l4 { background: #4B42E0; }
+  .heatmap-legend {
+    display: flex; align-items: center; gap: 4px; font-size: 11px;
+    color: var(--text-sec); margin-top: 10px; justify-content: flex-end;
+  }
+  .heatmap-legend .heatmap-cell { width: 11px; height: 11px; cursor: default; }
+
+  /* Entry List */
+  .entry-list { display: flex; flex-direction: column; gap: 10px; }
+  .entry-item {
+    background: var(--card); border-radius: var(--radius);
+    padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); position: relative;
+  }
+  .entry-item .entry-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .entry-item .entry-title { font-weight: 600; font-size: 15px; flex: 1; }
+  .entry-item .entry-date { font-size: 12px; color: var(--text-sec); white-space: nowrap; }
+  .entry-item .entry-content { font-size: 13px; color: var(--text-sec); margin-top: 6px; line-height: 1.5; }
+  .status-badge {
+    display: inline-block; font-size: 11px; padding: 2px 10px;
+    border-radius: 20px; font-weight: 600; margin-top: 8px;
+  }
+  .status-badge.mastered { background: #E8F8EF; color: var(--green); }
+  .status-badge.reviewing { background: #FFF4E0; color: var(--orange); }
+  .status-badge.unknown { background: #FFE8E6; color: var(--red); }
+  .entry-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .entry-actions button {
+    flex: 1; padding: 6px 0; border: none; border-radius: 8px;
+    font-size: 12px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+  }
+  .entry-actions button:active { opacity: 0.7; }
+  .btn-master { background: #E8F8EF; color: var(--green); }
+  .btn-review { background: #FFF4E0; color: var(--orange); }
+  .btn-forget { background: #FFE8E6; color: var(--red); }
+  .btn-delete { background: var(--border); color: var(--text-sec); }
+
+  /* Book Tabs */
+  .book-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 12px; scrollbar-width: none; }
+  .book-tabs::-webkit-scrollbar { display: none; }
+  .book-tab {
+    padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--border); background: var(--card);
+    color: var(--text-sec); cursor: pointer; white-space: nowrap; transition: all 0.2s;
+  }
+  .book-tab.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+  /* FAB */
+  .fab {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), #A855F7);
+    border: none; color: white; font-size: 28px; font-weight: 300;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(108, 99, 255, 0.4);
+    z-index: 100; transition: transform 0.2s;
+  }
+  .fab:active { transform: translateX(-50%) scale(0.92); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4); z-index: 200; align-items: flex-end;
+    justify-content: center; animation: fadeIn 0.2s;
+  }
+  .modal-overlay.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: var(--card); width: 100%; max-width: 480px;
+    border-radius: 20px 20px 0 0; padding: 24px 20px 32px;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 85vh; overflow-y: auto;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+  .modal label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text-sec); }
+  .modal input, .modal textarea {
+    width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: 15px; font-family: inherit;
+    margin-bottom: 16px; outline: none; transition: border-color 0.2s; background: var(--bg);
+  }
+  .modal input:focus, .modal textarea:focus { border-color: var(--primary); }
+  .modal textarea { min-height: 80px; resize: vertical; }
+  .modal-actions { display: flex; gap: 12px; margin-top: 8px; }
+  .modal-actions button { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .btn-cancel { background: var(--bg); color: var(--text-sec); }
+  .btn-save { background: var(--primary); color: white; }
+  .btn-save:active { opacity: 0.85; }
+  .status-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .status-btn {
+    flex: 1; padding: 10px; border: 2px solid var(--border); border-radius: 10px;
+    font-size: 13px; font-weight: 600; cursor: pointer; background: var(--card); transition: all 0.2s;
+  }
+  .status-btn.active-m { border-color: var(--green); background: #E8F8EF; color: var(--green); }
+  .status-btn.active-r { border-color: var(--orange); background: #FFF4E0; color: var(--orange); }
+  .status-btn.active-u { border-color: var(--red); background: #FFE8E6; color: var(--red); }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text-sec); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: rgba(0,0,0,0.75); color: white; padding: 14px 24px;
+    border-radius: 12px; font-size: 15px; font-weight: 600; z-index: 300;
+    opacity: 0; transition: all 0.25s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+  /* Loading */
+  .loading { text-align: center; padding: 40px; color: var(--text-sec); }
+  .spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div class="login-screen" id="loginScreen">
+  <div class="logo">📖</div>
+  <h1>背书记录</h1>
+  <p>登录后即可在多台设备间同步数据<br>手机和电脑用同一个密码登录即可</p>
+  <input type="password" id="loginPassword" placeholder="请输入访问密码" value="">
+  <button onclick="doLogin()">进入</button>
+  <div class="login-tip">
+    💡 默认密码：beishu2024<br>
+    如果你是自己部署的，请使用你设置的密码
+  </div>
+</div>
+
+<!-- App Screen -->
+<div class="app-screen" id="appScreen">
+  <div class="container">
+    <header>
+      <h1>📖 背书记录</h1>
+      <p id="headerSub">坚持每一天，量化每一点进步</p>
+      <div class="sync-indicator" id="syncIndicator">
+        <div class="sync-dot"></div>
+        <span id="syncText">已同步</span>
+      </div>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card"><div class="num" id="statStreak">0</div><div class="label">连续打卡天数</div></div>
+      <div class="stat-card"><div class="num" id="statTotal">0</div><div class="label">累计背诵条目</div></div>
+      <div class="stat-card"><div class="num" id="statMastered">0</div><div class="label">已掌握</div></div>
+      <div class="stat-card"><div class="num" id="statReviewing">0</div><div class="label">复习中</div></div>
+      <div class="stat-card wide"><div class="num" id="statRate">0%</div><div class="label">掌握率</div></div>
+    </div>
+
+    <!-- Progress -->
+    <div class="section-title">📚 背诵进度</div>
+    <div class="book-tabs" id="bookTabs"></div>
+    <div class="progress-list" id="progressList"></div>
+
+    <!-- Heatmap -->
+    <div class="section-title">🔥 打卡热力图</div>
+    <div class="heatmap-card">
+      <div class="heatmap-months" id="heatmapMonths"></div>
+      <div class="heatmap-grid" id="heatmapGrid"></div>
+      <div class="heatmap-legend">
+        <span>少</span>
+        <div class="heatmap-cell"></div>
+        <div class="heatmap-cell l1"></div>
+        <div class="heatmap-cell l2"></div>
+        <div class="heatmap-cell l3"></div>
+        <div class="heatmap-cell l4"></div>
+        <span>多</span>
+      </div>
+    </div>
+
+    <!-- Entry List -->
+    <div class="section-title">📝 背诵条目</div>
+    <div id="entryList"></div>
+  </div>
+
+  <button class="fab" id="fab">＋</button>
+</div>
+
+<!-- Add Entry Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">新增背诵条目</h2>
+    <label>所属书籍/模块</label>
+    <input type="text" id="inputBook" placeholder="如：政治马原、英语单词List1..." list="bookList">
+    <datalist id="bookList"></datalist>
+    <label>条目标题</label>
+    <input type="text" id="inputTitle" placeholder="如：矛盾的同一性和斗争性">
+    <label>详细内容（选填）</label>
+    <textarea id="inputContent" placeholder="记录具体内容，方便复习..."></textarea>
+    <label>掌握程度</label>
+    <div class="status-row">
+      <button class="status-btn active-r" id="sbMaster" onclick="setModalStatus('mastered')">✓ 已掌握</button>
+      <button class="status-btn" id="sbReview" onclick="setModalStatus('reviewing')">⟳ 复习中</button>
+      <button class="status-btn" id="sbForget" onclick="setModalStatus('unknown')">✗ 还不会</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-save" onclick="saveEntry()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ Config ============
+// 部署后修改为你的后端服务地址
+// 本地开发时用 http://localhost:3000
+// 部署后用你的实际网址，如 https://your-app.onrender.com
+const API_BASE = 'http://localhost:3000/api';
+
+// ============ State ============
+let token = localStorage.getItem('beishu_token') || '';
+let records = [];
+let selectedBook = 'all';
+let editingId = null;
+let modalStatus = 'reviewing';
+
+// ============ API ============
+async function api(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  
+  setSyncStatus('syncing');
+  try {
+    const res = await fetch(API_BASE + path, { ...options, headers });
+    const data = await res.json();
+    setSyncStatus('ok');
+    return data;
+  } catch(e) {
+    setSyncStatus('error');
+    throw e;
+  }
+}
+
+function setSyncStatus(status) {
+  const ind = document.getElementById('syncIndicator');
+  const txt = document.getElementById('syncText');
+  ind.className = 'sync-indicator' + (status === 'syncing' ? ' syncing' : '');
+  if (status === 'syncing') txt.textContent = '同步中...';
+  else if (status === 'ok') txt.textContent = '已同步';
+  else txt.textContent = '同步失败';
+}
+
+// ============ Auth ============
+async function doLogin() {
+  const pwd = document.getElementById('loginPassword').value;
+  if (!pwd) { showToast('请输入密码'); return; }
+  try {
+    const res = await fetch(API_BASE + '/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    });
+    const data = await res.json();
+    if (data.success) {
+      token = data.token;
+      localStorage.setItem('beishu_token', token);
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appScreen').classList.add('active');
+      await loadRecords();
+      showToast('登录成功 🎉');
+    } else {
+      showToast('密码错误');
+    }
+  } catch(e) {
+    showToast('连接失败，请检查网络');
+  }
+}
+
+function doLogout() {
+  token = '';
+  localStorage.removeItem('beishu_token');
+  document.getElementById('appScreen').classList.remove('active');
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+// ============ Data ============
+async function loadRecords() {
+  try {
+    records = await api('/records');
+    render();
+  } catch(e) {
+    showToast('加载数据失败');
+  }
+}
+
+async function saveRecordToServer(record) {
+  if (record.id && !String(record.id).startsWith('temp_')) {
+    // Update
+    const { id, ...update } = record;
+    await api('/records/' + id, { method: 'PUT', body: JSON.stringify(update) });
+  } else {
+    // Create
+    const { id, ...create } = record;
+    const saved = await api('/records', { method: 'POST', body: JSON.stringify(create) });
+    return saved;
+  }
+}
+
+async function deleteRecordFromServer(id) {
+  await api('/records/' + id, { method: 'DELETE' });
+}
+
+// ============ Helpers ============
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+function formatDate(isoStr) {
+  const d = new Date(isoStr);
+  const now = new Date();
+  const diff = Math.floor((now - d) / 86400000);
+  if (diff === 0) return '今天';
+  if (diff === 1) return '昨天';
+  if (diff < 7) return `${diff}天前`;
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+
+function getBookNames() {
+  const set = new Set();
+  records.forEach(r => set.add(r.book));
+  return [...set];
+}
+
+function getFilteredRecords() {
+  if (selectedBook === 'all') return records;
+  return records.filter(r => r.book === selectedBook);
+}
+
+function calcStreak() {
+  const dates = records.map(r => new Date(r.created_at).toISOString().slice(0,10));
+  const uniqueDates = [...new Set(dates)].sort().reverse();
+  if (uniqueDates.length === 0) return 0;
+  
+  let streak = 0;
+  const today = new Date().toISOString().slice(0,10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+  
+  // Allow today or yesterday as starting point
+  let cursor = uniqueDates[0];
+  if (cursor === yesterday) {
+    // yesterday is latest, check if today has any
+    if (records.some(r => new Date(r.created_at).toISOString().slice(0,10) === today)) {
+      cursor = today;
+    }
+  }
+  
+  const allDates = new Set(uniqueDates);
+  let checkDate = cursor;
+  
+  while (allDates.has(checkDate)) {
+    streak++;
+    const d = new Date(checkDate);
+    d.setDate(d.getDate() - 1);
+    checkDate = d.toISOString().slice(0,10);
+  }
+  return streak;
+}
+
+// ============ Render ============
+function render() {
+  renderStats();
+  renderBookTabs();
+  renderProgress();
+  renderHeatmap();
+  renderEntries();
+}
+
+function renderStats() {
+  const mastered = records.filter(r => r.status === 'mastered').length;
+  const reviewing = records.filter(r => r.status === 'reviewing').length;
+  const streak = calcStreak();
+  const rate = records.length > 0 ? Math.round(mastered / records.length * 100) : 0;
+
+  document.getElementById('statStreak').textContent = streak;
+  document.getElementById('statTotal').textContent = records.length;
+  document.getElementById('statMastered').textContent = mastered;
+  document.getElementById('statReviewing').textContent = reviewing;
+  document.getElementById('statRate').textContent = rate + '%';
+
+  const sub = document.getElementById('headerSub');
+  if (streak > 0) {
+    sub.textContent = streak >= 7 ? `🔥 已连续打卡 ${streak} 天，太棒了！` : `📅 已连续打卡 ${streak} 天，继续加油！`;
+  } else {
+    sub.textContent = '今天还没打卡，赶紧背一条吧！';
+  }
+}
+
+function renderBookTabs() {
+  const books = getBookNames();
+  let html = `<div class="book-tab ${selectedBook==='all'?'active':''}" onclick="selectBook('all')">📋 全部</div>`;
+  books.forEach(b => {
+    html += `<div class="book-tab ${selectedBook===b?'active':''}" onclick="selectBook('${b}')">${b}</div>`;
+  });
+  document.getElementById('bookTabs').innerHTML = html;
+}
+
+function renderProgress() {
+  const books = getBookNames();
+  if (books.length === 0) {
+    document.getElementById('progressList').innerHTML = '<div class="empty-state"><div class="icon">📚</div><p>还没有任何书籍记录，点击右下角添加第一条吧！</p></div>';
+    return;
+  }
+  let html = '';
+  books.forEach(book => {
+    const bookRecords = records.filter(r => r.book === book);
+    const total = bookRecords.length;
+    const mastered = bookRecords.filter(r => r.status === 'mastered').length;
+    const pct = total > 0 ? Math.round(mastered / total * 100) : 0;
+    html += `
+      <div class="progress-item">
+        <div class="top"><span class="name">${book}</span><span class="pct">${pct}%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-meta"><span>${mastered} / ${total} 条已掌握</span><span>${total - mastered} 条待复习</span></div>
+      </div>`;
+  });
+  document.getElementById('progressList').innerHTML = html;
+}
+
+function renderHeatmap() {
+  const grid = document.getElementById('heatmapGrid');
+  const monthsRow = document.getElementById('heatmapMonths');
+  grid.innerHTML = '';
+  monthsRow.innerHTML = '';
+
+  const now = new Date();
+  const startDate = new Date(now);
+  startDate.setDate(now.getDate() - 23 * 7);
+  startDate.setDate(startDate.getDate() - startDate.getDay());
+
+  const weeks = [];
+  for (let w = 0; w < 24; w++) {
+    const week = [];
+    for (let dow = 0; dow < 7; dow++) {
+      const d = new Date(startDate);
+      d.setDate(startDate.getDate() + w * 7 + dow);
+      week.push(d);
+    }
+    weeks.push(week);
+  }
+
+  // Count records per day
+  const dayCounts = {};
+  records.forEach(r => {
+    const key = new Date(r.created_at).toISOString().slice(0,10);
+    dayCounts[key] = (dayCounts[key] || 0) + 1;
+  });
+
+  // Months header
+  const monthLabels = [];
+  let lastMonth = -1;
+  weeks.forEach(week => {
+    const firstDay = week[0];
+    const m = firstDay.getMonth();
+    if (m !== lastMonth) {
+      monthLabels.push(firstDay.toLocaleDateString('zh-CN', { month: 'short' }));
+      lastMonth = m;
+    } else {
+      monthLabels.push('');
+    }
+  });
+  monthLabels.forEach(m => monthsRow.innerHTML += `<span>${m}</span>`);
+
+  // Grid
+  weeks.forEach(week => {
+    let col = '<div class="heatmap-col">';
+    week.forEach(d => {
+      const key = d.toISOString().slice(0,10);
+      const count = dayCounts[key] || 0;
+      const level = count > 0 ? Math.min(4, count) : 0;
+      const dateStr = `${d.getMonth()+1}月${d.getDate()}日`;
+      col += `<div class="heatmap-cell ${level>0?'l'+level:''}" title="${dateStr}: ${count}条"></div>`;
+    });
+    col += '</div>';
+    grid.innerHTML += col;
+  });
+}
+
+function renderEntries() {
+  const filtered = getFilteredRecords();
+  const list = document.getElementById('entryList');
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>这里还没有条目哦，点击右下角 + 添加吧</p></div>';
+    return;
+  }
+  const sorted = [...filtered].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+  let html = '';
+  sorted.forEach(r => {
+    const badgeClass = r.status === 'mastered' ? 'mastered' : r.status === 'reviewing' ? 'reviewing' : 'unknown';
+    const badgeText = r.status === 'mastered' ? '✓ 已掌握' : r.status === 'reviewing' ? '⟳ 复习中' : '✗ 还不会';
+    html += `
+      <div class="entry-item" data-id="${r.id}">
+        <div class="entry-top">
+          <span class="entry-title">${r.title}</span>
+          <span class="entry-date">${formatDate(r.created_at)}</span>
+        </div>
+        <div style="font-size:12px;color:var(--primary);font-weight:600;">📚 ${r.book}</div>
+        ${r.content ? `<div class="entry-content">${r.content}</div>` : ''}
+        <span class="status-badge ${badgeClass}">${badgeText}</span>
+        <div class="entry-actions">
+          ${r.status !== 'mastered' ? `<button class="btn-master" onclick="changeStatus(${r.id},'mastered')">✓ 标为已掌握</button>` : ''}
+          ${r.status !== 'reviewing' ? `<button class="btn-review" onclick="changeStatus(${r.id},'reviewing')">⟳ 复习中</button>` : ''}
+          ${r.status !== 'unknown' ? `<button class="btn-forget" onclick="changeStatus(${r.id},'unknown')">✗ 还不会</button>` : ''}
+          <button class="btn-delete" onclick="deleteEntry(${r.id})">🗑</button>
+        </div>
+      </div>`;
+  });
+  list.innerHTML = html;
+}
+
+// ============ Actions ============
+function selectBook(book) { selectedBook = book; renderBookTabs(); renderEntries(); }
+
+async function changeStatus(id, status) {
+  const record = records.find(r => r.id === id);
+  if (!record) return;
+  record.status = status;
+  render();
+  try {
+    await saveRecordToServer(record);
+    const map = { mastered: '太棒了，又掌握了一条！', reviewing: '已标记为复习中', unknown: '已标记为还不会，继续加油！' };
+    showToast(map[status]);
+  } catch(e) { showToast('保存失败'); }
+}
+
+async function deleteEntry(id) {
+  if (!confirm('确定删除这条记录吗？')) return;
+  records = records.filter(r => r.id !== id);
+  render();
+  try {
+    await deleteRecordFromServer(id);
+    showToast('已删除');
+  } catch(e) { showToast('删除失败'); }
+}
+
+// ============ Modal ============
+function openModal(editId) {
+  const overlay = document.getElementById('modalOverlay');
+  const titleEl = document.getElementById('modalTitle');
+  document.getElementById('bookList').innerHTML = getBookNames().map(b => `<option value="${b}">`).join('');
+
+  if (editId) {
+    editingId = editId;
+    titleEl.textContent = '编辑背诵条目';
+    const r = records.find(x => x.id === editId);
+    document.getElementById('inputBook').value = r.book;
+    document.getElementById('inputTitle').value = r.title;
+    document.getElementById('inputContent').value = r.content || '';
+    setModalStatus(r.status);
+  } else {
+    editingId = null;
+    titleEl.textContent = '新增背诵条目';
+    document.getElementById('inputBook').value = selectedBook === 'all' ? '' : selectedBook;
+    document.getElementById('inputTitle').value = '';
+    document.getElementById('inputContent').value = '';
+    setModalStatus('reviewing');
+  }
+  overlay.classList.add('active');
+}
+
+function setModalStatus(status) {
+  modalStatus = status;
+  document.getElementById('sbMaster').className = 'status-btn' + (status === 'mastered' ? ' active-m' : '');
+  document.getElementById('sbReview').className = 'status-btn' + (status === 'reviewing' ? ' active-r' : '');
+  document.getElementById('sbForget').className = 'status-btn' + (status === 'unknown' ? ' active-u' : '');
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+
+async function saveEntry() {
+  const book = document.getElementById('inputBook').value.trim();
+  const title = document.getElementById('inputTitle').value.trim();
+  const content = document.getElementById('inputContent').value.trim();
+  if (!book) { showToast('请填写所属书籍/模块'); return; }
+  if (!title) { showToast('请填写条目标题'); return; }
+
+  const record = { id: editingId || 'temp_' + Date.now(), book, title, content, status: modalStatus, created_at: new Date().toISOString() };
+
+  if (editingId) {
+    const idx = records.findIndex(r => r.id === editingId);
+    records[idx] = { ...records[idx], book, title, content, status: modalStatus };
+    render();
+    try { await saveRecordToServer(record); showToast('已更新'); }
+    catch(e) { showToast('保存失败'); }
+  } else {
+    records.unshift(record);
+    render();
+    try {
+      const saved = await saveRecordToServer(record);
+      const idx = records.findIndex(r => r.id === record.id);
+      if (idx >= 0) records[idx] = saved;
+      render();
+      showToast('已记录，打卡 +1 🎉');
+    } catch(e) { showToast('保存失败'); }
+  }
+  closeModal();
+}
+
+// ============ Events ============
+document.getElementById('fab').addEventListener('click', () => openModal(null));
+document.getElementById('loginPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('inputTitle').addEventListener('keydown', (e) => { if (e.key === 'Enter') saveEntry(); });
+document.getElementById('modalOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
+
+// Long press to edit
+let pressTimer = null;
+document.getElementById('entryList').addEventListener('touchstart', (e) => {
+  const item = e.target.closest('.entry-item');
+  if (!item || e.target.tagName === 'BUTTON') return;
+  pressTimer = setTimeout(() => openModal(parseInt(item.dataset.id)), 600);
+});
+document.getElementById('entryList').addEventListener('touchend', () => clearTimeout(pressTimer));
+document.getElementById('entryList').addEventListener('touchmove', () => clearTimeout(pressTimer));
+
+// ============ Init ============
+if (token) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').classList.add('active');
+  loadRecords();
+}
+</script>
+</body>
+</html>
