@@ -23,10 +23,14 @@ button.sm{padding:6px 13px;font-size:12.5px;border-radius:10px;flex-shrink:0}
 .hero-top{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--sub);letter-spacing:1.2px;text-transform:uppercase}
 .hero-top .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.hero-motto{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--ink);opacity:.86;letter-spacing:.6px;margin-bottom:8px;font-weight:500}
+.hero-motto .m-ic{width:22px;height:22px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;background:linear-gradient(135deg,var(--l5),var(--brand));color:#fff;flex:0 0 auto;box-shadow:0 3px 10px rgba(63,214,171,.3)}
 .hero-num{font-size:min(88px,16vw);font-weight:800;letter-spacing:-3.5px;line-height:1.04;margin:14px 0 4px;background:linear-gradient(120deg,#fff 8%,#c8d6ff 46%,#e6d4ff 86%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 body.light .hero-num{background:linear-gradient(120deg,#14181f,#3b4a7a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .hero-sub{font-size:14.5px;color:var(--sub);margin-bottom:4px}
-.hero-row{display:flex;gap:14px;margin-top:26px;flex-wrap:wrap}
+.hero-quote{margin-top:6px;font-size:15.5px;color:var(--ink);letter-spacing:.2px;min-height:28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hero-quote .q{opacity:.5;font-size:13px;color:var(--sub);font-style:normal}
+.hero-row{display:flex;gap:14px;margin-top:24px;flex-wrap:wrap}
 .hero-cell{flex:1;min-width:104px;background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:16px;padding:14px 16px;transition:.2s}
 body.light .hero-cell{background:rgba(0,0,0,.02)}
 .hero-cell:hover{background:rgba(255,255,255,.075);transform:translateY(-2px)}
@@ -150,8 +154,10 @@ footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter
 <div class="page on" id="page-home">
 <div class="hero">
  <div class="hero-top"><span class="dot"></span> 考研倒计时 每日自动更新</div>
+ <div class="hero-motto"><span class="m-ic">&#10077;</span><span>灵魂的渴望 是命运的先知</span></div>
  <div class="hero-num" id="cdNum">-</div>
  <div class="hero-sub" id="cdSub"></div>
+ <div class="hero-quote" id="heroQuote"><span class="q">&#10077;</span><span id="qText">加载中</span><span class="q">&#10078;</span></div>
  <div class="hero-row">
   <div class="hero-cell"><b id="cdToday">0</b><span>今日背诵</span></div>
   <div class="hero-cell"><b id="cdMastered">0</b><span>已背熟</span></div>
@@ -237,6 +243,49 @@ var LVL={1:'遗忘',2:'模糊',3:'熟悉',4:'背熟',5:'卡壳'};
 var NODES=[1,2,4,7,15];
 var subjects=[], chapters=[], points=[], reviews=[];
 var today=new Date(); today.setHours(0,0,0,0);
+var QUOTES=[
+ ['你已经走了这么远 别停在离终点最近的地方','考研不是看谁聪明 是看谁把同一个知识点背了第八遍还愿意再来一遍'],
+ ['背不下来不是你笨 是还没到第八遍','焦虑的反义词是具体 背完这一条 焦虑就少一分'],
+ ['这一分钟你在背 别人在刷手机 差距就是这么拉的','不要问来不来得及 你今天背的每一个字都在替你回答这个问题'],
+ ['考场上你写下的每一句话 都是今天这个时候背下来的','不想背的时候 就去想象查到分数的那一刻'],
+ ['重复是记忆的母亲','你不是记性差 你只是重复得不够'],
+ ['能坐在书桌前本身就是一种胜利','今天的难 是明天的容易'],
+ ['别跟别人比进度 你只跟昨天的自己比','每一个你觉得背不下来的知识点 最终都会变成条件反射'],
+ ['考不上的是那些中途放弃的人 不是背错一遍的人','你现在的辛苦 是将来不必低头的底气'],
+ ['知识点不会背叛你 你给它的时间它都记得','今天背了 今天就赢了一点点'],
+ ['最难的不是背书 是每天坐下来开始','允许自己慢 但不允许自己停'],
+ ['考场上的从容 是书桌前的重复换来的','你背过的 一个都不会浪费'],
+ ['别算还剩几天 算你还能背几轮','手比脑快 开始写 就开始记住了'],
+ ['现在的重复 是考场上的肌肉记忆','你不是没天赋 你只是还没背够'],
+ ['放弃很容易 但放弃之后是什么 你很清楚','每天进步一点 70 天就是 70 次'],
+ ['背书最怕的不是难 是觉得难就不开始','你今天记不住的 第 15 天复习的时候会记住'],
+ ['重复到厌倦 就是记住的开始','你的对手不是分数线 是那个想放弃的自己'],
+ ['每一个没背的知识点 都是考场上空着的一分','现在吃的苦 是录取通知书上的字'],
+ ['不需要状态好才背 背着背着状态就来了','你已经比昨天的自己强了 因为你在做'],
+ ['记住这件事 没有捷径 只有脚印','今天很难 但今天的你比昨天更接近答案'],
+ ['你不需要喜欢背书 你只需要坐在那里','考场上的自信 是今天这些枯燥的重复给的'],
+ ['怕什么 你连这个都背得下来','时间不会辜负你 但你得先给它内容'],
+ ['别想结果 只管今天背完这几条','你背下的每一个字 都在替你推开那扇门'],
+ ['考研这件事 不是谁聪明谁赢 是谁还能坐住谁赢','今天坐住了 今天就没输'],
+ ['你会感谢现在这个不肯放下的自己','每一次重复 都在把不确定变成确定'],
+ ['不想背的时候 就背一条 只一条','你离目标的距离 就是今天剩下的这几十页'],
+ ['记住 你不是一个人在背 是一天一天的你在接力','你现在流的汗 是明年不用流的泪'],
+ ['最后 70 天 每一天都比昨天更值钱','别怕慢 怕的是今天什么都没干'],
+ ['背到想吐 说明进脑子了','你现在的枯燥 是将来选择的权利'],
+ ['别人在玩的时候你在背 这就是答案','坚持不是不累 是累着还接着干'],
+ ['你背下来的每一分钟 都在替你挡住一个不确定的未来','今天不放弃 明天才有得选'],
+ ['没有白背的书 只有没开始的今天','考完那天你会感谢现在这个不妥协的自己'],
+ ['把大目标拆成今天的 5 条 你就能完成','你已经在路上 别回头']
+];
+function dayHash(d){
+ var s=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
+ var h=2166136261;h=h^s;h=Math.imul(h,16777619);h=h^(h>>>13);h=Math.imul(h,1277);h=h^(h>>>16);
+ return Math.abs(h);
+}
+function todayQuote(){
+ var idx=dayHash(today)%QUOTES.length;
+ return QUOTES[idx];
+}
 function ts(){return today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());}
 function pad(n){return n<10?'0'+n:''+n;}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -287,14 +336,16 @@ function dueList(){
  out.sort(function(a,b){return (a.first||'').localeCompare(b.first||'');});
  return out;
 }
-function render(){renderCountdown();renderDue();renderNew();renderCats();renderMap();renderHeat();renderStats();}
-function renderCountdown(){
+function render(){renderHero();renderDue();renderNew();renderCats();renderMap();renderHeat();renderStats();}
+function renderHero(){
  var exam=new Date(EXAM_Y,EXAM_M,EXAM_D);exam.setHours(0,0,0,0);
  var days=Math.ceil((exam-today)/86400000);
  var n=document.getElementById('cdNum');var sub=document.getElementById('cdSub');
- if(days>0){n.textContent=days+' 天';sub.textContent='2026 年 12 月 19 日 稳住 能上';}
+ if(days>0){n.textContent=days+' 天';sub.textContent='2026 年 12 月 19 日 · 稳住 能上';}
  else if(days===0){n.textContent='就是今天';sub.textContent='去考吧 你已经准备好了';}
  else {n.textContent='已开考';sub.textContent='别看了 复盘下一站';}
+ var q=todayQuote();
+ document.getElementById('qText').innerHTML=q[0]+'<br><span style="font-size:12.5px;color:var(--sub);font-style:normal">'+q[1]+'</span>';
  var t=ts();
  document.getElementById('cdToday').textContent=reviews.filter(function(r){return r.review_date===t;}).length;
  document.getElementById('cdMastered').textContent=points.filter(function(p){return lastLevel(p.id)>=4;}).length;
@@ -390,7 +441,6 @@ function renderMap(){
  grid.innerHTML='';
  var cols=Math.max(10,Math.min(24,Math.ceil(Math.sqrt(list.length*1.5))));
  grid.style.gridTemplateColumns='repeat('+cols+',1fr)';
- var tip=document.getElementById('tip');
  list.forEach(function(p){
   var l=lastLevel(p.id);var d=firstDate(p.id);var due=d?isDue(p.id):false;var overdue=d&&d<ts()&&l>0&&due;
   var el=document.createElement('div');
@@ -402,7 +452,7 @@ function renderMap(){
   grid.appendChild(el);
  });
  var begun=list.filter(function(p){return firstDate(p.id);}).length;
- var duec=list.filter(function(p){return d=firstDate(p.id),isDue(p.id);}).length;
+ var duec=list.filter(function(p){return firstDate(p.id)&&isDue(p.id);}).length;
  document.getElementById('mapTag').textContent='共 '+list.length+' 个知识点 · 已首背 '+begun+' 个 · 今日待复习 '+duec+' 个';
 }
 function renderHeat(){
