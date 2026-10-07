@@ -1,2 +1,1 @@
-// 这个文件现在不需要了，数据直接走 Supabase
-module.exports = {};
+// 不再需要后端服务，数据直连 Supabase
