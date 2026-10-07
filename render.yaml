@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: beishu-app
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: SUPABASE_URL
+        value: https://jnnsmjjhjhwrcxnklonf.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: sb_publishable_2w2iM-cklg-Aof9dP7xB_Q_OfWQmj8V
+    plan: free
