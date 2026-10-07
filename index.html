@@ -2,472 +2,537 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>背书记录</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>国际商务知识点清单</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --primary: #6C63FF; --primary-light: #A5A0F8; --bg: #F5F5F7; --card: #FFFFFF;
-    --text: #1D1D1F; --text-sec: #86868B; --border: #E5E5EA; --green: #34C759;
-    --orange: #FF9500; --red: #FF3B30; --radius: 16px;
-  }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; -webkit-font-smoothing: antialiased;
-  }
-  .container { max-width: 480px; margin: 0 auto; padding: 16px 16px 100px; }
-  .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 40px 24px; }
-  .login-screen .logo { font-size: 64px; margin-bottom: 16px; }
-  .login-screen h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, var(--primary), #A855F7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .login-screen p { color: var(--text-sec); font-size: 14px; margin-bottom: 40px; text-align: center; }
-  .login-screen input { width: 100%; max-width: 320px; padding: 14px 18px; border: 2px solid var(--border); border-radius: 14px; font-size: 17px; text-align: center; outline: none; margin-bottom: 16px; transition: border-color 0.2s; }
-  .login-screen input:focus { border-color: var(--primary); }
-  .login-screen button { width: 100%; max-width: 320px; padding: 14px; background: linear-gradient(135deg, var(--primary), #A855F7); color: white; border: none; border-radius: 14px; font-size: 17px; font-weight: 700; cursor: pointer; }
-  .login-screen button:active { opacity: 0.85; }
-  .login-tip { margin-top: 24px; font-size: 12px; color: var(--text-sec); text-align: center; background: var(--card); padding: 12px 16px; border-radius: 10px; max-width: 320px; }
-  .app-screen { display: none; }
-  .app-screen.active { display: block; }
-  header { text-align: center; padding: 24px 0 16px; position: relative; }
-  header h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(135deg, var(--primary), #A855F7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  header p { color: var(--text-sec); font-size: 14px; margin-top: 4px; }
-  .sync-indicator { position: absolute; top: 28px; right: 0; font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 3px; }
-  .sync-indicator.syncing { color: var(--orange); }
-  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-  .stat-card { background: var(--card); border-radius: var(--radius); padding: 18px 16px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
-  .stat-card .num { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1.2; }
-  .stat-card .label { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
-  .stat-card.wide { grid-column: span 2; }
-  .section-title { font-size: 16px; font-weight: 700; margin: 24px 0 12px; display: flex; align-items: center; gap: 6px; }
-  .section-title::before { content: ''; width: 4px; height: 16px; background: var(--primary); border-radius: 2px; }
-  .progress-list { display: flex; flex-direction: column; gap: 10px; }
-  .progress-item { background: var(--card); border-radius: var(--radius); padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
-  .progress-item .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .progress-item .name { font-weight: 600; font-size: 15px; }
-  .progress-item .pct { font-size: 13px; color: var(--text-sec); font-weight: 600; }
-  .progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--primary), #A855F7); transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-  .progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-sec); margin-top: 6px; }
-  .heatmap-card { background: var(--card); border-radius: var(--radius); padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow-x: auto; }
-  .heatmap-months { display: flex; gap: 2px; margin-bottom: 6px; padding-left: 26px; }
-  .heatmap-months span { font-size: 10px; color: var(--text-sec); flex: 1; text-align: center; }
-  .heatmap-grid { display: flex; gap: 3px; }
-  .heatmap-col { display: flex; flex-direction: column; gap: 3px; }
-  .heatmap-cell { width: 12px; height: 12px; border-radius: 3px; background: #EBEDF0; cursor: pointer; transition: transform 0.15s; }
-  .heatmap-cell:hover { transform: scale(1.3); }
-  .heatmap-cell.l1 { background: #D4CAFF; }
-  .heatmap-cell.l2 { background: #A5A0F8; }
-  .heatmap-cell.l3 { background: #7C73F5; }
-  .heatmap-cell.l4 { background: #4B42E0; }
-  .heatmap-legend { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-sec); margin-top: 10px; justify-content: flex-end; }
-  .heatmap-legend .heatmap-cell { width: 11px; height: 11px; cursor: default; }
-  .entry-list { display: flex; flex-direction: column; gap: 10px; }
-  .entry-item { background: var(--card); border-radius: var(--radius); padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); position: relative; }
-  .entry-item .entry-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-  .entry-item .entry-title { font-weight: 600; font-size: 15px; flex: 1; }
-  .entry-item .entry-date { font-size: 12px; color: var(--text-sec); white-space: nowrap; }
-  .entry-item .entry-content { font-size: 13px; color: var(--text-sec); margin-top: 6px; line-height: 1.5; }
-  .status-badge { display: inline-block; font-size: 11px; padding: 2px 10px; border-radius: 20px; font-weight: 600; margin-top: 8px; }
-  .status-badge.mastered { background: #E8F8EF; color: var(--green); }
-  .status-badge.reviewing { background: #FFF4E0; color: var(--orange); }
-  .status-badge.unknown { background: #FFE8E6; color: var(--red); }
-  .entry-actions { display: flex; gap: 6px; margin-top: 10px; }
-  .entry-actions button { flex: 1; padding: 6px 0; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-  .entry-actions button:active { opacity: 0.7; }
-  .btn-master { background: #E8F8EF; color: var(--green); }
-  .btn-review { background: #FFF4E0; color: var(--orange); }
-  .btn-forget { background: #FFE8E6; color: var(--red); }
-  .btn-delete { background: var(--border); color: var(--text-sec); }
-  .book-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 12px; scrollbar-width: none; }
-  .book-tabs::-webkit-scrollbar { display: none; }
-  .book-tab { padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1.5px solid var(--border); background: var(--card); color: var(--text-sec); cursor: pointer; white-space: nowrap; transition: all 0.2s; }
-  .book-tab.active { background: var(--primary); border-color: var(--primary); color: white; }
-  .fab { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #A855F7); border: none; color: white; font-size: 28px; font-weight: 300; cursor: pointer; box-shadow: 0 4px 16px rgba(108, 99, 255, 0.4); z-index: 100; transition: transform 0.2s; }
-  .fab:active { transform: translateX(-50%) scale(0.92); }
-  .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: flex-end; justify-content: center; animation: fadeIn 0.2s; }
-  .modal-overlay.active { display: flex; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  .modal { background: var(--card); width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 24px 20px 32px; animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-height: 85vh; overflow-y: auto; }
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
-  .modal label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text-sec); }
-  .modal input, .modal textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; font-family: inherit; margin-bottom: 16px; outline: none; transition: border-color 0.2s; background: var(--bg); }
-  .modal input:focus, .modal textarea:focus { border-color: var(--primary); }
-  .modal textarea { min-height: 80px; resize: vertical; }
-  .modal-actions { display: flex; gap: 12px; margin-top: 8px; }
-  .modal-actions button { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
-  .btn-cancel { background: var(--bg); color: var(--text-sec); }
-  .btn-save { background: var(--primary); color: white; }
-  .btn-save:active { opacity: 0.85; }
-  .status-row { display: flex; gap: 8px; margin-bottom: 16px; }
-  .status-btn { flex: 1; padding: 10px; border: 2px solid var(--border); border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; background: var(--card); transition: all 0.2s; }
-  .status-btn.active-m { border-color: var(--green); background: #E8F8EF; color: var(--green); }
-  .status-btn.active-r { border-color: var(--orange); background: #FFF4E0; color: var(--orange); }
-  .status-btn.active-u { border-color: var(--red); background: #FFE8E6; color: var(--red); }
-  .empty-state { text-align: center; padding: 48px 20px; color: var(--text-sec); }
-  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
-  .empty-state p { font-size: 14px; }
-  .toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: rgba(0,0,0,0.75); color: white; padding: 14px 24px; border-radius: 12px; font-size: 15px; font-weight: 600; z-index: 300; opacity: 0; transition: all 0.25s; pointer-events: none; }
-  .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1a1d26;--sub:#6b7280;--line:#e3e8ef;--brand:#1f4e79;--accent:#2d7f9e;--ok:#1f9d68;--warn:#d97706;--danger:#dc2626;--soft:#eef4f9}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Microsoft YaHei","WenQuanYi Micro Hei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
+body.dark{--bg:#101319;--card:#1a202b;--ink:#e6e9ef;--sub:#8b93a1;--line:#2a323f;--soft:#1f2733;--brand:#4a90d9;--accent:#5fb8d6}
+.wrap{max-width:1080px;margin:0 auto;padding:16px 14px 80px}
+header{background:linear-gradient(135deg,#1f4e79,#2d7f9e);color:#fff;border-radius:20px;padding:24px 20px;box-shadow:0 10px 28px rgba(31,78,121,.18)}
+header h1{font-size:23px}
+header p{opacity:.9;font-size:13px;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px}
+.stat{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:11px;padding:10px 6px;text-align:center}
+.stat b{display:block;font-size:17px;line-height:1.2}
+.stat span{font-size:10.5px;opacity:.9}
+.toolbar{position:sticky;top:0;z-index:30;background:rgba(244,246,249,.96);backdrop-filter:blur(8px);padding:10px 0;margin:14px 0;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--line);flex-wrap:wrap}
+body.dark .toolbar{background:rgba(16,19,25,.96)}
+.toolbar input{border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:13.5px;background:var(--card);color:var(--ink);flex:1;min-width:160px;margin:0}
+button{cursor:pointer;border:none;border-radius:10px;font-weight:600;font-size:13.5px;padding:10px 16px;background:var(--brand);color:#fff;transition:.15s;font-family:inherit}
+button:hover{opacity:.88}
+button.ghost{background:var(--card);color:var(--brand);border:1px solid var(--brand)}
+.review-box{background:linear-gradient(135deg,#fff8e6,#fef3c7);border-radius:16px;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 10px rgba(217,119,6,.12);border:1px solid #fde68a}
+body.dark .review-box{background:linear-gradient(135deg,#3a2e10,#332812);border-color:#6b4c12}
+.review-box h3{font-size:16px;margin-bottom:10px;color:#92400e}
+body.dark .review-box h3{color:#fcd34d}
+.review-box ul{list-style:none}
+.review-box li{padding:6px 0;border-bottom:1px dashed rgba(146,64,14,.25);font-size:13.5px;display:flex;gap:8px;align-items:center}
+.review-box li:last-child{border-bottom:none}
+.review-box .over{color:#dc2626;font-weight:700}
+.review-box .soon{color:#d97706;font-weight:700}
+nav{display:flex;gap:12px;overflow-x:auto;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:6px}
+nav a{color:var(--brand);text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap}
+nav a:hover{color:var(--accent)}
+section{background:var(--card);border-radius:16px;padding:20px 16px;margin-bottom:16px;box-shadow:0 2px 10px rgba(26,29,38,.05)}
+h2{font-size:19px;color:var(--brand);margin-bottom:12px;padding-left:11px;border-left:5px solid var(--accent)}
+h3{font-size:15px;margin:14px 0 8px}
+.card{background:var(--soft);border-radius:12px;padding:14px;margin:10px 0}
+.tgroup{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px 8px 8px;margin:8px 0}
+.tgroup h4{font-size:13px;color:var(--accent);margin:10px 0 4px;padding-left:6px}
+ul.items{list-style:none}
+ul.items li{display:flex;align-items:center;gap:8px;padding:8px 6px;border-bottom:1px dashed var(--line);font-size:13.5px;flex-wrap:wrap}
+ul.items li:last-child{border-bottom:none}
+ul.items li.done .nm{text-decoration:line-through;color:var(--sub)}
+.tag{display:inline-block;padding:1.5px 7px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap}
+.tm{background:#e8f5ee;color:#15803d}.ts{background:#dbeafe;color:#1d4ed8}.td{background:#fef3c7;color:#b45309}.to{background:#f3e8ff;color:#7c3aed}
+body.dark .tm{background:#12351f;color:#4ade80}body.dark .ts{background:#172554;color:#93c5fd}body.dark .td{background:#3f2a06;color:#fbbf24}body.dark .to{background:#3b1f5c;color:#d8b4fe}
+.layer-mini{display:flex;gap:3px;margin-left:auto}
+.layer-mini button{width:26px;height:22px;padding:0;font-size:11px;border-radius:6px;background:var(--card);color:var(--sub);border:1px solid var(--line)}
+.layer-mini button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.next-date{font-size:11px;color:var(--sub);margin-left:auto}
+textarea,input[type=date],input[type=text]{border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13.5px;font-family:inherit;background:var(--card);color:var(--ink);margin:5px 0;width:100%}
+textarea{resize:vertical;min-height:90px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.note{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.6}
+.chart-box{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart-bar{margin:10px 0}
+.chart-bar .bar-row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12.5px}
+.chart-bar .bar-track{flex:1;height:16px;background:var(--soft);border-radius:8px;overflow:hidden}
+.chart-bar .bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .4s}
+.chart-pie-wrap{display:flex;align-items:center;gap:14px;justify-content:center;padding:10px 0}
+.chart-pie-wrap svg{width:120px;height:120px;transform:rotate(-90deg)}
+.chart-pie-wrap .legend{font-size:12.5px;line-height:2}
+.chart-pie-wrap .legend span{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1d26;color:#fff;padding:11px 20px;border-radius:30px;font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;transition:.3s;z-index:99}
+.toast.show{opacity:1}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.active{display:flex}
+.modal{background:var(--card);border-radius:18px;padding:22px;max-width:420px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.modal h3{margin:0 0 16px;font-size:18px}
+.modal label{display:block;font-size:12.5px;color:var(--sub);margin:12px 0 4px;font-weight:600}
+.modal .layer-pick{display:flex;gap:8px;margin:10px 0}
+.modal .layer-pick button{flex:1;padding:12px 0;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:600}
+.modal .layer-pick button.picked{border-color:var(--brand);background:var(--soft)}
+.modal-actions{display:flex;gap:12px;margin-top:18px}
+.modal-actions button{flex:1}
+@media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.row2{grid-template-columns:1fr}.chart-box{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="login-screen" id="loginScreen">
-  <div class="logo">📖</div>
-  <h1>背书记录</h1>
-  <p>登录后即可在多台设备间同步数据<br>手机和电脑用同一个密码登录即可</p>
-  <input type="password" id="loginPassword" placeholder="请输入访问密码" value="">
-  <button onclick="doLogin()">进入</button>
-  <div class="login-tip">💡 默认密码：beishu2024<br>如果你是自己部署的，请使用你设置的密码</div>
-</div>
-<div class="app-screen" id="appScreen">
-  <div class="container">
-    <header>
-      <h1>📖 背书记录</h1>
-      <p id="headerSub">坚持每一天，量化每一点进步</p>
-      <div class="sync-indicator" id="syncIndicator"><div class="sync-dot"></div><span id="syncText">已同步</span></div>
-    </header>
-    <div class="stats">
-      <div class="stat-card"><div class="num" id="statStreak">0</div><div class="label">连续打卡天数</div></div>
-      <div class="stat-card"><div class="num" id="statTotal">0</div><div class="label">累计背诵条目</div></div>
-      <div class="stat-card"><div class="num" id="statMastered">0</div><div class="label">已掌握</div></div>
-      <div class="stat-card"><div class="num" id="statReviewing">0</div><div class="label">复习中</div></div>
-      <div class="stat-card wide"><div class="num" id="statRate">0%</div><div class="label">掌握率</div></div>
-    </div>
-    <div class="section-title">📚 背诵进度</div>
-    <div class="book-tabs" id="bookTabs"></div>
-    <div class="progress-list" id="progressList"></div>
-    <div class="section-title">🔥 打卡热力图</div>
-    <div class="heatmap-card">
-      <div class="heatmap-months" id="heatmapMonths"></div>
-      <div class="heatmap-grid" id="heatmapGrid"></div>
-      <div class="heatmap-legend"><span>少</span><div class="heatmap-cell"></div><div class="heatmap-cell l1"></div><div class="heatmap-cell l2"></div><div class="heatmap-cell l3"></div><div class="heatmap-cell l4"></div><span>多</span></div>
-    </div>
-    <div class="section-title">📝 背诵条目</div>
-    <div id="entryList"></div>
-  </div>
-  <button class="fab" id="fab">＋</button>
-</div>
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <h2 id="modalTitle">新增背诵条目</h2>
-    <label>所属书籍/模块</label>
-    <input type="text" id="inputBook" placeholder="如：政治马原、英语单词List1..." list="bookList">
-    <datalist id="bookList"></datalist>
-    <label>条目标题</label>
-    <input type="text" id="inputTitle" placeholder="如：矛盾的同一性和斗争性">
-    <label>详细内容（选填）</label>
-    <textarea id="inputContent" placeholder="记录具体内容，方便复习..."></textarea>
-    <label>掌握程度</label>
-    <div class="status-row">
-      <button class="status-btn active-r" id="sbMaster" onclick="setModalStatus('mastered')">✓ 已掌握</button>
-      <button class="status-btn" id="sbReview" onclick="setModalStatus('reviewing')">⟳ 复习中</button>
-      <button class="status-btn" id="sbForget" onclick="setModalStatus('unknown')">✗ 还不会</button>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">取消</button>
-      <button class="btn-save" onclick="saveEntry()">保存</button>
-    </div>
-  </div>
-</div>
-<div class="toast" id="toast"></div>
+<div class="wrap">
+<header>
+ <h1>国际商务 · 知识点清单</h1>
+ <p>第一至第五章 · 分题型标注 · 四层评级 · 自动算下次复习日</p>
+ <div class="stats">
+  <div class="stat"><b id="sTotal">0</b><span>总条目</span></div>
+  <div class="stat"><b id="sM">0</b><span>名词解释</span></div>
+  <div class="stat"><b id="sS">0</b><span>简答</span></div>
+  <div class="stat"><b id="sD">0</b><span>论述</span></div>
+  <div class="stat"><b id="sDone">0</b><span>已首背</span></div>
+ </div>
+</header>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<div class="review-box" id="reviewBox">
+ <h3>📅 今日待复习</h3>
+ <ul id="reviewList"><li style="color:var(--sub);border:none">加载中…</li></ul>
+</div>
+
+<div class="toolbar">
+ <input type="text" id="search" placeholder="🔍 搜索条目或章节，如：产品生命周期">
+ <button class="ghost" onclick="exportData()">导出</button>
+ <button class="ghost" onclick="document.getElementById('imp').click()">导入</button>
+ <input type="file" id="imp" accept=".json" style="display:none" onchange="importData(event)">
+ <button class="ghost" onclick="toggleDark()">🌙 暗色</button>
+</div>
+
+<nav>
+ <a href="#input">录入</a>
+ <a href="#chart">统计</a>
+ <a href="#ch1">第一章</a>
+ <a href="#ch2">第二章</a>
+ <a href="#ch3">第三章</a>
+ <a href="#ch4">第四章</a>
+ <a href="#ch5">第五章</a>
+ <a href="#dup">重复条目</a>
+</nav>
+
+<section id="input">
+ <h2>录入今日背诵</h2>
+ <p class="note">找到对应章节的条目 → 点卡片右侧 L1–L4 评级 → 节点自动算。<br>也可粘贴批量录入，格式：<br><b>第5章 国际直接投资与跨国公司<br>垄断优势理论的内容 第1层<br>产品生命周期理论的内容 第4层</b></p>
+ <textarea id="raw" placeholder="粘贴你今天背的内容"></textarea>
+ <div class="card">
+  <h3 style="margin-top:0">四层评级</h3>
+  <p style="font-size:12.5px">第1层→14天｜第2层→7天｜第3层→3天｜第4层→明天。连续2次L1拉到30天。</p>
+  <div class="row2">
+   <div><label style="font-size:12.5px;color:var(--sub)">首背日</label><input type="date" id="entryDate"></div>
+   <div><label style="font-size:12.5px;color:var(--sub)">所属章节（可空）</label><input type="text" id="entryCh" placeholder="如：第5章"></div>
+  </div>
+  <button onclick="parseInput()" style="margin-top:8px">解析并入库</button>
+ </div>
+</section>
+
+<section id="chart"><h2>背诵统计</h2>
+ <div class="chart-box">
+  <div class="chart-bar">
+   <h3 style="margin:0 0 4px">各章完成度</h3>
+   <div id="barChart"></div>
+  </div>
+  <div>
+   <h3 style="margin:0 0 4px">题型分布</h3>
+   <div class="chart-pie-wrap">
+    <svg id="pieSvg" viewBox="0 0 42 42"><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--soft)" stroke-width="6"></circle><circle id="pieArc" cx="21" cy="21" r="15.9" fill="none" stroke="var(--brand)" stroke-width="6" stroke-dasharray="0 100"></circle></svg>
+    <div class="legend" id="pieLegend"></div>
+   </div>
+  </div>
+ </div>
+ <p class="note" id="chartNote"></p>
+</section>
+
+<section id="ch1"><h2>第一章 国际贸易理论</h2><p class="note">与第2—5章重复的条目已标注 <span class="tag to">重复·以后章为主</span>，本章不再单独建档。</p><div id="ch1_body"></div></section>
+<section id="ch2"><h2>第二章 国际贸易措施</h2><div id="ch2_body"></div></section>
+<section id="ch3"><h2>第三章 货物贸易与服务贸易</h2><p class="note">⚠️ 服务贸易迅速发展的原因、我国存在的问题及应对——教材原文只有"原因"6条，<b>问题与对策需按课堂笔记自行补充</b>。</p><div id="ch3_body"></div></section>
+<section id="ch4"><h2>第四章 区域经济一体化与多边贸易体制</h2><div id="ch4_body"></div></section>
+<section id="ch5"><h2>第五章 国际直接投资与跨国公司</h2><div id="ch5_body"></div></section>
+
+<section id="dup"><h2>重复条目处理一览</h2>
+ <div class="card">
+  <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+   <tr style="border-bottom:1px solid var(--line)"><th style="text-align:left;padding:6px">条目</th><th style="text-align:left;padding:6px">出现在</th><th style="text-align:left;padding:6px">以哪章为主</th></tr>
+   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">进口替代工业化战略</td><td style="padding:6px">第1章 + 第2章</td><td style="padding:6px"><b>第2章</b></td></tr>
+   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">出口导向工业化战略</td><td style="padding:6px">第1章 + 第2章</td><td style="padding:6px"><b>第2章</b></td></tr>
+   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">产品生命周期理论</td><td style="padding:6px">第1章 + 第5章</td><td style="padding:6px"><b>第5章</b></td></tr>
+   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">垄断优势理论</td><td style="padding:6px">第1章 + 第5章</td><td style="padding:6px"><b>第5章</b></td></tr>
+   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">内部化理论</td><td style="padding:6px">第1章 + 第5章</td><td style="padding:6px"><b>第5章</b></td></tr>
+   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">国际生产折衷理论</td><td style="padding:6px">第1章 + 第5章</td><td style="padding:6px"><b>第5章</b></td></tr>
+   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">边际产业扩张论</td><td style="padding:6px">第1章 + 第5章</td><td style="padding:6px"><b>第5章</b></td></tr>
+   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">倾销与反倾销</td><td style="padding:6px">第1章 + 第2章</td><td style="padding:6px"><b>第2章</b></td></tr>
+   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">技术性/绿色贸易壁垒</td><td style="padding:6px">第1章 + 第2章</td><td style="padding:6px"><b>第2章</b></td></tr>
+   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">从量税/从价税/有效关税保护率</td><td style="padding:6px">第1章 + 第2章</td><td style="padding:6px"><b>第2章</b></td></tr>
+   <tr style="border-bottom:1px dashed var(--line)"><td style="padding:6px">贸易创造/贸易转向</td><td style="padding:6px">第1章 + 第4章</td><td style="padding:6px"><b>第4章</b></td></tr>
+   <tr><td style="padding:6px">区域一体化五层次</td><td style="padding:6px">第1章 + 第4章</td><td style="padding:6px"><b>第4章</b></td></tr>
+  </table>
+ </div>
+</section>
+
+<footer style="text-align:center;color:var(--sub);font-size:12px;padding:18px 0">数据存在 Supabase，手机和电脑打开同一网址即可同步 · 默认密码 beishu2024</footer>
+</div>
+
+<div class="modal-overlay" id="modal"><div class="modal">
+ <h3 id="modalTitle">设置背诵评级</h3>
+ <p class="note" id="modalName"></p>
+ <div class="layer-pick">
+  <button id="mp1" onclick="pickLayer(1)">第1层<br><small>一遍就过</small></button>
+  <button id="mp2" onclick="pickLayer(2)">第2层<br><small>几遍后顺</small></button>
+  <button id="mp3" onclick="pickLayer(3)">第3层<br><small>刚记住</small></button>
+  <button id="mp4" onclick="pickLayer(4)">第4层<br><small>等于新背</small></button>
+ </div>
+ <div class="modal-actions">
+  <button class="ghost" onclick="closeModal()">取消</button>
+  <button onclick="saveModal()">保存</button>
+ </div>
+</div></div>
+
+<div class="toast" id="toast">已复制</div>
+
 <script>
-var SUPABASE_URL = 'https://jnnsmjjhjhwrcxnklonf.supabase.co';
-var SUPABASE_ANON_KEY = 'sb_publishable_2w2iM-cklg-Aof9dP7xB_Q_OfWQmj8V';
-var ACCESS_PASSWORD = 'beishu2024';
-var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+/* ============ 配置 ============ */
+var SUPABASE_URL='https://jnnsmjjhjhwrcxnklonf.supabase.co';
+var SUPABASE_ANON_KEY='sb_publishable_2w2iM-cklg-Aof9dP7xB_Q_OfWQmj8V';
+var ACCESS_PASSWORD='beishu2024';
+var supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+var GAP={1:14,2:7,3:3,4:1};
+var DB={};            /* 内存缓存：name -> record */
+var DATA={};          /* 章节知识点，由 buildData() 生成 */
+var today=new Date();
+var editingName=null;
+var editingCh=null;
+var pickedLayer=0;
 
-var records = [];
-var selectedBook = 'all';
-var editingId = null;
-var modalStatus = 'reviewing';
+function fmt(d){if(!d)return '—';var x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');}
+function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return fmt(x);}
+function todayStr(){return fmt(today);}
+function esc(s){return String(s).replace(/'/g,"\\'");}
 
-function setSyncStatus(status) {
-  var ind = document.getElementById('syncIndicator');
-  var txt = document.getElementById('syncText');
-  ind.className = 'sync-indicator' + (status === 'syncing' ? ' syncing' : '');
-  if (status === 'syncing') txt.textContent = '同步中...';
-  else if (status === 'ok') txt.textContent = '已同步';
-  else txt.textContent = '同步失败';
-}
-
-function doLogin() {
-  var pwd = document.getElementById('loginPassword').value;
-  if (!pwd) { showToast('请输入密码'); return; }
-  if (pwd !== ACCESS_PASSWORD) { showToast('密码错误'); return; }
-  if (!window.supabase) { showToast('页面资源加载失败，请检查网络'); return; }
-  setSyncStatus('syncing');
-  supabase.from('records').select('id').limit(1).then(function(res) {
-    if (res.error) { onLoginFail(res.error); return; }
-    localStorage.setItem('beishu_logged_in', '1');
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appScreen').classList.add('active');
-    loadRecords();
-    showToast('登录成功 🎉');
-  }).catch(onLoginFail);
-}
-
-function onLoginFail(e) {
-  console.error(e);
-  showToast('连接失败：' + (e.message || e.error_description || '请检查网络'));
-  setSyncStatus('error');
-}
-
-function loadRecords() {
-  setSyncStatus('syncing');
-  supabase.from('records').select('*').order('created_at', { ascending: false }).then(function(res) {
-    if (res.error) { setSyncStatus('error'); showToast('加载失败：' + res.error.message); return; }
-    records = res.data || [];
-    setSyncStatus('ok');
-    render();
-  }).catch(function(e) { setSyncStatus('error'); showToast('加载失败'); });
-}
-
-function saveRecordToServer(record) {
-  if (record.id && !String(record.id).startsWith('temp_')) {
-    var id = record.id;
-    var update = {};
-    Object.keys(record).forEach(function(k) { if (k !== 'id' && k !== 'created_at' && k !== 'updated_at') update[k] = record[k]; });
-    update.updated_at = new Date().toISOString();
-    setSyncStatus('syncing');
-    return supabase.from('records').update(update).eq('id', id).select().single().then(function(res) {
-      setSyncStatus('ok'); if (res.error) throw res.error; return res.data;
-    });
-  } else {
-    var create = {};
-    Object.keys(record).forEach(function(k) { if (k !== 'id') create[k] = record[k]; });
-    setSyncStatus('syncing');
-    return supabase.from('records').insert([create]).select().single().then(function(res) {
-      setSyncStatus('ok'); if (res.error) throw res.error; return res.data;
-    });
+/* ============ 知识点数据 ============ */
+function buildData(){
+ DATA={
+  "第一章 国际贸易理论":{
+   "一、重商主义与绝对优势（其他）":["重商主义","绝对优势理论","绝对优势理论的评价"],
+   "二、比较优势（简答／论述核心）":["比较优势理论（2×2×2模型）","比较成本","两优取其重、两劣取其轻","比较优势理论的贡献与局限"],
+   "三、相互需求（简答）":["相互需求理论","提供曲线（相互需求曲线）"],
+   "四、要素禀赋理论（名词解释＋简答）":["要素丰裕度","要素密集度","H-O模型（2×2×2）","要素价格均等化（H-O-S定理）","斯托尔珀—萨缪尔森定理（SS定理）"],
+   "五、里昂惕夫之谜与解释（简答／论述）":["里昂惕夫之谜","人力资本说","自然资源说","要素密集度逆转","需求偏好相似说（对里昂惕夫之谜的解释）"],
+   "六、贸易保护理论（简答）":["幼稚产业保护论","穆勒标准","巴斯塔布尔标准","肯普标准","小岛清标准","超贸易保护主义","战略性贸易政策理论"],
+   "七、当代贸易理论（名词解释＋简答＋论述）":["规模经济与产业内贸易","垄断竞争模型","产品生命周期理论","需求偏好相似理论（林德理论）","产业内贸易指数","企业异质性（新新贸易理论）"],
+   "八、政策工具（以后章为主）":["倾销与反倾销","技术性贸易壁垒","绿色贸易壁垒","进口配额","自愿出口限制","出口补贴","从量税／从价税／有效关税保护率"],
+   "九、工业化战略（以后章为主）":["进口替代工业化战略","出口导向工业化战略","进口替代与出口导向的比较"],
+   "十、区域一体化（以后章为主）":["自由贸易区","关税同盟","共同市场","经济联盟","贸易创造／贸易转向"]
+  },
+  "第二章 国际贸易措施":{
+   "名词解释（23条）":["进口替代工业化战略","出口导向工业化战略","出口信贷","出口信贷国家担保制","出口补贴","外汇倾销","关税的概念","从量税","从价税","普遍优惠制（普惠税）","有效关税保护率","进口配额制","关税配额","自愿出口限制（自动出口配额制）","进口许可证制","倾销","反倾销","技术性贸易壁垒","绿色贸易壁垒","知识产权保护","原产地规则","补贴与反补贴","保障措施"],
+   "简答（10条）":["鼓励出口的贸易措施","关税的特点","关税的作用","关税对国际贸易的影响","从量税的四个特点","从价税的五个特点","非关税壁垒的概念与分类","非关税壁垒的特点","新贸易保护主义的主要形式","基于倾销解释企业掠夺性行为"],
+   "简答／论述（8条）":["国际贸易摩擦的含义","国际贸易摩擦的形式","绿色贸易壁垒对我国外贸的影响","中国遭受反倾销的原因","反倾销对中国出口的影响","应对反倾销我国应采取的对策","国际贸易摩擦的应对方法"]
+  },
+  "第三章 货物贸易与服务贸易":{
+   "名词解释（17条）":["国际货物贸易的概念","出口贸易","进口贸易","过境贸易","复出口与复进口","净出口与净进口","直接贸易","间接贸易","转口贸易","国际服务贸易的概念","服务外包","国际技术贸易的定义","专利","商标","工业产权","专有技术","国际劳务合作的概念"],
+   "简答（11条）":["国际货物贸易的类型（按货物移动方向）","国际货物贸易的类型（按有无第三国）","国际货物贸易的类型（按运输方式）","国际服务贸易的提供方式","国际服务贸易的特征","国际技术贸易的形式","国际技术贸易的特点","国际劳务合作的作用","服务贸易迅速发展的原因","我国服务贸易存在的问题","我国服务贸易的应对措施"],
+   "论述（2条）":["网络贸易对国际贸易的正面影响","网络贸易对国际贸易的负面影响"]
+  },
+  "第四章 区域经济一体化与多边贸易体制":{
+   "名词解释（15条）":["经济全球化的概念","区域经济一体化的概念","自由贸易区","关税同盟","共同市场","经济联盟","政治联盟","贸易转移（贸易转向）","世界贸易组织的概念","最惠国待遇","国民待遇","透明度原则","公平解决争端原则","RCEP的定义"],
+   "简答（18条）":["经济全球化的表现（内容）","经济全球化的基本特征","经济全球化的推动因素","经济全球化的影响","全球化的主要特征","反全球化的原因","非歧视性原则","关税保护原则","公平贸易原则","互惠贸易原则","市场准入原则","世界贸易组织的宗旨","区域经济一体化的机遇","区域经济一体化的挑战","欧元对欧盟经济的积极影响","欧元对欧盟经济的消极影响","RCEP对中国经济的影响"],
+   "论述（3条）":["中国参与区域合作的经济因素","中国参与区域合作的政治因素","一带一路对我国的影响"]
+  },
+  "第五章 国际直接投资与跨国公司":{
+   "名词解释（22条）":["国际直接投资的概念","垄断优势理论","产品生命周期理论","内部化理论","国际生产折衷理论（综合理论）","多点竞争战略","区位优势","边际产业扩张论（比较优势理论）","混合型投资","跨国公司的定义","资源开发型跨国公司","加工制造型跨国公司","服务提供型跨国公司","横向型跨国公司","垂直型跨国公司","混合型跨国公司","民族中心型公司","多元中心型公司","全球中心型公司","对外直接投资周期理论","技术地方化理论","小规模技术理论"],
+   "简答（6条）":["国际直接投资的特点与趋势（流量与存量的概念）","衡量外来直接投资重要性的方法","跨国公司的主要特征","跨国公司发展的原因","中国对外直接投资的现状和特点","中国对外直接投资的作用"],
+   "简答／论述":["水平型对外直接投资（概念＋经济效应）","垂直型对外直接投资（概念＋经济效应）"],
+   "新增（要背“…的内容”）":["垄断优势理论的内容","产品生命周期理论的内容","内部化理论的内容","国际生产折中理论的内容","多点竞争与区位优势的内容","边际产业扩张论的内容"]
   }
+ };
+}
+buildData();
+
+var TYPE_OF={
+ "重商主义":"其他","绝对优势理论":"简答","绝对优势理论的评价":"简答","比较优势理论（2×2×2模型）":"简答","比较成本":"名词解释","两优取其重、两劣取其轻":"简答","比较优势理论的贡献与局限":"论述",
+ "相互需求理论":"简答","提供曲线（相互需求曲线）":"名词解释",
+ "要素丰裕度":"名词解释","要素密集度":"名词解释","H-O模型（2×2×2）":"简答","要素价格均等化（H-O-S定理）":"简答","斯托尔珀—萨缪尔森定理（SS定理）":"简答",
+ "里昂惕夫之谜":"名词解释","人力资本说":"简答","自然资源说":"简答","要素密集度逆转":"简答","需求偏好相似说（对里昂惕夫之谜的解释）":"简答",
+ "幼稚产业保护论":"简答","穆勒标准":"简答","巴斯塔布尔标准":"简答","肯普标准":"简答","小岛清标准":"简答","超贸易保护主义":"简答","战略性贸易政策理论":"简答",
+ "规模经济与产业内贸易":"简答","垄断竞争模型":"简答","产品生命周期理论":"简答","需求偏好相似理论（林德理论）":"简答","产业内贸易指数":"名词解释","企业异质性（新新贸易理论）":"简答",
+ "国际直接投资的概念":"名词解释","垄断优势理论":"简答","产品生命周期理论":"简答","内部化理论":"简答","国际生产折衷理论（综合理论）":"简答","多点竞争战略":"名词解释","区位优势":"名词解释","边际产业扩张论（比较优势理论）":"简答","混合型投资":"名词解释","跨国公司的定义":"名词解释","资源开发型跨国公司":"名词解释","加工制造型跨国公司":"名词解释","服务提供型跨国公司":"名词解释","横向型跨国公司":"名词解释","垂直型跨国公司":"名词解释","混合型跨国公司":"名词解释","民族中心型公司":"名词解释","多元中心型公司":"名词解释","全球中心型公司":"名词解释","对外直接投资周期理论":"简答","技术地方化理论":"简答","小规模技术理论":"简答",
+ "国际直接投资的特点与趋势（流量与存量的概念）":"简答","衡量外来直接投资重要性的方法":"简答","跨国公司的主要特征":"简答","跨国公司发展的原因":"简答","中国对外直接投资的现状和特点":"简答","中国对外直接投资的作用":"简答",
+ "垄断优势理论的内容":"简答","产品生命周期理论的内容":"简答","内部化理论的内容":"简答","国际生产折中理论的内容":"简答","多点竞争与区位优势的内容":"简答","边际产业扩张论的内容":"简答",
+ "水平型对外直接投资（概念＋经济效应）":"简答","垂直型对外直接投资（概念＋经济效应）":"简答"
+};
+function typeTag(name){
+ var t=TYPE_OF[name]||TYPE_OF[name.replace(/<[^>]+>/g,'')];
+ if(t==="名词解释")return "<span class='tag tm'>名词解释</span>";
+ if(t==="简答")return "<span class='tag ts'>简答</span>";
+ if(t==="论述")return "<span class='tag td'>论述</span>";
+ return "<span class='tag to'>其他</span>";
+}
+function typeOf(name){var t=TYPE_OF[name]||TYPE_OF[name.replace(/<[^>]+>/g,'')];return t||"其他";}
+
+/* ============ 同步 ============ */
+function clean(n){return String(n).replace(/<[^>]+>/g,'');}
+
+async function loadAll(){
+ try{
+  var r=await supabase.from('kb_items').select('*');
+  if(r.error)throw r.error;
+  DB={};
+  (r.data||[]).forEach(function(it){DB[clean(it.name)]=it;});
+  render();
+ }catch(e){console.error(e);toast('加载失败：'+(e.message||''));}
 }
 
-function deleteRecordFromServer(id) {
-  setSyncStatus('syncing');
-  return supabase.from('records').delete().eq('id', id).then(function(res) {
-    setSyncStatus('ok'); if (res.error) throw res.error;
-  });
-}
-
-function showToast(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(function() { t.classList.remove('show'); }, 2000);
-}
-
-function formatDate(isoStr) {
-  if (!isoStr) return '';
-  var d = new Date(isoStr); var now = new Date();
-  var diff = Math.floor((now - d) / 86400000);
-  if (diff === 0) return '今天';
-  if (diff === 1) return '昨天';
-  if (diff < 7) return diff + '天前';
-  return (d.getMonth() + 1) + '/' + d.getDate();
-}
-
-function getBookNames() {
-  var set = {};
-  records.forEach(function(r) { set[r.book] = 1; });
-  return Object.keys(set);
-}
-
-function getFilteredRecords() {
-  if (selectedBook === 'all') return records;
-  return records.filter(function(r) { return r.book === selectedBook; });
-}
-
-function calcStreak() {
-  var map = {};
-  records.forEach(function(r) { var k = (r.created_at || '').slice(0, 10); if (k) map[k] = 1; });
-  var dates = Object.keys(map).sort().reverse();
-  if (!dates.length) return 0;
-  var streak = 0; var cursor = dates[0]; var s = {}; dates.forEach(function(d) { s[d] = 1; });
-  while (s[cursor]) {
-    streak++;
-    var d = new Date(cursor); d.setDate(d.getDate() - 1);
-    cursor = d.toISOString().slice(0, 10);
+async function saveItem(rec){
+ var cleaned=clean(rec.name);
+ var payload={ch:rec.ch,name:cleaned,type:typeOf(cleaned),layer:rec.layer||null,first_date:rec.first_date||null,next_date:rec.next_date||null,l1_streak:rec.l1_streak||0};
+ var exist=DB[cleaned];
+ try{
+  if(exist&&exist.id){
+   var r=await supabase.from('kb_items').update(payload).eq('id',exist.id).select().single();
+   if(r.error)throw r.error;
+   DB[cleaned]=r.data;
+  }else{
+   var r2=await supabase.from('kb_items').insert([payload]).select().single();
+   if(r2.error)throw r2.error;
+   DB[cleaned]=r2.data;
   }
-  return streak;
+  render();
+ }catch(e){console.error(e);toast('保存失败：'+(e.message||''));}
 }
 
-function render() {
-  renderStats(); renderBookTabs(); renderProgress(); renderHeatmap(); renderEntries();
+async function deleteItem(name){
+ var cleaned=clean(name);
+ var exist=DB[cleaned];
+ if(!exist||!exist.id)return;
+ if(!confirm('确定删除这条记录吗？'))return;
+ try{
+  var r=await supabase.from('kb_items').delete().eq('id',exist.id);
+  if(r.error)throw r.error;
+  delete DB[cleaned];render();toast('已删除');
+ }catch(e){console.error(e);toast('删除失败');}
 }
 
-function renderStats() {
-  var mastered = 0, reviewing = 0;
-  records.forEach(function(r) { if (r.status === 'mastered') mastered++; else if (r.status === 'reviewing') reviewing++; });
-  var streak = calcStreak();
-  var rate = records.length > 0 ? Math.round(mastered / records.length * 100) : 0;
-  document.getElementById('statStreak').textContent = streak;
-  document.getElementById('statTotal').textContent = records.length;
-  document.getElementById('statMastered').textContent = mastered;
-  document.getElementById('statReviewing').textContent = reviewing;
-  document.getElementById('statRate').textContent = rate + '%';
-  var sub = document.getElementById('headerSub');
-  if (streak > 0) sub.textContent = streak >= 7 ? '🔥 已连续打卡 ' + streak + ' 天，太棒了！' : '📅 已连续打卡 ' + streak + ' 天，继续加油！';
-  else sub.textContent = '今天还没打卡，赶紧背一条吧！';
+function setEntry(ch,name,layer,dateStr){
+ var d=dateStr||todayStr();
+ var exist=DB[clean(name)]||{};
+ var streak=(layer===1)?((exist.l1_streak||0)+1):0;
+ var rec={
+  ch:ch,name:name,layer:layer,
+  first_date:exist.first_date||d,
+  next_date:addDays(d,GAP[layer]),
+  l1_streak:streak
+ };
+ saveItem(rec);
 }
 
-function renderBookTabs() {
-  var books = getBookNames();
-  var html = '<div class="book-tab ' + (selectedBook === 'all' ? 'active' : '') + '" onclick="selectBook(\'all\')">📋 全部</div>';
-  books.forEach(function(b) {
-    html += '<div class="book-tab ' + (selectedBook === b ? 'active' : '') + '" onclick="selectBook(\'' + b + '\')">' + b + '</div>';
-  });
-  document.getElementById('bookTabs').innerHTML = html;
-}
-
-function renderProgress() {
-  var books = getBookNames();
-  if (!books.length) {
-    document.getElementById('progressList').innerHTML = '<div class="empty-state"><div class="icon">📚</div><p>还没有任何书籍记录，点击右下角添加第一条吧！</p></div>';
-    return;
-  }
-  var html = '';
-  books.forEach(function(book) {
-    var br = records.filter(function(r) { return r.book === book; });
-    var total = br.length;
-    var mastered = br.filter(function(r) { return r.status === 'mastered'; }).length;
-    var pct = total > 0 ? Math.round(mastered / total * 100) : 0;
-    html += '<div class="progress-item"><div class="top"><span class="name">' + book + '</span><span class="pct">' + pct + '%</span></div><div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><div class="progress-meta"><span>' + mastered + ' / ' + total + ' 条已掌握</span><span>' + (total - mastered) + ' 条待复习</span></div></div>';
-  });
-  document.getElementById('progressList').innerHTML = html;
-}
-
-function renderHeatmap() {
-  var grid = document.getElementById('heatmapGrid');
-  var monthsRow = document.getElementById('heatmapMonths');
-  grid.innerHTML = ''; monthsRow.innerHTML = '';
-  var now = new Date();
-  var start = new Date(now); start.setDate(now.getDate() - 23 * 7); start.setDate(start.getDate() - start.getDay());
-  var dayCounts = {};
-  records.forEach(function(r) { var k = (r.created_at || '').slice(0, 10); if (k) dayCounts[k] = (dayCounts[k] || 0) + 1; });
-  var ml = []; var lm = -1;
-  for (var w = 0; w < 24; w++) {
-    var week = []; var m0 = new Date(start); m0.setDate(start.getDate() + w * 7);
-    for (var dow = 0; dow < 7; dow++) { var d = new Date(start); d.setDate(start.getDate() + w * 7 + dow); week.push(d); }
-    var m = week[0].getMonth();
-    ml.push(m !== lm ? week[0].toLocaleDateString('zh-CN', { month: 'short' }) : '');
-    lm = m;
-  }
-  ml.forEach(function(m) { monthsRow.innerHTML += '<span>' + m + '</span>'; });
-  for (var w2 = 0; w2 < 24; w2++) {
-    var col = '<div class="heatmap-col">';
-    for (var dow2 = 0; dow2 < 7; dow2++) {
-      var dd = new Date(start); dd.setDate(start.getDate() + w2 * 7 + dow2);
-      var key = dd.toISOString().slice(0, 10);
-      var c = dayCounts[key] || 0; var lv = c > 0 ? Math.min(4, c) : 0;
-      col += '<div class="heatmap-cell ' + (lv > 0 ? 'l' + lv : '') + '" title="' + (dd.getMonth() + 1) + '月' + dd.getDate() + '日: ' + c + '条"></div>';
+/* ============ 渲染 ============ */
+function render(){
+ var total=0,mc=0,sc=0,dc=0,done=0;
+ var counts={};
+ Object.keys(DATA).forEach(function(cid){
+  counts[cid]=0;
+  var box=document.getElementById(cid_en(cid)+'_body');if(!box)return;
+  var h='';
+  Object.keys(DATA[cid]).forEach(function(g){
+   var items=DATA[cid][g];
+   total+=items.length;
+   h+="<div class='tgroup'><h4>"+g+"（"+items.length+"）</h4><ul class='items'>";
+   items.forEach(function(n){
+    var cleanN=clean(n);
+    var it=DB[cleanN];
+    if(it&&it.layer)done++;
+    var t=typeOf(cleanN);
+    if(t==='名词解释')mc++;else if(t==='简答')sc++;else if(t==='论述')dc++;
+    if(it&&it.layer)counts[cid]=(counts[cid]||0)+1;
+    var btns='';
+    for(var i=1;i<=4;i++){
+     btns+="<button class='"+(it&&it.layer==i?'on':'')+"' onclick='openModal(\""+esc(cid)+"\",\""+esc(cleanN)+"\","+i+")'>"+i+"</button>";
     }
-    col += '</div>';
-    grid.innerHTML += col;
-  }
-}
-
-function renderEntries() {
-  var filtered = getFilteredRecords();
-  var list = document.getElementById('entryList');
-  if (!filtered.length) { list.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>这里还没有条目哦，点击右下角 + 添加吧</p></div>'; return; }
-  var sorted = filtered.slice().sort(function(a, b) { return new Date(b.created_at || 0) - new Date(a.created_at || 0); });
-  var html = '';
-  sorted.forEach(function(r) {
-    var bc = r.status === 'mastered' ? 'mastered' : r.status === 'reviewing' ? 'reviewing' : 'unknown';
-    var bt = r.status === 'mastered' ? '✓ 已掌握' : r.status === 'reviewing' ? '⟳ 复习中' : '✗ 还不会';
-    html += '<div class="entry-item" data-id="' + r.id + '"><div class="entry-top"><span class="entry-title">' + r.title + '</span><span class="entry-date">' + formatDate(r.created_at) + '</span></div><div style="font-size:12px;color:var(--primary);font-weight:600;">📚 ' + r.book + '</div>' + (r.content ? '<div class="entry-content">' + r.content + '</div>' : '') + '<span class="status-badge ' + bc + '">' + bt + '</span><div class="entry-actions">' + (r.status !== 'mastered' ? '<button class="btn-master" onclick="changeStatus(' + r.id + ',\'mastered\')">✓ 标为已掌握</button>' : '') + (r.status !== 'reviewing' ? '<button class="btn-review" onclick="changeStatus(' + r.id + ',\'reviewing\')">⟳ 复习中</button>' : '') + (r.status !== 'unknown' ? '<button class="btn-forget" onclick="changeStatus(' + r.id + ',\'unknown\')">✗ 还不会</button>' : '') + '<button class="btn-delete" onclick="deleteEntry(' + r.id + ')">🗑</button></div></div>';
+    var nxt=it&&it.next_date?"<span class='next-date'>下次 "+it.next_date+"</span>":"";
+    h+="<li class='"+(it&&it.layer?"done":"")+"'>"
+      +"<span class='nm'>"+n+"</span>"
+      +typeTag(cleanN)
+      +"<span class='layer-mini'>"+btns+"</span>"
+      +nxt
+      +"</li>";
+   });
+   h+='</ul></div>';
   });
-  list.innerHTML = html;
+  box.innerHTML=h;
+ });
+ document.getElementById('sTotal').textContent=total;
+ document.getElementById('sM').textContent=mc;
+ document.getElementById('sS').textContent=sc;
+ document.getElementById('sD').textContent=dc;
+ document.getElementById('sDone').textContent=done;
+ renderReview();
+ renderChart(counts,total);
 }
 
-function selectBook(book) { selectedBook = book; renderBookTabs(); renderEntries(); }
-
-function changeStatus(id, status) {
-  var record = records.find(function(r) { return r.id === id; });
-  if (!record) return;
-  record.status = status; render();
-  saveRecordToServer(record).then(function() {
-    var map = { mastered: '太棒了，又掌握了一条！', reviewing: '已标记为复习中', unknown: '已标记为还不会，继续加油！' };
-    showToast(map[status]);
-  }).catch(function() { showToast('保存失败'); });
+function cid_en(cid){
+ return 'ch'+cid.replace(/[^0-9]/g,'').slice(0,1);
 }
 
-function deleteEntry(id) {
-  if (!confirm('确定删除这条记录吗？')) return;
-  records = records.filter(function(r) { return r.id !== id; }); render();
-  deleteRecordFromServer(id).then(function() { showToast('已删除'); }).catch(function() { showToast('删除失败'); });
+function renderReview(){
+ var ul=document.getElementById('reviewList');
+ var ts=todayStr();
+ var due=Object.values(DB).filter(function(v){return v.next_date&&v.next_date<=ts;}).sort(function(a,b){return (a.next_date||'').localeCompare(b.next_date||'');});
+ if(!due.length){ul.innerHTML="<li style='border:none;color:var(--sub)'>🎉 今天没有需要复习的条目，去新增吧</li>";return;}
+ ul.innerHTML='';
+ due.forEach(function(v){
+  var cls=v.next_date<ts?'over':'soon';
+  var mark=v.next_date<ts?'已逾期':'今日';
+  ul.innerHTML+="<li><span class='"+cls+"'>"+mark+"</span>｜"+v.ch+"｜"+v.name+"｜下次 "+v.next_date+"｜L"+v.layer+"</li>";
+ });
 }
 
-function openModal(editId) {
-  var overlay = document.getElementById('modalOverlay');
-  var titleEl = document.getElementById('modalTitle');
-  document.getElementById('bookList').innerHTML = getBookNames().map(function(b) { return '<option value="' + b + '">'; }).join('');
-  if (editId) {
-    editingId = editId; titleEl.textContent = '编辑背诵条目';
-    var r = records.find(function(x) { return x.id === editId; });
-    document.getElementById('inputBook').value = r.book;
-    document.getElementById('inputTitle').value = r.title;
-    document.getElementById('inputContent').value = r.content || '';
-    setModalStatus(r.status);
-  } else {
-    editingId = null; titleEl.textContent = '新增背诵条目';
-    document.getElementById('inputBook').value = selectedBook === 'all' ? '' : selectedBook;
-    document.getElementById('inputTitle').value = '';
-    document.getElementById('inputContent').value = '';
-    setModalStatus('reviewing');
-  }
-  overlay.classList.add('active');
+function renderChart(counts,total){
+ var bar=document.getElementById('barBarChart');
+ var max=0;Object.keys(DATA).forEach(function(c){if((counts[c]||0)>max)max=counts[c];});
+ var h='';
+ Object.keys(DATA).forEach(function(c){
+  var got=counts[c]||0;
+  var pct=total?Math.round(got/Object.keys(DATA[c]).length*100):0;
+  h+="<div class='bar-row'><span style='width:88px'>"+c.replace(/[（(].*/,'')+"</span>"
+    +"<div class='bar-track'><div class='bar-fill' style='width:"+pct+"%'></div></div>"
+    +"<span style='width:44px;text-align:right'>"+got+"/"+Object.keys(DATA[c]).length+"</span></div>";
+ });
+ document.getElementById('barChart').innerHTML=h;
+ /* 题型饼图 */
+ var types={};Object.values(DB).forEach(function(v){if(v.layer)types[v.type]=(types[v.type]||0)+1;});
+ var pie=document.getElementById('pieSvg');
+ var leg=document.getElementById('pieLegend');
+ pie.style.display=Object.keys(types).length?'block':'none';
+ if(!Object.keys(types).length){leg.innerHTML="<span style='color:var(--sub)'>还没有背诵记录</span>";return;}
+ var done2=0;for(var k in types)done2+=types[k];
+ var acc=0;var path='';
+ var color={'名词解释':'#1f9d68','简答':'#1d4ed8','论述':'#d97706','其他':'#7c3aed'};
+ leg.innerHTML='';
+ for(var k2 in types){
+  var frac=types[k2]/done2;
+  var dash=frac*100;
+  path+="<circle cx='21' cy='21' r='15.9' fill='none' stroke='"+(color[k2]||'#999')+"' stroke-width='6' stroke-dasharray='"+dash+" "+(100-dash)+"' stroke-dashoffset='"+(100-acc)+"'></circle>";
+  acc+=dash;
+  leg.innerHTML+="<div><span style='background:"+(color[k2]||'#999')+"'></span>"+k2+"："+types[k2]+"</div>";
+ }
+ document.getElementById('pieArc').outerHTML=path;
 }
 
-function setModalStatus(status) {
-  modalStatus = status;
-  document.getElementById('sbMaster').className = 'status-btn' + (status === 'mastered' ? ' active-m' : '');
-  document.getElementById('sbReview').className = 'status-btn' + (status === 'reviewing' ? ' active-r' : '');
-  document.getElementById('sbForget').className = 'status-btn' + (status === 'unknown' ? ' active-u' : '');
+/* ============ 录入 ============ */
+function parseInput(){
+ var raw=document.getElementById('raw').value.trim();
+ if(!raw){toast('先输入内容');return;}
+ var dateStr=document.getElementById('entryDate').value||todayStr();
+ var curCh=document.getElementById('entryCh').value.trim();
+ var cnt=0;
+ raw.split(/\n+/).forEach(function(line){
+  line=line.trim();if(!line)return;
+  var m=/^(第?[一二三四五六七八九十\d]+章)[^\s：:]*\s*[：:]?\s*(.*)$/.exec(line);
+  if(m&&(!m[2]||m[2].length<2)){curCh=m[1];return;}
+  var name=(m?m[2]:line).trim().replace(/\s*(第[1234]层|[Ll]\d)\s*$/,'');
+  if(!name)return;
+  cnt++;
+  /* 未选层时弹内联选择 */
+  openModal(curCh||"第五章 国际直接投资与跨国公司",name,0,true);
+ });
+ if(cnt===0)toast('没有解析到条目');
 }
 
-function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
-
-function saveEntry() {
-  var book = document.getElementById('inputBook').value.trim();
-  var title = document.getElementById('inputTitle').value.trim();
-  var content = document.getElementById('inputContent').value.trim();
-  if (!book) { showToast('请填写所属书籍/模块'); return; }
-  if (!title) { showToast('请填写条目标题'); return; }
-  var record = { book: book, title: title, content: content, status: modalStatus };
-  if (editingId) {
-    var idx = records.findIndex(function(r) { return r.id === editingId; });
-    records[idx] = Object.assign({}, records[idx], { book: book, title: title, content: content, status: modalStatus });
-    render();
-    saveRecordToServer(records[idx]).then(function() { showToast('已更新'); }).catch(function() { showToast('保存失败'); });
-  } else {
-    saveRecordToServer(record).then(function(saved) {
-      records.unshift(saved); render(); showToast('已记录，打卡 +1 🎉');
-    }).catch(function(e) { showToast('保存失败'); });
-  }
-  closeModal();
+var pendingBulk=false;
+function openModal(ch,name,layer,fromBulk){
+ pendingBulk=!!fromBulk;
+ editingCh=ch;editingName=name;pickedLayer=layer||0;
+ document.getElementById('modalTitle').textContent=fromBulk?'为「'+name+'」选层':'设置背诵评级';
+ document.getElementById('modalName').textContent=ch+' · '+name;
+ [1,2,3,4].forEach(function(i){document.getElementById('mp'+i).className=i===pickedLayer?'picked':'';});
+ document.getElementById('modal').classList.add('active');
 }
+function pickLayer(l){pickedLayer=l;[1,2,3,4].forEach(function(i){document.getElementById('mp'+i).className=i===l?'picked':'';});}
+function closeModal(){document.getElementById('modal').classList.remove('active');editingName=null;pendingBulk=false;}
+async function saveModal(){
+ if(!pickedLayer){toast('请先选第几层');return;}
+ var dateStr=document.getElementById('entryDate').value||todayStr();
+ setEntry(editingCh,editingName,pickedLayer,dateStr);
+ closeModal();
+ if(pendingBulk)toast('已记录 '+editingName);
+}
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
-document.getElementById('fab').addEventListener('click', function() { openModal(null); });
-document.getElementById('loginPassword').addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
-document.getElementById('inputTitle').addEventListener('keydown', function(e) { if (e.key === 'Enter') saveEntry(); });
-document.getElementById('modalOverlay').addEventListener('click', function(e) { if (e.target === e.currentTarget) closeModal(); });
-var pressTimer = null;
-document.getElementById('entryList').addEventListener('touchstart', function(e) {
-  var item = e.target.closest('.entry-item');
-  if (!item || e.target.tagName === 'BUTTON') return;
-  pressTimer = setTimeout(function() { openModal(Number(item.dataset.id)); }, 600);
+/* ============ 搜索 ============ */
+document.getElementById('search').addEventListener('input',function(e){
+ var q=e.target.value.trim().toLowerCase();
+ document.querySelectorAll('.tgroup').forEach(function(tg){
+  var hit=false;
+  tg.querySelectorAll('ul.items li').forEach(function(li){
+   var ok=!q||li.textContent.toLowerCase().indexOf(q)>-1||(tg.previousElementSibling&&tg.previousElementSibling.textContent.toLowerCase().indexOf(q)>-1);
+   li.style.display=ok?'':'none';
+   if(ok)hit=true;
+  });
+  tg.style.display=hit||!q?'':'none';
+ });
+ document.querySelectorAll('section[id^="ch"]').forEach(function(s){
+  var any=[].slice.call(s.querySelectorAll('.tgroup')).some(function(t){return t.style.display!=='none';});
+  s.style.display=(any||!q)?'':'none';
+ });
 });
-document.getElementById('entryList').addEventListener('touchend', function() { clearTimeout(pressTimer); });
-document.getElementById('entryList').addEventListener('touchmove', function() { clearTimeout(pressTimer); });
 
-if (localStorage.getItem('beishu_logged_in') === '1') {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('appScreen').classList.add('active');
-  loadRecords();
+/* ============ 导入导出 ============ */
+function exportData(){
+ var data={version:1,exported_at:new Date().toISOString(),items:Object.values(DB)};
+ var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ var url=URL.createObjectURL(blob);
+ var a=document.createElement('a');a.href=url;a.download='beishu-kb-'+todayStr()+'.json';
+ document.body.appendChild(a);a.click();document.body.removeChild(a);
+ setTimeout(function(){URL.revokeObjectURL(url);},1000);
+ toast('已导出');
 }
+async function importData(ev){
+ var file=ev.target.files[0];if(!file)return;
+ var text=await file.text();
+ try{
+  var json=JSON.parse(text);
+  var items=json.items||json;
+  if(!Array.isArray(items))throw new Error('格式不对');
+  var cnt=0;
+  for(var i=0;i<items.length;i++){
+   var it=items[i];if(!it.name||!it.ch)continue;
+   await saveItem({ch:it.ch,name:it.name,layer:it.layer,first_date:it.first_date,next_date:it.next_date,l1_streak:it.l1_streak||0});
+   cnt++;
+  }
+  toast('已导入 '+cnt+' 条');
+ }catch(e){toast('导入失败：'+e.message);}
+ ev.target.value='';
+}
+
+/* ============ 暗色模式 ============ */
+function toggleDark(){
+ document.body.classList.toggle('dark');
+ localStorage.setItem('kb_dark',document.body.classList.contains('dark')?'1':'0');
+}
+if(localStorage.getItem('kb_dark')==='1')document.body.classList.add('dark');
+
+/* ============ 登录 ============ */
+function askPassword(){
+ var p=prompt('请输入访问密码（默认 beishu2024）','');
+ if(p!==ACCESS_PASSWORD){toast('密码错误');setTimeout(askPassword,300);return;}
+ localStorage.setItem('kb_logged_in','1');
+ document.getElementById('loginScreen').style.display='none';
+ init();
+}
+function init(){
+ document.getElementById('entryDate').value=todayStr();
+ loadAll();
+}
+if(localStorage.getItem('kb_logged_in')==='1'){document.getElementById('loginScreen').style.display='none';init();}
+else askPassword();
 </script>
 </body>
 </html>
