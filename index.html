@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head<script src="./supabase-client.js"></script>>
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>背书记录</title>
+<!-- Supabase 官方客户端，从 CDN 加载 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root {
@@ -339,35 +341,23 @@
 
 <script>
 // ============ Config ============
-// 部署后修改为你的后端服务地址
-// 本地开发时用 http://localhost:3000
-// 部署后用你的实际网址，如 https://your-app.onrender.com
-const API_BASE = 'http://localhost:3000/api';
+// 改成你自己的 Supabase 项目信息
+const SUPABASE_URL = 'https://jnnsmjjhjhwrcxnklonf.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_2w2iM-cklg-Aof9dP7xB_Q_OfWQmj8V';
+
+// 密码（自己部署时改成你自己的）
+const ACCESS_PASSWORD = 'beishu2024';
+
+// 初始化 Supabase 客户端
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ============ State ============
-let token = localStorage.getItem('beishu_token') || '';
 let records = [];
 let selectedBook = 'all';
 let editingId = null;
 let modalStatus = 'reviewing';
 
-// ============ API ============
-async function api(path, options = {}) {
-  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  
-  setSyncStatus('syncing');
-  try {
-    const res = await fetch(API_BASE + path, { ...options, headers });
-    const data = await res.json();
-    setSyncStatus('ok');
-    return data;
-  } catch(e) {
-    setSyncStatus('error');
-    throw e;
-  }
-}
-
+// ============ Sync UI ============
 function setSyncStatus(status) {
   const ind = document.getElementById('syncIndicator');
   const txt = document.getElementById('syncText');
@@ -381,60 +371,93 @@ function setSyncStatus(status) {
 async function doLogin() {
   const pwd = document.getElementById('loginPassword').value;
   if (!pwd) { showToast('请输入密码'); return; }
+  if (pwd !== ACCESS_PASSWORD) {
+    showToast('密码错误');
+    return;
+  }
+  // 密码正确，尝试从 Supabase 拉数据验证连接
+  setSyncStatus('syncing');
   try {
-    const res = await fetch(API_BASE + '/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pwd })
-    });
-    const data = await res.json();
-    if (data.success) {
-      token = data.token;
-      localStorage.setItem('beishu_token', token);
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('appScreen').classList.add('active');
-      await loadRecords();
-      showToast('登录成功 🎉');
-    } else {
-      showToast('密码错误');
-    }
+    const { data, error } = await supabase
+      .from('records')
+      .select('id')
+      .limit(1);
+    if (error) throw error;
+    localStorage.setItem('beishu_logged_in', '1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').classList.add('active');
+    await loadRecords();
+    showToast('登录成功 🎉');
   } catch(e) {
-    showToast('连接失败，请检查网络');
+    console.error(e);
+    showToast('连接失败：' + (e.message || e.error_description || '请检查网络'));
+    setSyncStatus('error');
   }
 }
 
 function doLogout() {
-  token = '';
-  localStorage.removeItem('beishu_token');
+  localStorage.removeItem('beishu_logged_in');
   document.getElementById('appScreen').classList.remove('active');
   document.getElementById('loginScreen').style.display = 'flex';
 }
 
 // ============ Data ============
 async function loadRecords() {
+  setSyncStatus('syncing');
   try {
-    records = await api('/records');
+    const { data, error } = await supabase
+      .from('records')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    records = data || [];
+    setSyncStatus('ok');
     render();
   } catch(e) {
-    showToast('加载数据失败');
+    console.error(e);
+    setSyncStatus('error');
+    showToast('加载数据失败：' + (e.message || ''));
   }
 }
 
 async function saveRecordToServer(record) {
   if (record.id && !String(record.id).startsWith('temp_')) {
     // Update
-    const { id, ...update } = record;
-    await api('/records/' + id, { method: 'PUT', body: JSON.stringify(update) });
+    const { id, created_at, updated_at, ...update } = record;
+    update.updated_at = new Date().toISOString();
+    setSyncStatus('syncing');
+    const { data, error } = await supabase
+      .from('records')
+      .update(update)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    setSyncStatus('ok');
+    return data;
   } else {
     // Create
     const { id, ...create } = record;
-    const saved = await api('/records', { method: 'POST', body: JSON.stringify(create) });
-    return saved;
+    setSyncStatus('syncing');
+    const { data, error } = await supabase
+      .from('records')
+      .insert([create])
+      .select()
+      .single();
+    if (error) throw error;
+    setSyncStatus('ok');
+    return data;
   }
 }
 
 async function deleteRecordFromServer(id) {
-  await api('/records/' + id, { method: 'DELETE' });
+  setSyncStatus('syncing');
+  const { error } = await supabase
+    .from('records')
+    .delete()
+    .eq('id', id);
+  setSyncStatus('ok');
+  if (error) throw error;
 }
 
 // ============ Helpers ============
@@ -442,10 +465,11 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 1500);
+  setTimeout(() => t.classList.remove('show'), 2000);
 }
 
 function formatDate(isoStr) {
+  if (!isoStr) return '';
   const d = new Date(isoStr);
   const now = new Date();
   const diff = Math.floor((now - d) / 86400000);
@@ -467,31 +491,25 @@ function getFilteredRecords() {
 }
 
 function calcStreak() {
-  const dates = records.map(r => new Date(r.created_at).toISOString().slice(0,10));
+  const dates = records
+    .map(r => (r.created_at || '').slice(0, 10))
+    .filter(Boolean);
   const uniqueDates = [...new Set(dates)].sort().reverse();
   if (uniqueDates.length === 0) return 0;
-  
+
   let streak = 0;
-  const today = new Date().toISOString().slice(0,10);
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
-  
-  // Allow today or yesterday as starting point
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+
   let cursor = uniqueDates[0];
-  if (cursor === yesterday) {
-    // yesterday is latest, check if today has any
-    if (records.some(r => new Date(r.created_at).toISOString().slice(0,10) === today)) {
-      cursor = today;
-    }
-  }
-  
   const allDates = new Set(uniqueDates);
   let checkDate = cursor;
-  
+
   while (allDates.has(checkDate)) {
     streak++;
     const d = new Date(checkDate);
     d.setDate(d.getDate() - 1);
-    checkDate = d.toISOString().slice(0,10);
+    checkDate = d.toISOString().slice(0, 10);
   }
   return streak;
 }
@@ -578,14 +596,12 @@ function renderHeatmap() {
     weeks.push(week);
   }
 
-  // Count records per day
   const dayCounts = {};
   records.forEach(r => {
-    const key = new Date(r.created_at).toISOString().slice(0,10);
-    dayCounts[key] = (dayCounts[key] || 0) + 1;
+    const key = (r.created_at || '').slice(0, 10);
+    if (key) dayCounts[key] = (dayCounts[key] || 0) + 1;
   });
 
-  // Months header
   const monthLabels = [];
   let lastMonth = -1;
   weeks.forEach(week => {
@@ -600,11 +616,10 @@ function renderHeatmap() {
   });
   monthLabels.forEach(m => monthsRow.innerHTML += `<span>${m}</span>`);
 
-  // Grid
   weeks.forEach(week => {
     let col = '<div class="heatmap-col">';
     week.forEach(d => {
-      const key = d.toISOString().slice(0,10);
+      const key = d.toISOString().slice(0, 10);
       const count = dayCounts[key] || 0;
       const level = count > 0 ? Math.min(4, count) : 0;
       const dateStr = `${d.getMonth()+1}月${d.getDate()}日`;
@@ -622,13 +637,14 @@ function renderEntries() {
     list.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>这里还没有条目哦，点击右下角 + 添加吧</p></div>';
     return;
   }
-  const sorted = [...filtered].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+  const sorted = [...filtered].sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   let html = '';
   sorted.forEach(r => {
+    const id = r.id;
     const badgeClass = r.status === 'mastered' ? 'mastered' : r.status === 'reviewing' ? 'reviewing' : 'unknown';
     const badgeText = r.status === 'mastered' ? '✓ 已掌握' : r.status === 'reviewing' ? '⟳ 复习中' : '✗ 还不会';
     html += `
-      <div class="entry-item" data-id="${r.id}">
+      <div class="entry-item" data-id="${id}">
         <div class="entry-top">
           <span class="entry-title">${r.title}</span>
           <span class="entry-date">${formatDate(r.created_at)}</span>
@@ -637,10 +653,10 @@ function renderEntries() {
         ${r.content ? `<div class="entry-content">${r.content}</div>` : ''}
         <span class="status-badge ${badgeClass}">${badgeText}</span>
         <div class="entry-actions">
-          ${r.status !== 'mastered' ? `<button class="btn-master" onclick="changeStatus(${r.id},'mastered')">✓ 标为已掌握</button>` : ''}
-          ${r.status !== 'reviewing' ? `<button class="btn-review" onclick="changeStatus(${r.id},'reviewing')">⟳ 复习中</button>` : ''}
-          ${r.status !== 'unknown' ? `<button class="btn-forget" onclick="changeStatus(${r.id},'unknown')">✗ 还不会</button>` : ''}
-          <button class="btn-delete" onclick="deleteEntry(${r.id})">🗑</button>
+          ${r.status !== 'mastered' ? `<button class="btn-master" onclick="changeStatus(${id},'mastered')">✓ 标为已掌握</button>` : ''}
+          ${r.status !== 'reviewing' ? `<button class="btn-review" onclick="changeStatus(${id},'reviewing')">⟳ 复习中</button>` : ''}
+          ${r.status !== 'unknown' ? `<button class="btn-forget" onclick="changeStatus(${id},'unknown')">✗ 还不会</button>` : ''}
+          <button class="btn-delete" onclick="deleteEntry(${id})">🗑</button>
         </div>
       </div>`;
   });
@@ -713,21 +729,19 @@ async function saveEntry() {
   if (!book) { showToast('请填写所属书籍/模块'); return; }
   if (!title) { showToast('请填写条目标题'); return; }
 
-  const record = { id: editingId || 'temp_' + Date.now(), book, title, content, status: modalStatus, created_at: new Date().toISOString() };
+  const record = { book, title, content, status: modalStatus };
 
   if (editingId) {
     const idx = records.findIndex(r => r.id === editingId);
     records[idx] = { ...records[idx], book, title, content, status: modalStatus };
     render();
-    try { await saveRecordToServer(record); showToast('已更新'); }
+    try { await saveRecordToServer(records[idx]); showToast('已更新'); }
     catch(e) { showToast('保存失败'); }
   } else {
-    records.unshift(record);
     render();
     try {
       const saved = await saveRecordToServer(record);
-      const idx = records.findIndex(r => r.id === record.id);
-      if (idx >= 0) records[idx] = saved;
+      records.unshift(saved);
       render();
       showToast('已记录，打卡 +1 🎉');
     } catch(e) { showToast('保存失败'); }
@@ -741,18 +755,17 @@ document.getElementById('loginPassword').addEventListener('keydown', (e) => { if
 document.getElementById('inputTitle').addEventListener('keydown', (e) => { if (e.key === 'Enter') saveEntry(); });
 document.getElementById('modalOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
 
-// Long press to edit
 let pressTimer = null;
 document.getElementById('entryList').addEventListener('touchstart', (e) => {
   const item = e.target.closest('.entry-item');
   if (!item || e.target.tagName === 'BUTTON') return;
-  pressTimer = setTimeout(() => openModal(parseInt(item.dataset.id)), 600);
+  pressTimer = setTimeout(() => openModal(Number(item.dataset.id)), 600);
 });
 document.getElementById('entryList').addEventListener('touchend', () => clearTimeout(pressTimer));
 document.getElementById('entryList').addEventListener('touchmove', () => clearTimeout(pressTimer));
 
 // ============ Init ============
-if (token) {
+if (localStorage.getItem('beishu_logged_in') === '1') {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appScreen').classList.add('active');
   loadRecords();
