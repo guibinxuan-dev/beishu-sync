@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "背书记录 - 免费联网同步版",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
+ "scripts": {
+  "start": "echo 'no server needed'"
+}
     "dev": "node server.js"
   },
   "dependencies": {
