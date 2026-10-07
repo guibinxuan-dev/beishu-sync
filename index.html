@@ -17,7 +17,8 @@ button.ghost{background:rgba(255,255,255,.05);color:var(--ink);box-shadow:none;b
 body.light button.ghost{background:#fff}
 button.ghost:hover{background:rgba(255,255,255,.11);transform:translateY(-2px)}
 button.soft{background:rgba(255,255,255,.04);color:var(--sub);box-shadow:none;border:1px solid var(--line)}
-button.sm{padding:6px 13px;font-size:12.5px;border-radius:10px}
+button.danger{background:rgba(248,113,113,.12);color:var(--l2);box-shadow:none;border:1px solid rgba(248,113,113,.25)}
+button.sm{padding:6px 13px;font-size:12.5px;border-radius:10px;flex-shrink:0}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px 100px}
 .hero{position:relative;margin:22px 0 26px;border-radius:32px;padding:38px 38px 32px;overflow:hidden;background:linear-gradient(135deg,rgba(124,155,255,.15),rgba(176,124,255,.11) 48%,rgba(63,214,171,.09)),var(--card);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);box-shadow:var(--shadow)}
 .hero-top{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--sub);letter-spacing:1.2px;text-transform:uppercase}
@@ -41,15 +42,17 @@ body.light .hero-cell:hover{background:rgba(0,0,0,.035)}
 .card{background:var(--card);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:24px;padding:26px 28px;margin-bottom:20px;box-shadow:var(--shadow)}
 .card-h{display:flex;align-items:center;gap:11px;font-size:15px;font-weight:700;margin-bottom:18px}
 .card-h .ic{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;flex:0 0 auto;box-shadow:0 4px 12px rgba(124,155,255,.3)}
-.due-item{display:flex;align-items:center;gap:14px;padding:16px 18px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:16px;margin-bottom:10px;flex-wrap:wrap;font-size:14px;transition:.2s}
+.ch-act{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.due-item{display:flex;align-items:center;gap:12px;padding:16px 18px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:16px;margin-bottom:10px;flex-wrap:wrap;font-size:14px;transition:.2s}
 body.light .due-item{background:rgba(0,0,0,.012)}
 .due-item:hover{border-color:rgba(124,155,255,.28);background:rgba(255,255,255,.06)}
-.due-item .nm{flex:1;min-width:160px;font-weight:600;font-size:14.5px}
+.due-item .nm{flex:1;min-width:140px;font-weight:600;font-size:14.5px}
 .due-item .meta{font-size:11.5px;color:var(--sub);width:100%;margin-top:3px}
-.lvl-btns{display:flex;gap:6px;margin-left:auto}
-.lvl-btns button{width:36px;height:32px;padding:0;font-size:12px;border-radius:9px;color:#fff;border:2px solid transparent;box-shadow:none;transition:.15s}
+.lvl-btns{display:flex;gap:5px;margin-left:auto;flex-shrink:0}
+.lvl-btns button{width:34px;height:32px;padding:0;font-size:12px;border-radius:9px;color:#fff;border:2px solid transparent;box-shadow:none;transition:.15s;flex-shrink:0}
 .lvl-btns button:hover{transform:scale(1.14)}
 .lvl-btns button.l1{background:var(--l1)}.lvl-btns button.l2{background:var(--l2)}.lvl-btns button.l3{background:var(--l3)}.lvl-btns button.l4{background:var(--l4)}.lvl-btns button.l5{background:var(--l5)}
+.lvl-btns button.wide{width:auto;padding:0 12px;font-weight:700}
 .empty{padding:28px;text-align:center;color:var(--sub);font-size:13.5px}
 .over{color:var(--l2)!important;font-weight:600}
 .soon{color:var(--l3)!important;font-weight:600}
@@ -77,7 +80,7 @@ body.light .cat-card .bar{background:rgba(0,0,0,.06)}
 .cat-card .cnt{font-size:12.5px;color:var(--sub)}
 .cat-card .arrow{position:absolute;right:22px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:20px;transition:.2s}
 .cat-card:hover .arrow{color:var(--brand);transform:translateY(-50%) translateX(4px)}
-.point{display:flex;align-items:flex-start;gap:14px;padding:16px 6px;border-bottom:1px dashed var(--line);transition:.18s;border-radius:10px}
+.point{display:flex;align-items:flex-start;gap:12px;padding:14px 6px;border-bottom:1px dashed var(--line);transition:.18s;border-radius:10px}
 .point:hover{background:rgba(255,255,255,.025);padding-left:12px}
 body.light .point:hover{background:rgba(0,0,0,.012)}
 .point:last-child{border-bottom:none}
@@ -94,7 +97,7 @@ body.light .point .lvl{background:rgba(0,0,0,.09)}
 body.light .point .prev{background:rgba(0,0,0,.015)}
 .point.expanded .prev{display:block;animation:fade .25s ease}
 @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-.point .acts{display:flex;gap:6px;flex-shrink:0}
+.point .acts{display:flex;gap:6px;flex-shrink:0;min-width:max-content}
 .tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;letter-spacing:.4px}
 .tm{background:rgba(34,197,94,.16);color:#4ade80}.ts{background:rgba(59,130,246,.18);color:#7aa7ff}.td{background:rgba(224,168,46,.18);color:#f0c068}.to{background:rgba(192,132,252,.18);color:#d4adff}
 .rich{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.03)}
@@ -131,7 +134,7 @@ body.light .topbar input{background:#fff}
 .page.on{display:block;animation:pg .3s ease}
 @keyframes pg{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter-spacing:.6px}
-@media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.hero{padding:26px 22px 24px}.hero-num{font-size:56px}.heat-cell{width:12px;height:12px}.card{padding:20px 18px}.topbar input{min-width:120px}.cat-grid{grid-template-columns:1fr}}
+@media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.hero{padding:26px 22px 24px}.hero-num{font-size:56px}.heat-cell{width:12px;height:12px}.card{padding:20px 18px}.topbar input{min-width:120px}.cat-grid{grid-template-columns:1fr}.lvl-btns button{width:30px;height:30px;font-size:11px}.point .acts{flex-wrap:wrap;width:100%;margin-top:6px;justify-content:flex-end}}
 </style>
 </head>
 <body>
@@ -176,13 +179,13 @@ footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter
 </div>
 
 <div class="page" id="page-chapter">
- <div class="back" onclick="go('home')">← 返回首页</div>
+ <div class="back" onclick="go('home')">&#8592; 返回首页</div>
  <div id="chapterDetail"></div>
  <footer>数据存于 Supabase 多设备打开同一网址自动同步</footer>
 </div>
 
 <div class="page" id="page-day">
- <div class="back" onclick="go('home')">← 返回首页</div>
+ <div class="back" onclick="go('home')">&#8592; 返回首页</div>
  <div class="card">
   <div class="card-h"><span class="ic">&#128197;</span><span id="dayTitle">当日背诵</span></div>
   <div id="dayList"></div>
@@ -227,12 +230,13 @@ function rest(path,method,body){
   var ct=r.headers.get('content-type')||'';return ct.indexOf('json')>-1?r.json():null;
  });
 }
-function pointReviews(id){return reviews.filter(function(r){return r.point_id===id;}).sort(function(a,b){return a.review_date.localeCompare(b.review_date);});}
+function chOf(id){return chapters.filter(function(c){return c.id==id;})[0]||null;}
+function pointReviews(id){return reviews.filter(function(r){return r.point_id==id;}).sort(function(a,b){return a.review_date.localeCompare(b.review_date);});}
 function lastLevel(id){var rs=pointReviews(id);return rs.length?rs[rs.length-1].level:0;}
 function firstDate(id){var rs=pointReviews(id);return rs.length?rs[0].review_date:null;}
 function isDue(id){
  var rs=pointReviews(id);
- if(!rs.length)return true;
+ if(!rs.length)return false;
  var todayS=ts();
  var first=rs[0].review_date;
  var day=daysBetween(first,todayS);
@@ -292,26 +296,46 @@ function renderNew(){
  var box=document.getElementById('newList');
  var groups=[];
  chapters.forEach(function(c){
-  var cps=points.filter(function(p){return p.chapter_id===c.id&&!firstDate(p.id);});
+  var cps=points.filter(function(p){return p.chapter_id==c.id&&!firstDate(p.id);});
   if(cps.length)groups.push({c:c,cps:cps});
  });
  document.getElementById('newTag').textContent=groups.length?'有 '+groups.length+' 章未首背':'已全部首背过';
  if(!groups.length){box.innerHTML='<div class="empty">全部知识点都首背过了 可以去复习了</div>';return;}
  var h='';
  groups.forEach(function(g){
-  h+='<div class="cat-card" onclick="openNew(\''+g.c.id+'\')" style="padding:18px 20px"><h3 style="font-size:15px">'+esc(g.c.name)+'</h3><div class="cnt" style="margin-top:6px">'+g.cps.length+' 条待首背</div><span class="arrow">→</span></div>';
+  h+='<div class="cat-card" data-cid="'+g.c.id+'" style="padding:18px 20px"><h3 style="font-size:15px">'+esc(g.c.name)+'</h3><div class="cnt" style="margin-top:6px">'+g.cps.length+' 条待首背</div><span class="arrow">&#8594;</span></div>';
  });
  box.innerHTML=h;
+ box.querySelectorAll('.cat-card').forEach(function(el){
+  el.addEventListener('click',function(){openNew(el.getAttribute('data-cid'));});
+ });
 }
 function openNew(id){
- var c=chapters.filter(function(x){return x.id===id;})[0];if(!c)return;
- var cps=points.filter(function(p){return p.chapter_id===id&&!firstDate(p.id);});
- var h='<div class="card"><div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px"><h2 style="font-size:22px">'+esc(c.name)+'</h2><span style="color:var(--sub);font-size:13px">'+cps.length+' 条待首背</span></div></div>';
+ var c=chOf(id);if(!c)return;
+ var cps=points.filter(function(p){return p.chapter_id==id&&!firstDate(p.id);});
+ var h='<div class="card"><div class="card-h" style="margin-bottom:14px"><span class="ic">&#128214;</span>'+esc(c.name)+'<div class="ch-act"><button class="ghost sm" onclick="batchNew('+id+')">一键全部背熟</button></div></div><div style="font-size:13px;color:var(--sub)">共 '+cps.length+' 条待首背 点击任意等级标记今日已背</div></div>';
  cps.forEach(function(p){
-  h+='<div class="card" style="padding:16px 20px"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-weight:600;font-size:14.5px;flex:1;min-width:140px">'+esc(p.name)+'</span><span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span></div></div>';
+  h+='<div class="card" style="padding:16px 20px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-weight:600;font-size:14.5px;flex:1;min-width:120px">'+esc(p.name)+'</span><span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span></div></div>';
  });
  document.getElementById('chapterDetail').innerHTML=h;
  go('chapter');
+}
+function batchNew(cid){
+ var cps=points.filter(function(p){return p.chapter_id==cid&&!firstDate(p.id);});
+ if(!cps.length){toast('这一章没有待首背的了');return;}
+ if(!confirm('确定把这一章 '+cps.length+' 条全部标记为已背熟（L4）？'))return;
+ var t=ts();
+ var chain=Promise.resolve();
+ var done=0;
+ cps.forEach(function(p){
+  chain=chain.then(function(){
+   return rest('/kb_reviews?select=*','POST',{point_id:p.id,review_date:t,level:4}).then(function(r){
+    if(r&&r[0])reviews.unshift(r[0]);else reviews.push({point_id:p.id,review_date:t,level:4});
+    done++;
+   }).catch(function(){});
+  });
+ });
+ chain.then(function(){render();toast('已标记 '+done+' 条');openNew(cid);});
 }
 function renderStats(){
  document.getElementById('sPoint').textContent=points.length;
@@ -324,12 +348,15 @@ function renderStats(){
 function renderCats(){
  var box=document.getElementById('catGrid');var h='';
  chapters.forEach(function(c){
-  var cps=points.filter(function(p){return p.chapter_id===c.id;});
+  var cps=points.filter(function(p){return p.chapter_id==c.id;});
   var done=cps.filter(function(p){return firstDate(p.id);}).length;
   var pct=cps.length?Math.round(done/cps.length*100):0;
-  h+='<div class="cat-card" onclick="openChapter('+c.id+')"><h3>'+esc(c.name)+'</h3><div class="bar"><i style="width:'+pct+'%"></i></div><div class="cnt">'+done+' / '+cps.length+' 已首背 '+pct+'%</div><span class="arrow">→</span></div>';
+  h+='<div class="cat-card" data-cid="'+c.id+'"><h3>'+esc(c.name)+'</h3><div class="bar"><i style="width:'+pct+'%"></i></div><div class="cnt">'+done+' / '+cps.length+' 已首背 '+pct+'%</div><span class="arrow">&#8594;</span></div>';
  });
  box.innerHTML=h;
+ box.querySelectorAll('.cat-card').forEach(function(el){
+  el.addEventListener('click',function(){openChapter(el.getAttribute('data-cid'));});
+ });
 }
 function renderHeat(){
  var grid=document.getElementById('heatGrid');var mon=document.getElementById('heatMonth');
@@ -366,10 +393,17 @@ function bindTip(){
  });
 }
 function openChapter(id){
- var c=chapters.filter(function(x){return x.id===id;})[0];if(!c)return;
- var cps=points.filter(function(p){return p.chapter_id===id;});
+ var c=chOf(id);if(!c)return;
+ var cps=points.filter(function(p){return p.chapter_id==id;});
  var todo=cps.filter(function(p){return !firstDate(p.id);});
- var h='<div class="card"><div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px"><h2 style="font-size:22px">'+esc(c.name)+'</h2><span style="color:var(--sub);font-size:13px">'+todo.length+' 条待首背</span></div><div style="height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden;margin:14px 0 4px"><i style="display:block;height:100%;width:'+(cps.length?Math.round((cps.length-todo.length)/cps.length*100):0)+'%;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:8px"></i></div></div>';
+ var h='<div class="card"><div class="card-h" style="margin-bottom:14px"><span class="ic">&#128214;</span>'+esc(c.name)+'<div class="ch-act"><button class="ghost sm" onclick="batchNew('+id+')">一键首背未背的</button></div></div><div style="height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden;margin:12px 0 4px"><i style="display:block;height:100%;width:'+(cps.length?Math.round((cps.length-todo.length)/cps.length*100):0)+'%;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:8px"></i></div><div style="font-size:13px;color:var(--sub)">'+(cps.length-todo.length)+' / '+cps.length+' 已首背'+(todo.length?' · 还有 '+todo.length+' 条待首背':'')+'</div></div>';
+ if(todo.length){
+  h+='<div class="card"><h4 style="font-size:14px;color:var(--ink);font-weight:700;margin:0 0 14px;padding-left:10px;border-left:3px solid var(--l2)">待首背 <span style="float:right;color:var(--sub);font-weight:400;font-size:12px">'+todo.length+' 条</span></h4>';
+  todo.forEach(function(p){
+   h+='<div class="point" id="pt_'+p.id+'" onclick="togglePoint('+p.id+')"><span class="lvl"></span><div class="info"><div class="nm">'+esc(p.name)+' '+tagOf(p.category)+'</div><div class="prev">'+(clean(p.content)||'暂无内容 点编辑添加具体内容')+'</div></div><div class="acts" onclick="event.stopPropagation()"><span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span></div></div>';
+  });
+  h+='</div>';
+ }
  h+=groupHtml(cps,'名词解释')+groupHtml(cps,'简答')+groupHtml(cps,'简答／论述')+groupHtml(cps,'论述')+groupHtml(cps,'新增');
  document.getElementById('chapterDetail').innerHTML=h;
  go('chapter');
@@ -380,12 +414,13 @@ function groupHtml(cps,cat){
  var h='<div class="card"><h4 style="font-size:14px;color:var(--ink);font-weight:700;margin:0 0 14px;padding-left:10px;border-left:3px solid var(--brand)">'+cat+' <span style="float:right;color:var(--sub);font-weight:400;font-size:12px">'+list.length+' 条</span></h4>';
  list.forEach(function(p){
   var l=lastLevel(p.id);
-  h+='<div class="point" id="pt_'+p.id+'" onclick="togglePoint('+p.id+')"><span class="lvl"'+(l?' data-l="'+l+'"':'')+'></span><div class="info"><div class="nm">'+esc(p.name)+' '+tagOf(cat)+'</div><div class="prev">'+(clean(p.content)||'暂无内容 点编辑添加具体内容')+'</div></div><div class="acts" onclick="event.stopPropagation()"><button class="ghost sm" onclick="openPointModal('+p.id+')">编辑</button><button class="soft sm" onclick="quickReview('+p.id+',4)">背熟</button><button class="soft sm" style="color:var(--l2)" onclick="delPoint('+p.id+')">删</button></div></div>';
+  h+='<div class="point" id="pt_'+p.id+'" onclick="togglePoint('+p.id+')"><span class="lvl"'+(l?' data-l="'+l+'"':'')+'></span><div class="info"><div class="nm">'+esc(p.name)+' '+tagOf(cat)+'</div><div class="prev">'+(clean(p.content)||'暂无内容 点编辑添加具体内容')+'</div></div><div class="acts" onclick="event.stopPropagation()"><button class="ghost sm" onclick="openPointModal('+p.id+')">编辑</button><span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span><button class="soft sm" onclick="delPoint('+p.id+')">删</button></div></div>';
  });
  h+='</div>';
  return h;
 }
 function tagOf(c){if(c==='名词解释')return '<span class="tag tm">名词解释</span>';if(c==='简答'||c==='新增')return '<span class="tag ts">'+(c==='新增'?'新增内容':'简答')+'</span>';if(c==='论述')return '<span class="tag td">论述</span>';return '<span class="tag to">其他</span>';}
+function chName(id){var c=chOf(id);return c?c.name:'';}
 function openDay(date){
  var list=reviews.filter(function(r){return r.review_date===date;});
  document.getElementById('dayTitle').textContent=date+' 的背诵';
@@ -394,7 +429,7 @@ function openDay(date){
  else{
   h+='<div style="display:flex;flex-direction:column;gap:10px">';
   list.forEach(function(r){
-   var p=points.filter(function(x){return x.id===r.point_id;})[0];
+   var p=points.filter(function(x){return x.id==r.point_id;})[0];
    if(!p)return;
    var col={'1':'var(--l1)','2':'var(--l2)','3':'var(--l3)','4':'var(--l4)','5':'var(--l5)'}[r.level]||'var(--l3)';
    h+='<div style="background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;padding:14px 16px"><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap"><span style="width:9px;height:9px;border-radius:50%;background:'+col+';display:inline-block"></span><span style="font-weight:600;font-size:14.5px">'+esc(p.name)+'</span><span style="font-size:11px;color:var(--sub)">'+esc(chName(p.chapter_id))+'</span></div><div class="lvl-btns" style="margin:11px 0 0"><button class="l1" onclick="dayReview('+r.point_id+',1,\''+date+'\')">遗</button><button class="l2" onclick="dayReview('+r.point_id+',2,\''+date+'\')">糊</button><button class="l3" onclick="dayReview('+r.point_id+',3,\''+date+'\')">熟</button><button class="l4" onclick="dayReview('+r.point_id+',4,\''+date+'\')">背</button><button class="l5" onclick="dayReview('+r.point_id+',5,\''+date+'\')">卡</button></div></div>';
@@ -405,7 +440,7 @@ function openDay(date){
  go('day');
 }
 function dayReview(pointId,level,date){
- var r=reviews.filter(function(x){return x.point_id===pointId&&x.review_date===date;})[0];
+ var r=reviews.filter(function(x){return x.point_id==pointId&&x.review_date===date;})[0];
  if(!r)return;
  rest('/kb_reviews?id=eq.'+r.id,'PATCH',{level:level}).then(function(){r.level=level;render();toast('已更新为 '+LVL[level]);openDay(date);});
 }
@@ -417,9 +452,9 @@ function go(page){
 }
 var curPoint=null;
 function openPointModal(pointId){
- var p=pointId?points.filter(function(x){return x.id===pointId;})[0]:null;
+ var p=pointId?points.filter(function(x){return x.id==pointId;})[0]:null;
  curPoint=p||null;
- var opts='';chapters.forEach(function(c){opts+='<option value="'+c.id+'"'+(p&&p.chapter_id===c.id?' selected':'')+'>'+esc(c.name)+'</option>';});
+ var opts='';chapters.forEach(function(c){opts+='<option value="'+c.id+'"'+(p&&p.chapter_id==c.id?' selected':'')+'>'+esc(c.name)+'</option>';});
  var cat=p?p.category:'简答';
  var html='<h3>'+(p?'编辑知识点':'新增知识点')+'</h3><div class="field"><label>所属章节</label><select id="fCh">'+opts+'</select></div><div class="field"><label>知识点名称</label><input id="fName" value="'+(p?esc(p.name):'')+'"></div><div class="field"><label>题型</label><select id="fCat">'+['名词解释','简答','论述','其他'].map(function(c){return '<option'+(c===cat?' selected':'')+'>'+c+'</option>';}).join('')+'</select></div><div class="field"><label>具体内容 富文本</label><div class="rich"><div class="tb"><button onclick="fmt(\'bold\')"><b>B</b></button><button onclick="fmt(\'italic\')"><i>I</i></button><button onclick="fmt(\'underline\')"><u>U</u></button><button onclick="fmt(\'insertUnorderedList\')">列表</button><button onclick="fmt(\'insertOrderedList\')">序号</button><button onclick="fmt(\'formatBlock\',\'h3\')">标题</button></div><div id="fContent" contenteditable data-ph="在这里写具体内容 支持加粗 列表">'+(p?p.content:'')+'</div></div></div><div class="modal-acts"><button class="ghost" onclick="closeModal()">取消</button><button onclick="submitPoint()">保存</button></div>';
  document.getElementById('modal').innerHTML=html;
@@ -447,13 +482,13 @@ function submitPoint(){
 function delPoint(id){
  if(!confirm('确定删除 该知识点的全部背诵记录会一起删除'))return;
  rest('/kb_reviews?point_id=eq.'+id,'DELETE').then(function(){return rest('/kb_points?id=eq.'+id,'DELETE');})
- .then(function(){points=points.filter(function(p){return p.id!==id;});reviews=reviews.filter(function(r){return r.point_id!==id;});render();toast('已删除');})
+ .then(function(){points=points.filter(function(p){return p.id!=id;});reviews=reviews.filter(function(r){return r.point_id!=id;});render();toast('已删除');})
  .catch(function(){toast('删除失败');});
 }
 function closeModal(){document.getElementById('mask').classList.remove('on');curPoint=null;}
 function quickReview(pointId,level){
  var t=ts();
- var exist=reviews.filter(function(r){return r.point_id===pointId&&r.review_date===t;})[0];
+ var exist=reviews.filter(function(r){return r.point_id==pointId&&r.review_date===t;})[0];
  if(exist){
   rest('/kb_reviews?id=eq.'+exist.id,'PATCH',{level:level}).then(function(){exist.level=level;render();toast('已记录 '+LVL[level]);});
  }else{
@@ -470,14 +505,14 @@ function doSearch(q){
  document.querySelectorAll('[id^="searchWrap_"]').forEach(function(n){n.remove();});
  if(!q){return;}
  chapters.forEach(function(c){
-  var cps=points.filter(function(p){return p.chapter_id===c.id;});
+  var cps=points.filter(function(p){return p.chapter_id==c.id;});
   var hit=cps.filter(function(p){return (p.name||'').toLowerCase().indexOf(q)>-1||(p.content||'').toLowerCase().indexOf(q)>-1;});
   if(!hit.length)return;
   var done=hit.filter(function(p){return firstDate(p.id);}).length;
   var h='<div class="card" id="searchWrap_'+c.id+'"><h4 style="font-size:14px;color:var(--ink);font-weight:700;margin:0 0 14px;padding-left:10px;border-left:3px solid var(--brand)">'+esc(c.name)+' <span style="float:right;color:var(--sub);font-weight:400;font-size:12px">'+done+'/'+hit.length+' 已首背</span></h4>';
   hit.forEach(function(p){
    var l=lastLevel(p.id);
-   h+='<div class="point" id="pt_'+p.id+'" onclick="togglePoint('+p.id+')"><span class="lvl"'+(l?' data-l="'+l+'"':'')+'></span><div class="info"><div class="nm">'+esc(p.name)+' '+tagOf(p.category)+'</div><div class="prev">'+(clean(p.content)||'暂无内容')+'</div></div><div class="acts" onclick="event.stopPropagation()"><button class="ghost sm" onclick="openPointModal('+p.id+')">编辑</button><button class="soft sm" onclick="quickReview('+p.id+',4)">背熟</button></div></div>';
+   h+='<div class="point" id="pt_'+p.id+'" onclick="togglePoint('+p.id+')"><span class="lvl"'+(l?' data-l="'+l+'"':'')+'></span><div class="info"><div class="nm">'+esc(p.name)+' '+tagOf(p.category)+'</div><div class="prev">'+(clean(p.content)||'暂无内容')+'</div></div><div class="acts" onclick="event.stopPropagation()"><button class="ghost sm" onclick="openPointModal('+p.id+')">编辑</button><span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span></div></div>';
   });
   h+='</div>';
   document.getElementById('catGrid').parentNode.insertAdjacentHTML('beforeend',h);
@@ -492,7 +527,6 @@ function toggleTheme(){
 if(localStorage.getItem('kb_theme')==='light'){document.body.classList.add('light');document.getElementById('darkBtn').textContent='深色模式';}
 var tt=null;
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on');},1800);}
-function chName(id){var c=chapters.filter(function(x){return x.id===id;})[0];return c?c.name:'';}
 function loadAll(){
  rest('/kb_subjects?select=*&order=sort_order').then(function(s){subjects=s||[];return rest('/kb_chapters?select=*&order=sort_order');})
  .then(function(c){chapters=c||[];return rest('/kb_points?select=*&order=created_at.desc');})
