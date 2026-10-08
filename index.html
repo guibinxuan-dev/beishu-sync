@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#08090c">
 <title>背书地图</title>
 <style>
-:root{--bg:#08090c;--card:rgba(20,23,30,.6);--card-solid:#13161c;--ink:#eaecf2;--sub:#858d9c;--line:rgba(255,255,255,.07);--brand:#7c9bff;--brand2:#b07cff;--accent:#3fd6ab;--shadow:0 10px 40px rgba(0,0,0,.4);--l5:#22c55e;--l4:#3b82f6;--l3:#e0a82e;--l2:#f87171;--l1:#c084fc}
+:root{--bg:#08090c;--card:rgba(20,23,30,.6);--card-solid:#13161c;--ink:#eaecf2;--sub:#858d9c;--line:rgba(255,255,255,.07);--brand:#7c9bff;--brand2:#b07cff;--accent:#3fd6ab;--shadow:0 10px 40px rgba(0,0,0,.4)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
 body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","WenQuanYi Micro Hei",sans-serif;color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;background:radial-gradient(1000px 600px at 8% -10%,rgba(124,155,255,.16),transparent 62%),radial-gradient(900px 700px at 92% 4%,rgba(176,124,255,.13),transparent 62%),radial-gradient(800px 600px at 50% 108%,rgba(63,214,171,.09),transparent 62%),#08090c;background-attachment:fixed}
@@ -62,7 +63,6 @@ body.light .note-box{background:rgba(0,0,0,.012)}
 .note-box:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(124,155,255,.14)}
 .note-box::placeholder{color:var(--sub);font-size:12.5px}
 .note-tag{display:inline-block;font-size:10.5px;color:var(--l3);margin-top:8px;font-weight:600}
-.note-tag.has{color:var(--l3)}
 .progress-row{display:flex;align-items:center;gap:12px;margin-top:16px;padding-top:16px;border-top:1px dashed var(--line)}
 .progress-bar{flex:1;height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden}
 body.light .progress-bar{background:rgba(0,0,0,.06)}
@@ -72,7 +72,7 @@ body.light .progress-bar{background:rgba(0,0,0,.06)}
 .lvl-btns{display:flex;gap:5px;margin-left:auto;flex-shrink:0}
 .lvl-btns button{width:34px;height:32px;padding:0;font-size:12px;border-radius:9px;color:#fff;border:2px solid transparent;box-shadow:none;transition:.15s;flex-shrink:0}
 .lvl-btns button:hover{transform:scale(1.14)}
-.lvl-btns button.l1{background:var(--l1)}.lvl-btns button.l2{background:var(--l2)}.lvl-btns button.l3{background:var(--l3)}.lvl-btns button.l4{background:var(--l4)}.lvl-btns button.l5{background:var(--l5)}
+.lvl-btns button.l1{background:#c084fc}.lvl-btns button.l2{background:#f87171}.lvl-btns button.l3{background:#e0a82e}.lvl-btns button.l4{background:#22c55e}.lvl-btns button.l5{background:#e0a82e}
 .empty{padding:28px;text-align:center;color:var(--sub);font-size:13.5px}
 .over{color:var(--l2)!important;font-weight:600}
 .soon{color:var(--l3)!important;font-weight:600}
@@ -84,7 +84,7 @@ body.light .progress-bar{background:rgba(0,0,0,.06)}
 .heat-cell{width:16px;height:16px;border-radius:5px;background:rgba(255,255,255,.055);cursor:pointer;transition:.16s;position:relative}
 body.light .heat-cell{background:rgba(0,0,0,.045)}
 .heat-cell:hover{transform:scale(1.55);z-index:5;box-shadow:0 0 0 2px rgba(255,255,255,.2)}
-.heat-cell[data-l="1"]{background:var(--l1)}.heat-cell[data-l="2"]{background:var(--l2)}.heat-cell[data-l="3"]{background:var(--l3)}.heat-cell[data-l="4"]{background:var(--l4)}.heat-cell[data-l="5"]{background:var(--l5)}
+.heat-cell[data-l="1"]{background:#c084fc}.heat-cell[data-l="2"]{background:#f87171}.heat-cell[data-l="3"]{background:#e0a82e}.heat-cell[data-l="4"]{background:#22c55e}.heat-cell[data-l="5"]{background:#e0a82e}
 .heat-legend{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin-top:16px;justify-content:flex-end;flex-wrap:wrap}
 .heat-legend i{width:12px;height:12px;border-radius:3px;display:inline-block;margin:0 2px}
 .heat-tip{position:fixed;z-index:99;background:#0b0d12;color:#fff;padding:7px 12px;border-radius:10px;font-size:11.5px;pointer-events:none;opacity:0;transition:.12s;white-space:nowrap;box-shadow:0 8px 22px rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1)}
@@ -106,11 +106,11 @@ body.light .point:hover{background:rgba(0,0,0,.012)}
 .point:last-child{border-bottom:none}
 .point .lvl{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.09);flex:0 0 auto;margin-top:7px;transition:.2s}
 body.light .point .lvl{background:rgba(0,0,0,.09)}
-.point .lvl[data-l="1"]{background:var(--l1);box-shadow:0 0 10px rgba(192,132,252,.5)}
-.point .lvl[data-l="2"]{background:var(--l2);box-shadow:0 0 10px rgba(248,113,113,.45)}
-.point .lvl[data-l="3"]{background:var(--l3);box-shadow:0 0 10px rgba(224,168,46,.4)}
-.point .lvl[data-l="4"]{background:var(--l4);box-shadow:0 0 10px rgba(59,130,246,.4)}
-.point .lvl[data-l="5"]{background:var(--l5);box-shadow:0 0 10px rgba(34,197,94,.45)}
+.point .lvl[data-l="1"]{background:#c084fc;box-shadow:0 0 10px rgba(192,132,252,.5)}
+.point .lvl[data-l="2"]{background:#f87171;box-shadow:0 0 10px rgba(248,113,113,.45)}
+.point .lvl[data-l="3"]{background:#e0a82e;box-shadow:0 0 10px rgba(224,168,46,.4)}
+.point .lvl[data-l="4"]{background:#22c55e;box-shadow:0 0 10px rgba(34,197,94,.45)}
+.point .lvl[data-l="5"]{background:#e0a82e;box-shadow:0 0 10px rgba(224,168,46,.4)}
 .point .info{flex:1;min-width:0;cursor:pointer}
 .point .nm{font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .point .prev{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.7;display:none;padding:12px 14px;background:rgba(255,255,255,.03);border-radius:11px;border:1px solid var(--line)}
@@ -129,7 +129,6 @@ body.light .point .prev{background:rgba(0,0,0,.015)}
 .map-cell{height:17px;border-radius:5px;background:rgba(255,255,255,.055);cursor:pointer;transition:.16s;position:relative}
 body.light .map-cell{background:rgba(0,0,0,.045)}
 .map-cell:hover{transform:scale(1.5);z-index:5;box-shadow:0 0 0 2px rgba(255,255,255,.2)}
-.map-cell[data-l="1"]{background:var(--l1)}.map-cell[data-l="2"]{background:var(--l2)}.map-cell[data-l="3"]{background:var(--l3)}.map-cell[data-l="4"]{background:var(--l4)}.map-cell[data-l="5"]{background:var(--l5)}
 .map-cell[data-note="1"]{outline:2px solid var(--l3)}
 .rich{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.03)}
 body.light .rich{background:rgba(0,0,0,.015)}
@@ -159,7 +158,6 @@ body.light .field input,body.light .field select,body.light .field textarea{back
 body.light .batchbar select{background:#fff}
 body.light .batchbar{background:rgba(124,155,255,.06)}
 .chk-wrap{display:none;align-items:center;justify-content:center;width:26px;height:26px;flex:0 0 auto;margin-top:2px}
-body.light .chk-wrap{background:transparent}
 .batch .chk-wrap{display:flex}
 .batch .ck-hide{display:none!important}
 .chk-wrap input{width:18px;height:18px;cursor:pointer;accent-color:var(--brand)}
@@ -206,7 +204,7 @@ footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter
 <div class="stats">
  <div class="stat"><b id="sPoint">0</b><span>知识点总数</span></div>
  <div class="stat"><b id="sDone">0</b><span>已首背</span></div>
- <div class="stat"><b id="sRate">0%</b><span>背熟率</span></div>
+ <div class="stat"><b id="sFading">0</b><span>正在褪色</span></div>
  <div class="stat"><b id="sTotal">0</b><span>累计背诵</span></div>
 </div>
 <div class="card">
@@ -218,10 +216,8 @@ footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter
  </div>
  <div class="batchbar" id="dueBatchBar">
   <span class="cnt" id="dueBatchCnt">已选 0 条</span>
-  <select id="dueBatchCh"><option value="">改章节</option></select>
-  <select id="dueBatchCat">
-   <option value="">改题型</option><option>名词解释</option><option>简答</option><option>论述</option><option>其他</option>
-  </select>
+  <select id="dueBatchCh" onchange="batchUpdate('due','chapter_id',this.value)"><option value="">改章节 →</option></select>
+  <select id="dueBatchCat" onchange="batchUpdate('due','category',this.value)"><option value="">改题型 →</option><option>名词解释</option><option>简答</option><option>论述</option><option>其他</option></select>
   <button class="danger sm" onclick="batchDelete('due')">删除所选</button>
   <button class="ghost sm" onclick="toggleBatch('due')">取消</button>
  </div>
@@ -235,10 +231,8 @@ footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter
  <div class="card-h"><span class="ic">&#128214;</span>章节 <div class="ch-act"><button class="ghost sm" id="chEditBtn" onclick="toggleBatch('chapter')">批量编辑</button></div></div>
  <div class="batchbar" id="chapterBatchBar">
   <span class="cnt" id="chapterBatchCnt">已选 0 条</span>
-  <select id="chapterBatchCh"><option value="">改章节</option></select>
-  <select id="chapterBatchCat">
-   <option value="">改题型</option><option>名词解释</option><option>简答</option><option>论述</option><option>其他</option>
-  </select>
+  <select id="chapterBatchCh" onchange="batchUpdate('chapter','chapter_id',this.value)"><option value="">改章节 →</option></select>
+  <select id="chapterBatchCat" onchange="batchUpdate('chapter','category',this.value)"><option value="">改题型 →</option><option>名词解释</option><option>简答</option><option>论述</option><option>其他</option></select>
   <button class="danger sm" onclick="batchDelete('chapter')">删除所选</button>
   <button class="ghost sm" onclick="toggleBatch('chapter')">取消</button>
  </div>
@@ -255,14 +249,14 @@ footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter
    <select id="mapCh" onchange="renderMap()" style="padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.05);color:var(--ink);font-family:inherit;font-size:13.5px">
     <option value="0">全部章节</option>
    </select>
-   <span style="font-size:12px;color:var(--sub)">颜色=当前掌握等级 · 蓝边=今日待复习 · 红边=已逾期 · 橙边=有卡点备注</span>
+   <span style="font-size:12px;color:var(--sub)">颜色随天数褪色：绿 → 黄 → 橙 → 红 · 点格子看详情</span>
   </div>
   <div class="heat-scroll"><div class="map-grid" id="mapGrid" style="grid-template-columns:repeat(16,1fr)"></div></div>
-  <div class="heat-legend"><span>L1 遗忘</span><i style="background:var(--l1)"></i><i style="background:var(--l2)"></i><i style="background:var(--l3)"></i><i style="background:var(--l4)"></i><i style="background:var(--l5)"></i><span>L5 背熟</span><span style="color:var(--sub);margin-left:8px">· 灰=未首背</span></div>
+  <div class="heat-legend"><i style="background:#22c55e;width:14px;height:14px;border-radius:4px;display:inline-block"></i><span>今天背熟</span><i style="background:#a3d34a;width:14px;height:14px;border-radius:4px;display:inline-block;margin-left:8px"></i><span>1-2天</span><i style="background:#e0a82e;width:14px;height:14px;border-radius:4px;display:inline-block;margin-left:8px"></i><span>3-4天</span><i style="background:#f59e4d;width:14px;height:14px;border-radius:4px;display:inline-block;margin-left:8px"></i><span>5-9天</span><i style="background:#f87171;width:14px;height:14px;border-radius:4px;display:inline-block;margin-left:8px"></i><span>10天+</span></div>
  </div>
  <div id="view-cal" style="display:none">
   <div class="heat-scroll"><div class="heat-month" id="heatMonth"></div><div class="heat-grid" id="heatGrid"></div></div>
-  <div class="heat-legend"><span>L1 遗忘</span><i style="background:var(--l1)"></i><i style="background:var(--l2)"></i><i style="background:var(--l3)"></i><i style="background:var(--l4)"></i><i style="background:var(--l5)"></i><span>L5 背熟</span><span style="color:var(--sub);margin-left:8px">· 颜色=当天最高等级</span></div>
+  <div class="heat-legend"><span>L1 遗忘</span><i style="background:#c084fc"></i><i style="background:#f87171"></i><i style="background:#e0a82e"></i><i style="background:#22c55e"></i><span style="color:var(--sub);margin-left:8px">· 颜色=当天最高等级</span></div>
  </div>
 </div>
 <footer>数据存于 Supabase 多设备打开同一网址自动同步 默认密码 beishu2024</footer>
@@ -302,7 +296,8 @@ var PASSWORD='beishu2024';
 var EXAM_Y=2026, EXAM_M=11, EXAM_D=19;
 var LVL={1:'遗忘',2:'模糊',3:'熟悉',4:'背熟',5:'卡壳'};
 var NODES=[1,2,4,7,15];
-var subjects=[], chapters=[], points=[], reviews=[], notes=[];
+var subjects=[], chapters=[], points=[], reviews=[], notes=[], metas={};
+var history=[];
 var today=new Date(); today.setHours(0,0,0,0);
 var QUOTES=[
  ['你已经走了这么远 别停在离终点最近的地方','考研不是看谁聪明 是看谁把同一个知识点背了第八遍还愿意再来一遍'],
@@ -366,7 +361,23 @@ function pointReviews(id){return reviews.filter(function(r){return r.point_id==i
 function pointNotes(id){return notes.filter(function(n){return n.point_id==id;}).sort(function(a,b){return b.note_date.localeCompare(a.note_date);});}
 function lastLevel(id){var rs=pointReviews(id);return rs.length?rs[rs.length-1].level:0;}
 function firstDate(id){var rs=pointReviews(id);return rs.length?rs[0].review_date:null;}
-function noteOf(id){var ns=pointNotes(id);return ns.length?ns[0]:null;}
+function metaOf(id){return metas[id]||null;}
+function lastMasterDate(id){var m=metaOf(id);if(m&&m.last_mastered)return m.last_mastered;return firstDate(id);}
+function isMastered(id){var l=lastLevel(id);return l>=4||l===0&&firstDate(id);}
+function fadeDays(id){var d=lastMasterDate(id);if(!d)return -1;return daysBetween(d,ts());}
+function fadeColor(id){
+ var l=lastLevel(id);
+ var d=lastMasterDate(id);
+ if(!d)return null;
+ var days=daysBetween(d,ts());
+ var fresh=l>=4?1:0.45;
+ var t=Math.max(0,Math.min(1,fresh-days/15));
+ var stops=[[34,197,94],[163,211,74],[224,168,46],[245,158,77],[248,113,113]];
+ var seg=t*4;var i=Math.min(3,Math.floor(seg));var f=seg-i;
+ var c=stops[i],n=stops[i+1];
+ var r=Math.round(c[0]+(n[0]-c[0])*f),g=Math.round(c[1]+(n[1]-c[1])*f),b=Math.round(c[2]+(n[2]-c[2])*f);
+ return 'rgb('+r+','+g+','+b+')';
+}
 function isDue(id){
  var rs=pointReviews(id);
  if(!rs.length)return false;
@@ -409,7 +420,7 @@ function renderHero(){
  document.getElementById('qText').innerHTML=q[0]+'<br><span style="font-size:12.5px;color:var(--sub);font-style:normal">'+q[1]+'</span>';
  var t=ts();
  document.getElementById('cdToday').textContent=reviews.filter(function(r){return r.review_date===t;}).length;
- document.getElementById('cdMastered').textContent=points.filter(function(p){return lastLevel(p.id)>=4;}).length;
+ document.getElementById('cdMastered').textContent=points.filter(function(p){var l=lastLevel(p.id);return l>=4;}).length;
  document.getElementById('cdDue').textContent=dueList().length;
  var streak=0;var cur=t;
  while(reviews.some(function(r){return r.review_date===cur;})){streak++;cur=addDaysStr(cur,-1);}
@@ -425,7 +436,7 @@ function renderDue(){
  list.forEach(function(o){
   var p=o.point;var overdue=o.first&&o.first<ts()&&lastLevel(p.id)>0;
   var done=!!doneToday[p.id];
-  var n=noteOf(p.id);
+  var n=pointNotes(p.id)[0];
   h+='<div class="due-item'+(done?' done':'')+'" id="due_'+p.id+'">'+
    '<div class="chk-wrap"><input type="checkbox" class="batch-chk" data-id="'+p.id+'"'+(done?' checked':'')+'></div>'+
    '<div class="ck ck-hide'+(done?' on':'')+'" onclick="toggleDone('+p.id+')">'+(done?'&#10003;':'')+'</div>'+
@@ -434,7 +445,7 @@ function renderDue(){
      '<span class="nm" style="font-weight:600;font-size:14.5px;flex:1;min-width:120px">'+esc(p.name)+'</span>'+
      tagOf(p.category)+
     '</div>'+
-    '<div class="meta '+(lastLevel(p.id)===0||overdue?'over':'soon')+'">'+esc(chName(p.chapter_id))+' 首背 '+o.first+(overdue?' · 已逾期':'')+(n?' · 有 '+pointNotes(p.id).length+' 条卡点备注':'')+'</div>'+
+    '<div class="meta '+(lastLevel(p.id)===0||overdue?'over':'soon')+'">'+esc(chName(p.chapter_id))+' 首背 '+o.first+(overdue?' · 已逾期':'')+(n?' · '+pointNotes(p.id).length+' 条卡点备注':'')+'</div>'+
     '<textarea class="note-box" id="note_'+p.id+'" placeholder="这里写容易卡壳、需要特别注意的地方，输入后自动保存…" oninput="onNote('+p.id+',this.value)">'+(n?n.content:'')+'</textarea>'+
     (n?'<div class="note-tag has">最近一次：'+n.note_date+'</div>':'')+
    '</div>'+
@@ -472,7 +483,7 @@ function onNote(id,val){
  clearTimeout(noteTimers[id]);
  var v=val.trim();
  noteTimers[id]=setTimeout(function(){
-  var nd=noteOf(id);
+  var nd=pointNotes(id)[0];
   if(nd){
    if(!v){rest('/kb_notes?id=eq.'+nd.id,'DELETE').then(function(){notes=notes.filter(function(x){return x.id!=nd.id;});renderMap();});return;}
    rest('/kb_notes?id=eq.'+nd.id,'PATCH',{content:v}).then(function(){nd.content=v;renderMap();});
@@ -537,6 +548,7 @@ function batchNew(cid){
   chain=chain.then(function(){
    return rest('/kb_reviews?select=*','POST',{point_id:p.id,review_date:t,level:4}).then(function(r){
     if(r&&r[0])reviews.unshift(r[0]);else reviews.push({point_id:p.id,review_date:t,level:4});
+    upsertMeta(p.id,t,4);
     done++;
    }).catch(function(){});
   });
@@ -547,8 +559,11 @@ function renderStats(){
  document.getElementById('sPoint').textContent=points.length;
  var done=points.filter(function(p){return firstDate(p.id);}).length;
  document.getElementById('sDone').textContent=done;
- var m=points.filter(function(p){return lastLevel(p.id)>=4;}).length;
- document.getElementById('sRate').textContent=done?Math.round(m/done*100)+'%':'0%';
+ var fading=points.filter(function(p){
+  var d=lastMasterDate(p.id);if(!d)return false;
+  var days=daysBetween(d,ts());return days>=1&&days<=14;
+ }).length;
+ document.getElementById('sFading').textContent=fading;
  document.getElementById('sTotal').textContent=reviews.length;
 }
 function renderCats(){
@@ -564,6 +579,18 @@ function renderCats(){
   el.addEventListener('click',function(){openChapter(el.getAttribute('data-cid'));});
  });
 }
+function upsertMeta(pointId,date,level){
+ var m=metaOf(pointId);
+ if(m){
+  if(m.last_mastered>=date)return;
+  rest('/kb_meta?id=eq.'+m.id,'PATCH',{last_mastered:date,master_level:level}).then(function(){m.last_mastered=date;m.master_level=level;renderMap();});
+ }else{
+  rest('/kb_meta?select=*','POST',{point_id:pointId,last_mastered:date,master_level:level}).then(function(r){
+   if(r&&r[0])metas[pointId]=r[0];else metas[pointId]={point_id:pointId,last_mastered:date,master_level:level};
+   renderMap();
+  }).catch(function(){});
+ }
+}
 function renderMap(){
  var sel=document.getElementById('mapCh');
  if(!sel.options.length||sel.options[0].value!=='0'){
@@ -574,21 +601,23 @@ function renderMap(){
  grid.innerHTML='';
  var cols=Math.max(10,Math.min(24,Math.ceil(Math.sqrt(list.length*1.5))));
  grid.style.gridTemplateColumns='repeat('+cols+',1fr)';
+ var faded=0;
  list.forEach(function(p){
-  var l=lastLevel(p.id);var d=firstDate(p.id);var due=d?isDue(p.id):false;var overdue=d&&d<ts()&&l>0&&due;
   var el=document.createElement('div');
   el.className='map-cell';
-  if(l)el.setAttribute('data-l',l);
-  if(d&&due&&l>0)el.setAttribute('data-note',overdue?'2':'1');
-  else if(pointNotes(p.id).length)el.setAttribute('data-note','1');
-  if(d&&due&&l>0)el.style.boxShadow=(overdue?'0 0 0 2px var(--l2)':'0 0 0 2px var(--brand)');
-  el.title=p.name+' · '+(l?LVL[l]:'未首背')+(pointNotes(p.id).length?' · '+pointNotes(p.id).length+' 条卡点备注':'')+(due?' · 待复习':'');
+  var c=fadeColor(p.id);
+  var days=fadeDays(p.id);
+  if(c)el.style.background=c;else el.style.background='rgba(255,255,255,.055)';
+  if(days>=1&&days<=14)faded++;
+  if(pointNotes(p.id).length)el.setAttribute('data-note','1');
+  var l=lastLevel(p.id);
+  el.title=p.name+' · '+esc(chName(p.chapter_id))+(l?LVL[l]+' · ':'')+(days<0?'未首背':days===0?'今天背熟':days+' 天前 · 正在褪色')+(pointNotes(p.id).length?' · 有卡点备注':'');
   el.addEventListener('click',function(){openPoint(p.id);});
   grid.appendChild(el);
  });
  var begun=list.filter(function(p){return firstDate(p.id);}).length;
  var duec=list.filter(function(p){return firstDate(p.id)&&isDue(p.id);}).length;
- document.getElementById('mapTag').textContent='共 '+list.length+' 个知识点 · 已首背 '+begun+' 个 · 今日待复习 '+duec+' 个';
+ document.getElementById('mapTag').textContent='共 '+list.length+' 个知识点 · 已首背 '+begun+' 个 · 今日待复习 '+duec+' 个 · 褪色中 '+faded+' 个';
 }
 function renderHeat(){
  var grid=document.getElementById('heatGrid');var mon=document.getElementById('heatMonth');
@@ -651,7 +680,7 @@ function groupHtml(cps,cat){
  var h='<div class="card"><h4 style="font-size:14px;color:var(--ink);font-weight:700;margin:0 0 14px;padding-left:10px;border-left:3px solid var(--brand)">'+cat+' <span style="float:right;color:var(--sub);font-weight:400;font-size:12px">'+list.length+' 条</span></h4>';
  list.forEach(function(p){
   var l=lastLevel(p.id);
-  var n=noteOf(p.id);
+  var n=pointNotes(p.id)[0];
   h+='<div class="point'+(batchSel[p.id]?' sel':'')+'" id="pt_'+p.id+'">'+
    '<div class="chk-wrap"><input type="checkbox" class="batch-chk" data-id="'+p.id+'"'+(batchSel[p.id]?' checked':'')+'></div>'+
    '<span class="lvl"'+(l?' data-l="'+l+'"':'')+'></span>'+
@@ -671,12 +700,17 @@ function groupHtml(cps,cat){
 }
 function tagOf(c){if(c==='名词解释')return '<span class="tag tm">名词解释</span>';if(c==='简答'||c==='新增')return '<span class="tag ts">'+(c==='新增'?'新增内容':'简答')+'</span>';if(c==='论述')return '<span class="tag td">论述</span>';return '<span class="tag to">其他</span>';}
 function chName(id){var c=chOf(id);return c?c.name:'';}
-function colorOf(l){return {'1':'var(--l1)','2':'var(--l2)','3':'var(--l3)','4':'var(--l4)','5':'var(--l5)'}[l]||'var(--sub)';}
 function openPoint(id){
  var p=points.filter(function(x){return x.id==id;})[0];if(!p)return;
  var rs=pointReviews(id);var l=lastLevel(p.id);var d=firstDate(id);
  var ns=pointNotes(id);
- var h='<div class="card"><div class="card-h" style="margin-bottom:14px"><span class="ic">&#128214;</span>'+esc(p.name)+'<span style="font-size:12px;color:var(--sub);font-weight:400;margin-left:6px">'+esc(chName(p.chapter_id))+'</span></div><div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px"><span class="tag '+(p.category==='名词解释'?'tm':p.category==='论述'?'td':'ts')+'">'+p.category+'</span><span style="font-size:13px;color:var(--sub)">当前等级：<b style="color:'+colorOf(l)+';font-size:17px">L'+(l||'-')+'</b> '+(l?LVL[l]:'未首背')+'</span>'+(d?'<span style="font-size:13px;color:var(--sub)">首背 '+d+'</span>':'')+(isDue(p.id)?'<span style="font-size:13px;color:var(--l3)">· 今日待复习</span>':'')+'</div>';
+ var days=fadeDays(p.id);
+ var h='<div class="card"><div class="card-h" style="margin-bottom:14px"><span class="ic">&#128214;</span>'+esc(p.name)+'<span style="font-size:12px;color:var(--sub);font-weight:400;margin-left:6px">'+esc(chName(p.chapter_id))+'</span></div>';
+ if(days>=0){
+  var c=fadeColor(p.id);
+  h+='<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px"><span style="width:28px;height:28px;border-radius:8px;background:'+c+';flex:0 0 auto;box-shadow:0 0 12px '+c+'66"></span><div style="font-size:13px;color:var(--sub)">上次背熟：'+lastMasterDate(p.id)+' · <b style="color:'+c+'">'+(days===0?'今天':'已 '+days+' 天 正在褪色')+'</b></div></div>';
+ }
+ h+='<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px"><span class="tag '+(p.category==='名词解释'?'tm':p.category==='论述'?'td':'ts')+'">'+p.category+'</span><span style="font-size:13px;color:var(--sub)">当前等级：<b style="color:'+colorOf(l)+';font-size:17px">L'+l+'</b> '+(l?LVL[l]:'未首背')+'</span>'+(d?'<span style="font-size:13px;color:var(--sub)">首背 '+d+'</span>':'')+(isDue(p.id)?'<span style="font-size:13px;color:var(--l3)">· 今日待复习</span>':'')+'</div>';
  if(p.content)h+='<div style="font-size:13.5px;line-height:1.8;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:16px">'+p.content+'</div>';
  h+='<div style="font-size:14px;font-weight:600;margin:0 0 10px;padding-left:10px;border-left:3px solid var(--l3)">卡点备注 <span style="font-weight:400;font-size:12px;color:var(--sub)">按日期倒序</span></div>';
  if(!ns.length){h+='<div class="empty">还没有卡点备注 在今日待复习页面对着知识点写</div>';}
@@ -685,7 +719,7 @@ function openPoint(id){
   ns.forEach(function(n){h+='<div class="nl-item"><span class="nl-date">'+n.note_date+'</span><span class="nl-text">'+esc(n.content)+'</span></div>';});
   h+='</div>';
  }
- h+='<div class="lvl-btns" style="margin-top:18px"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button><button class="ghost" onclick="openPointModal('+p.id+')">编辑</button></div>';
+ h+='<div class="lvl-btns" style="margin-top:18px"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button><button class="ghost" onclick="openPointModal('+p.id+')">编辑</button></div></div>';
  document.getElementById('dayList').innerHTML=h;
  document.getElementById('dayTitle').textContent=p.name;
  go('day');
@@ -710,14 +744,24 @@ function openDay(date){
 function dayReview(pointId,level,date){
  var r=reviews.filter(function(x){return x.point_id==pointId&&x.review_date===date;})[0];
  if(!r)return;
- rest('/kb_reviews?id=eq.'+r.id,'PATCH',{level:level}).then(function(){r.level=level;render();toast('已更新为 '+LVL[level]);openDay(date);});
+ rest('/kb_reviews?id=eq.'+r.id,'PATCH',{level:level}).then(function(){r.level=level;if(level>=4)upsertMeta(pointId,date,level);render();toast('已更新为 '+LVL[level]);openDay(date);});
 }
 function togglePoint(id){document.getElementById('pt_'+id).classList.toggle('expanded');}
 function go(page){
+ if(page!=='home')history.push(currentPage);
+ else history=[];
+ currentPage=page;
  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
  document.getElementById('page-'+page).classList.add('on');
  window.scrollTo(0,0);
 }
+function back(){
+ if(history.length){go(history.pop());}
+ else{go('home');}
+}
+var currentPage='home';
+window.addEventListener('popstate',function(){back();});
+window.addEventListener('hashchange',function(){back();});
 var curPoint=null;
 function openPointModal(pointId){
  var p=pointId?points.filter(function(x){return x.id==pointId;})[0]:null;
@@ -756,6 +800,7 @@ function delPoint(id){
   points=points.filter(function(p){return p.id!=id;});
   reviews=reviews.filter(function(r){return r.point_id!=id;});
   notes=notes.filter(function(n){return n.point_id!=id;});
+  delete metas[id];
   toast('已删除');
   render();
  })
@@ -765,12 +810,13 @@ function closeModal(){document.getElementById('mask').classList.remove('on');cur
 function quickReview(pointId,level){
  var t=ts();
  var exist=reviews.filter(function(r){return r.point_id==pointId&&r.review_date===t;})[0];
+ var after=function(){if(level>=4)upsertMeta(pointId,t,level);render();toast('已记录 '+LVL[level]);};
  if(exist){
-  rest('/kb_reviews?id=eq.'+exist.id,'PATCH',{level:level}).then(function(){exist.level=level;render();toast('已记录 '+LVL[level]);});
+  rest('/kb_reviews?id=eq.'+exist.id,'PATCH',{level:level}).then(function(){exist.level=level;after();});
  }else{
   rest('/kb_reviews?select=*','POST',{point_id:pointId,review_date:t,level:level}).then(function(r){
    if(r&&r[0])reviews.unshift(r[0]);else reviews.push({point_id:pointId,review_date:t,level:level});
-   render();toast('已记录 '+LVL[level]);
+   after();
   }).catch(function(){toast('记录失败');});
  }
 }
@@ -780,8 +826,12 @@ function toggleBatch(area){
  document.querySelectorAll('.batchbar').forEach(function(b){b.classList.toggle('on',b.id===area+'-batchbar'&&batchMode===area);});
  document.getElementById('dueEditBtn').textContent=batchMode==='due'?'退出批量':'批量编辑';
  document.getElementById('chEditBtn').textContent=batchMode==='chapter'?'退出批量':'批量编辑';
+ var wrap=document.getElementById('page-home');
+ wrap.classList.toggle('batch',batchMode!==null);
  if(batchMode===area){
-  var sch=document.getElementById(area+'BatchCh');sch.innerHTML='<option value="">改章节</option>'+chapters.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');
+  var sch=document.getElementById(area+'BatchCh');
+  sch.innerHTML='<option value="">改章节 →</option>'+chapters.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');
+  sch.value='';document.getElementById(area+'BatchCat').value='';
   batchSel={};updateBatchCnt(area);
  }
  render();
@@ -811,21 +861,22 @@ function batchDelete(area){
    points=points.filter(function(p){return p.id!=id;});
    reviews=reviews.filter(function(r){return r.point_id!=id;});
    notes=notes.filter(function(n){return n.point_id!=id;});
-   done++;left--;
-   if(left<=0){batchSel={};render();toast('已删除 '+done+' 条');}
-  }).catch(function(){left--;if(left<=0)render();});
+   delete metas[id];
+   done++;if(--left<=0){batchSel={};batchMode=null;render();toast('已删除 '+done+' 条');}
+  }).catch(function(){if(--left<=0)render();});
  });
 }
 function batchUpdate(area,field,value){
+ var sel=document.getElementById(area+(field==='chapter_id'?'BatchCh':'BatchCat'));
  var ks=Object.keys(batchSel).filter(function(k){return batchSel[k];});
- if(!ks.length){toast('先勾选知识点');return;}
- if(!value){toast('请选择要改成的值');return;}
+ if(!ks.length){sel.value='';toast('先勾选知识点');return;}
+ if(!value){sel.value='';return;}
  var body={};body[field]=field==='chapter_id'?+value:value;
  var left=ks.length;
  ks.forEach(function(id){
   var p=points.filter(function(x){return x.id==id;})[0];if(!p)return;
   Object.assign(p,body);
-  rest('/kb_points?id=eq.'+p.id,'PATCH',body).then(function(){left--;if(left<=0){render();toast('已更新 '+ks.length+' 条');}});
+  rest('/kb_points?id=eq.'+p.id,'PATCH',body).then(function(){if(--left<=0){batchSel={};sel.value='';render();toast('已更新 '+ks.length+' 条');}});
  });
 }
 document.getElementById('search').addEventListener('input',function(e){doSearch(e.target.value.trim());});
@@ -862,7 +913,8 @@ function loadAll(){
  .then(function(c){chapters=c||[];return rest('/kb_points?select=*&order=created_at.desc');})
  .then(function(p){points=p||[];return rest('/kb_reviews?select=*&order=review_date.desc');})
  .then(function(r){reviews=r||[];return rest('/kb_notes?select=*&order=note_date.desc,created_at.desc');})
- .then(function(n){notes=n||[];render();})
+ .then(function(n){notes=n||[];return rest('/kb_meta?select=*');})
+ .then(function(m){metas={};(m||[]).forEach(function(x){metas[x.point_id]=x;});render();})
  .catch(function(e){console.error(e);toast('加载失败');});
 }
 (function(){
