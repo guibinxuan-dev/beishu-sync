@@ -180,12 +180,11 @@ body.light .topbar input{background:#fff}
 body.light .note-list .nl-item{border-bottom-color:rgba(0,0,0,.05)}
 .note-list .nl-date{font-family:monospace;font-size:12px;color:var(--sub);min-width:92px;flex-shrink:0}
 .note-list .nl-text{flex:1;color:var(--ink);line-height:1.65}
-.note-list .nl-empty{font-size:13px;color:var(--sub);padding:8px 0}
-.list-item{display:flex;align-items:flex-start;gap:12px;padding:14px 6px;border-bottom:1px dashed var(--line);transition:.18s;border-radius:10px}
+.list-item{display:flex;align-items:center;gap:12px;padding:14px 6px;border-bottom:1px dashed var(--line);transition:.18s;border-radius:10px}
 .list-item:hover{background:rgba(255,255,255,.025);padding-left:12px}
 body.light .list-item:hover{background:rgba(0,0,0,.012)}
 .list-item:last-child{border-bottom:none}
-.list-item .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto;margin-top:7px}
+.list-item .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
 footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter-spacing:.6px}
 @media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.hero{padding:26px 22px 24px}.hero-num{font-size:56px}.card{padding:20px 18px}.topbar input{min-width:120px}.cat-grid{grid-template-columns:1fr}.lvl-btns button{width:30px;height:30px;font-size:11px}.point .acts{flex-wrap:wrap;width:100%;margin-top:6px;justify-content:flex-end}}
 </style>
@@ -217,7 +216,7 @@ footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter
  <div class="card-h"><span class="ic">&#128204;</span>今日待复习 <span id="dueTag" style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px"></span>
   <div class="ch-act">
    <button class="ghost sm" id="dueEditBtn" onclick="toggleBatch('due')">批量编辑</button>
-   <button class="ghost sm" id="dueAllBtn" onclick="doneAll()">全部完成</button>
+   <button class="ghost sm" onclick="doneAll()">全部完成</button>
   </div>
  </div>
  <div class="batchbar" id="dueBatchBar">
@@ -234,14 +233,7 @@ footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter
  <div class="cat-grid" id="newList"><div class="empty">加载中</div></div>
 </div>
 <div class="card">
- <div class="card-h"><span class="ic">&#128214;</span>章节 <div class="ch-act"><button class="ghost sm" id="chEditBtn" onclick="toggleBatch('chapter')">批量编辑</button></div></div>
- <div class="batchbar" id="chapterBatchBar">
-  <span class="cnt" id="chapterBatchCnt">已选 0 条</span>
-  <select id="chapterBatchCh" onchange="batchUpdate('chapter','chapter_id',this.value)"><option value="">改章节 →</option></select>
-  <select id="chapterBatchCat" onchange="batchUpdate('chapter','category',this.value)"><option value="">改题型 →</option><option>名词解释</option><option>简答</option><option>论述</option><option>其他</option></select>
-  <button class="danger sm" onclick="batchDelete('chapter')">删除所选</button>
-  <button class="ghost sm" onclick="toggleBatch('chapter')">取消</button>
- </div>
+ <div class="card-h"><span class="ic">&#128214;</span>章节</div>
  <div class="cat-grid" id="catGrid"></div>
 </div>
 <div class="card">
@@ -421,7 +413,11 @@ function dueList(){
  out.sort(function(a,b){return (a.first||'').localeCompare(b.first||'');});
  return out;
 }
-function render(){renderHero();renderDue();renderNew();renderCats();renderMap();renderHeat();renderStats();}
+var currentPage='home';
+function render(){
+ if(currentPage!=='home')return;
+ renderHero();renderDue();renderNew();renderCats();renderMap();renderHeat();renderStats();
+}
 function renderHero(){
  var exam=new Date(EXAM_Y,EXAM_M,EXAM_D);exam.setHours(0,0,0,0);
  var days=Math.ceil((exam-today)/86400000);
@@ -667,42 +663,92 @@ function openChapter(id){
  var c=chOf(id);if(!c)return;
  var cps=points.filter(function(p){return p.chapter_id==id;});
  var todo=cps.filter(function(p){return !firstDate(p.id);});
- var h='<div class="card"><div class="card-h" style="margin-bottom:14px"><span class="ic">&#128214;</span>'+esc(c.name)+'<div class="ch-act"><button class="ghost sm" onclick="batchNew('+id+')">一键首背未背的</button></div></div><div style="height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden;margin:12px 0 4px"><i style="display:block;height:100%;width:'+(cps.length?Math.round((cps.length-todo.length)/cps.length*100):0)+'%;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:8px"></i></div><div style="font-size:13px;color:var(--sub)">'+(cps.length-todo.length)+' / '+cps.length+' 已首背'+(todo.length?' · 还有 '+todo.length+' 条待首背':'')+'</div></div>';
+ var h='<div class="card"><div class="card-h" style="margin-bottom:14px"><span class="ic">&#128214;</span>'+esc(c.name)+'<div class="ch-act"><button class="ghost sm" onclick="batchNew('+id+')">一键首背未背的</button><button class="ghost sm" id="chBatchBtn" onclick="toggleChapterBatch('+id+')">批量编辑</button></div></div><div style="height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden;margin:12px 0 4px"><i style="display:block;height:100%;width:'+(cps.length?Math.round((cps.length-todo.length)/cps.length*100):0)+'%;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:8px"></i></div><div style="font-size:13px;color:var(--sub)">'+(cps.length-todo.length)+' / '+cps.length+' 已首背'+(todo.length?' · 还有 '+todo.length+' 条待首背':'')+'</div></div>';
+ h+='<div class="batchbar" id="chapterBatchBar_'+id+'"><span class="cnt" id="chapterBatchCnt_'+id+'">已选 0 条</span><select id="chapterBatchCh_'+id+'" onchange="chapterBatchUpdate('+id+',\'chapter_id\',this.value)"><option value="">改章节 →</option></select><select id="chapterBatchCat_'+id+'" onchange="chapterBatchUpdate('+id+',\'category\',this.value)"><option value="">改题型 →</option><option>名词解释</option><option>简答</option><option>论述</option><option>其他</option></select><button class="danger sm" onclick="chapterBatchDelete('+id+')">删除所选</button><button class="ghost sm" onclick="toggleChapterBatch('+id+')">取消</button></div>';
  if(todo.length){
   h+='<div class="card"><h4 style="font-size:14px;color:var(--ink);font-weight:700;margin:0 0 14px;padding-left:10px;border-left:3px solid var(--l2)">待首背 <span style="float:right;color:var(--sub);font-weight:400;font-size:12px">'+todo.length+' 条</span></h4>';
   todo.forEach(function(p){
-   h+='<div class="point" id="pt_'+p.id+'"><span class="lvl"></span><div class="info" onclick="togglePoint('+p.id+')"><div class="nm">'+esc(p.name)+' '+tagOf(p.category)+'</div><div class="prev">'+(clean(p.content)||'暂无内容 点编辑添加具体内容')+'</div></div><div class="acts" onclick="event.stopPropagation()"><span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span></div></div>';
+   h+=pointRowHtml(p,id);
   });
   h+='</div>';
  }
- h+=groupHtml(cps,'名词解释')+groupHtml(cps,'简答')+groupHtml(cps,'简答／论述')+groupHtml(cps,'论述')+groupHtml(cps,'新增');
+ ['名词解释','简答','论述','新增'].forEach(function(cat){
+  var list=cps.filter(function(p){return (p.category||'简答')===cat;});
+  if(!list.length)return;
+  h+='<div class="card"><h4 style="font-size:14px;color:var(--ink);font-weight:700;margin:0 0 14px;padding-left:10px;border-left:3px solid var(--brand)">'+cat+' <span style="float:right;color:var(--sub);font-weight:400;font-size:12px">'+list.length+' 条</span></h4>';
+  list.forEach(function(p){h+=pointRowHtml(p,id);});
+  h+='</div>';
+ });
  document.getElementById('chapterDetail').innerHTML=h;
+ var sch=document.getElementById('chapterBatchCh_'+id);
+ sch.innerHTML='<option value="">改章节 →</option>'+chapters.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');
  go('chapter');
 }
-function groupHtml(cps,cat){
- var list=cps.filter(function(p){return (p.category||'简答')===cat;});
- if(!list.length)return '';
- var h='<div class="card"><h4 style="font-size:14px;color:var(--ink);font-weight:700;margin:0 0 14px;padding-left:10px;border-left:3px solid var(--brand)">'+cat+' <span style="float:right;color:var(--sub);font-weight:400;font-size:12px">'+list.length+' 条</span></h4>';
- list.forEach(function(p){
-  var l=lastLevel(p.id);
-  var n=pointNotes(p.id)[0];
-  var sel=batchSel[p.id]?' checked':'';
-  h+='<div class="point'+(batchSel[p.id]?' sel':'')+'" id="pt_'+p.id+'">'+
-   '<div class="chk-wrap"><input type="checkbox" class="batch-chk" data-id="'+p.id+'"'+sel+' onclick="onBatchCheck(this,'+p.id+')"></div>'+
-   '<span class="lvl"'+(l?' data-l="'+l+'"':'')+'></span>'+
-   '<div class="info" onclick="togglePoint('+p.id+')">'+
-    '<div class="nm">'+esc(p.name)+' '+tagOf(cat)+(n?' <span class="tag td">有卡点</span>':'')+'</div>'+
-    '<div class="prev">'+(clean(p.content)||'暂无内容 点编辑添加具体内容')+'</div>'+
-   '</div>'+
-   '<div class="acts" onclick="event.stopPropagation()">'+
-    '<button class="ghost sm" onclick="openPointModal('+p.id+')">编辑</button>'+
-    '<button class="ghost sm" onclick="showNotes('+p.id+')" title="查看卡点历史">注</button>'+
-    '<span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span>'+
-    '<button class="soft sm" onclick="delPoint('+p.id+')">删</button>'+
-   '</div></div>';
+function pointRowHtml(p,chId){
+ var l=lastLevel(p.id);
+ var n=pointNotes(p.id)[0];
+ return '<div class="point" id="pt_'+p.id+'">'+
+  '<div class="chk-wrap" id="chkwrap_'+p.id+'"><input type="checkbox" class="chapter-batch-chk" data-ch="'+chId+'" data-id="'+p.id+'"></div>'+
+  '<span class="lvl"'+(l?' data-l="'+l+'"':'')+'></span>'+
+  '<div class="info" onclick="togglePoint('+p.id+')">'+
+   '<div class="nm">'+esc(p.name)+' '+tagOf(p.category)+(n?' <span class="tag td">有卡点</span>':'')+'</div>'+
+   '<div class="prev">'+(clean(p.content)||'暂无内容 点编辑添加具体内容')+'</div>'+
+  '</div>'+
+  '<div class="acts" onclick="event.stopPropagation()">'+
+   '<button class="ghost sm" onclick="openPointModal('+p.id+')">编辑</button>'+
+   '<button class="ghost sm" onclick="showNotes('+p.id+')" title="查看卡点历史">注</button>'+
+   '<span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span>'+
+   '<button class="soft sm" onclick="delPoint('+p.id+')">删</button>'+
+  '</div></div>';
+}
+function toggleChapterBatch(chId){
+ var bar=document.getElementById('chapterBatchBar_'+chId);
+ var on=!bar.classList.contains('on');
+ bar.classList.toggle('on',on);
+ document.getElementById('chBatchBtn').textContent=on?'退出批量':'批量编辑';
+ document.getElementById('chapterDetail').parentNode.classList.toggle('batch',on);
+ document.querySelectorAll('#chapterDetail .point').forEach(function(el){
+  el.classList.toggle('batch',on);
+  var cb=el.querySelector('.chapter-batch-chk');
+  if(cb)cb.checked=false;
  });
- h+='</div>';
- return h;
+ chapterBatchSel={};
+ updateChapterBatchCnt(chId);
+}
+var chapterBatchSel={};
+function updateChapterBatchCnt(chId){
+ var ks=Object.keys(chapterBatchSel).filter(function(k){return chapterBatchSel[k];});
+ var el=document.getElementById('chapterBatchCnt_'+chId);
+ if(el)el.textContent='已选 '+ks.length+' 条';
+}
+function chapterBatchUpdate(chId,field,value){
+ var ks=Object.keys(chapterBatchSel).filter(function(k){return chapterBatchSel[k];});
+ if(!ks.length){toast('先勾选知识点');return;}
+ if(!value)return;
+ var body={};body[field]=field==='chapter_id'?+value:value;
+ var left=ks.length;
+ ks.forEach(function(id){
+  var p=points.filter(function(x){return x.id==id;})[0];if(!p)return;
+  Object.assign(p,body);
+  rest('/kb_points?id=eq.'+p.id,'PATCH',body).then(function(){if(--left<=0){toast('已更新 '+ks.length+' 条');openChapter(chId);}});
+ });
+}
+function chapterBatchDelete(chId){
+ var ks=Object.keys(chapterBatchSel).filter(function(k){return chapterBatchSel[k];});
+ if(!ks.length){toast('先勾选要删除的知识点');return;}
+ if(!confirm('确定删除这 '+ks.length+' 条知识点？\n它们的背诵记录和卡点备注会一起删除'))return;
+ var left=ks.length,done=0;
+ ks.forEach(function(id){
+  rest('/kb_notes?point_id=eq.'+id,'DELETE').then(function(){return rest('/kb_reviews?point_id=eq.'+id,'DELETE');})
+  .then(function(){return rest('/kb_points?id=eq.'+id,'DELETE');})
+  .then(function(){
+   points=points.filter(function(p){return p.id!=id;});
+   reviews=reviews.filter(function(r){return r.point_id!=id;});
+   notes=notes.filter(function(n){return n.point_id!=id;});
+   delete metas[id];
+   if(++done>=left){toast('已删除 '+done+' 条');openChapter(chId);}
+  }).catch(function(){if(++done>=left)openChapter(chId);});
+ });
 }
 function tagOf(c){if(c==='名词解释')return '<span class="tag tm">名词解释</span>';if(c==='简答'||c==='新增')return '<span class="tag ts">'+(c==='新增'?'新增内容':'简答')+'</span>';if(c==='论述')return '<span class="tag td">论述</span>';return '<span class="tag to">其他</span>';}
 function chName(id){var c=chOf(id);return c?c.name:'';}
@@ -750,9 +796,18 @@ function openDay(date){
 function dayReview(pointId,level,date){
  var r=reviews.filter(function(x){return x.point_id==pointId&&x.review_date===date;})[0];
  if(!r)return;
- rest('/kb_reviews?id=eq.'+r.id,'PATCH',{level:level}).then(function(){r.level=level;if(level>=4)upsertMeta(pointId,date,level);render();toast('已更新为 '+LVL[level]);openDay(date);});
+ rest('/kb_reviews?id=eq.'+r.id,'PATCH',{level:level}).then(function(){
+  r.level=level;
+  if(level>=4)upsertMeta(pointId,date,level);
+  if(currentPage==='day'&&document.getElementById('dayTitle').textContent.indexOf(date)>=0){
+   openDay(date);
+  }else{
+   renderStats();
+  }
+  toast('已更新为 '+LVL[level]);
+ });
 }
-function togglePoint(id){document.getElementById('pt_'+id).classList.toggle('expanded');}
+function togglePoint(id){var el=document.getElementById('pt_'+id);if(el)el.classList.toggle('expanded');}
 function go(page){
  if(page!=='home')history.push(currentPage);
  else history=[];
@@ -765,7 +820,6 @@ function back(){
  if(history.length){go(history.pop());}
  else{go('home');}
 }
-var currentPage='home';
 window.addEventListener('popstate',function(){back();});
 window.addEventListener('hashchange',function(){back();});
 var curPoint=null;
@@ -815,7 +869,11 @@ function closeModal(){document.getElementById('mask').classList.remove('on');cur
 function quickReview(pointId,level){
  var t=ts();
  var exist=reviews.filter(function(r){return r.point_id==pointId&&r.review_date===t;})[0];
- var after=function(){if(level>=4)upsertMeta(pointId,t,level);render();toast('已记录 '+LVL[level]);};
+ var after=function(){
+  if(level>=4)upsertMeta(pointId,t,level);
+  renderStats();
+  toast('已记录 '+LVL[level]);
+ };
  if(exist){
   rest('/kb_reviews?id=eq.'+exist.id,'PATCH',{level:level}).then(function(){exist.level=level;after();});
  }else{
@@ -827,37 +885,31 @@ function quickReview(pointId,level){
 }
 var batchSel={}, batchMode=null;
 function toggleBatch(area){
- if(batchMode&&batchMode!==area){toggleBatch(batchMode);}
  batchMode=batchMode===area?null:area;
- document.querySelectorAll('.batchbar').forEach(function(b){b.classList.remove('on');});
- document.getElementById(area+'BatchBar').classList.toggle('on',batchMode===area);
+ document.querySelectorAll('.batchbar').forEach(function(b){if(b.id!=='dueBatchBar')b.classList.remove('on');});
+ document.getElementById('dueBatchBar').classList.toggle('on',batchMode===area);
  document.getElementById('dueEditBtn').textContent=batchMode==='due'?'退出批量':'批量编辑';
- document.getElementById('chEditBtn').textContent=batchMode==='chapter'?'退出批量':'批量编辑';
- document.getElementById('page-home').classList.toggle('batch',batchMode!==null);
+ var wrap=document.getElementById('page-home');
+ wrap.classList.toggle('batch',batchMode===area);
  if(batchMode===area){
-  var sch=document.getElementById(area+'BatchCh');
+  var sch=document.getElementById('dueBatchCh');
   sch.innerHTML='<option value="">改章节 →</option>'+chapters.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');
-  sch.value='';document.getElementById(area+'BatchCat').value='';
-  updateBatchCnt(area);
+  sch.value='';document.getElementById('dueBatchCat').value='';
+  batchSel={};updateBatchCnt();
  }
- render();
+ renderDue();
 }
 function bindBatchChecks(area){
- document.querySelectorAll('#'+area+'List .batch-chk').forEach(function(cb){
-  cb.onchange=function(){onBatchCheck(cb,cb.dataset.id);};
+ document.querySelectorAll('#dueList .batch-chk').forEach(function(cb){
+  cb.onchange=function(){
+   if(cb.checked)batchSel[cb.dataset.id]=1;else delete batchSel[cb.dataset.id];
+   updateBatchCnt();
+  };
  });
 }
-function onBatchCheck(cb,id){
- if(cb.checked)batchSel[id]=1;else delete batchSel[id];
- var area=cb.closest('.card')?null:'due';
- updateBatchCnt(area);
-}
-function updateBatchCnt(area){
- ['due','chapter'].forEach(function(a){
-  var ks=Object.keys(batchSel).filter(function(k){return batchSel[k];});
-  var el=document.getElementById(a+'BatchCnt');
-  if(el)el.textContent='已选 '+ks.length+' 条';
- });
+function updateBatchCnt(){
+ var ks=Object.keys(batchSel).filter(function(k){return batchSel[k];});
+ document.getElementById('dueBatchCnt').textContent='已选 '+ks.length+' 条';
 }
 function batchDelete(area){
  var ks=Object.keys(batchSel).filter(function(k){return batchSel[k];});
@@ -872,8 +924,8 @@ function batchDelete(area){
    reviews=reviews.filter(function(r){return r.point_id!=id;});
    notes=notes.filter(function(n){return n.point_id!=id;});
    delete metas[id];
-   done++;if(--left<=0){batchSel={};batchMode=null;render();toast('已删除 '+done+' 条');}
-  }).catch(function(){if(--left<=0)render();});
+   if(++done>=left){batchSel={};batchMode=null;render();toast('已删除 '+done+' 条');}
+  }).catch(function(){if(++done>=left)render();});
  });
 }
 function batchUpdate(area,field,value){
@@ -890,32 +942,33 @@ function batchUpdate(area,field,value){
  });
 }
 function openStat(kind){
- var box=document.getElementById('statList');var h='';var title='';
+ var box=document.getElementById('statList');
+ var h='';
  var t=ts();
  if(kind==='today'){
-  title='今日背诵';
+  document.getElementById('statTitle').textContent='今日背诵';
   var list=reviews.filter(function(r){return r.review_date===t;});
   if(!list.length){h='<div class="empty">今天还没有背诵记录 去背几条吧</div>';}
   else{
    list.forEach(function(r){
     var p=points.filter(function(x){return x.id==r.point_id;})[0];if(!p)return;
-    h+='<div class="list-item"><span class="sw" style="background:'+colorOf(r.level)+'"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">'+esc(p.name)+'</div><div style="font-size:12px;color:var(--sub)">'+esc(chName(p.chapter_id))+' · L'+r.level+' '+LVL[r.level]+'</div></div><div class="lvl-btns"><button class="l1" onclick="dayReview('+r.point_id+',1,\''+t+'\')">遗</button><button class="l2" onclick="dayReview('+r.point_id+',2,\''+t+'\')">糊</button><button class="l3" onclick="dayReview('+r.point_id+',3,\''+t+'\')">熟</button><button class="l4" onclick="dayReview('+r.point_id+',4,\''+t+'\')">背</button><button class="l5" onclick="dayReview('+r.point_id+',5,\''+t+'\')">卡</button></div></div>';
+    h+='<div class="list-item"><span class="sw" style="background:'+colorOf(r.level)+'"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">'+esc(p.name)+'</div><div style="font-size:12px;color:var(--sub)">'+esc(chName(p.chapter_id))+' · L'+r.level+' '+LVL[r.level]+'</div></div><div class="lvl-btns"><button class="l1" onclick="statDayReview('+r.point_id+',1,\''+t+'\')">遗</button><button class="l2" onclick="statDayReview('+r.point_id+',2,\''+t+'\')">糊</button><button class="l3" onclick="statDayReview('+r.point_id+',3,\''+t+'\')">熟</button><button class="l4" onclick="statDayReview('+r.point_id+',4,\''+t+'\')">背</button><button class="l5" onclick="statDayReview('+r.point_id+',5,\''+t+'\')">卡</button></div></div>';
    });
   }
  }
  else if(kind==='done'){
-  title='已背熟';
+  document.getElementById('statTitle').textContent='已背熟';
   var ds=points.filter(function(p){return lastLevel(p.id)>=4;});
   if(!ds.length){h='<div class="empty">还没有背熟的 先去首背几条</div>';}
   else{
    ds.forEach(function(p){
     var days=fadeDays(p.id);var c=fadeColor(p.id);
-    h+='<div class="list-item" onclick="openPoint('+p.id+')"><span class="sw" style="background:'+c+'"></span><div style="flex:1;min-width:0;cursor:pointer"><div style="font-weight:600;font-size:14.5px">'+esc(p.name)+'</div><div style="font-size:12px;color:var(--sub)">'+esc(chName(p.chapter_id))+' · L'+lastLevel(p.id)+' · '+(days<0?'未首背':days===0?'今天背熟':days+' 天前')+'</div></div><span class="tag '+(p.category==='名词解释'?'tm':p.category==='论述'?'td':'ts')+'">'+p.category+'</span></div>';
+    h+='<div class="list-item" style="cursor:pointer" onclick="openPoint('+p.id+')"><span class="sw" style="background:'+c+'"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">'+esc(p.name)+'</div><div style="font-size:12px;color:var(--sub)">'+esc(chName(p.chapter_id))+' · L'+lastLevel(p.id)+' · '+(days<0?'未首背':days===0?'今天背熟':days+' 天前')+'</div></div><span class="tag '+(p.category==='名词解释'?'tm':p.category==='论述'?'td':'ts')+'">'+p.category+'</span></div>';
    });
   }
  }
  else if(kind==='fading'){
-  title='正在褪色';
+  document.getElementById('statTitle').textContent='正在褪色';
   var fs=points.filter(function(p){
    var d=lastMasterDate(p.id);if(!d)return false;
    var days=daysBetween(d,ts());return days>=1&&days<=14;
@@ -925,26 +978,36 @@ function openStat(kind){
    h+='<div class="empty" style="padding:12px 0 18px;text-align:left;font-size:12.5px">按褪色程度从高到低排列，排在前面的要优先复习</div>';
    fs.forEach(function(p){
     var days=fadeDays(p.id);var c=fadeColor(p.id);
-    h+='<div class="list-item" onclick="openPoint('+p.id+')"><span class="sw" style="background:'+c+'"></span><div style="flex:1;min-width:0;cursor:pointer"><div style="font-weight:600;font-size:14.5px">'+esc(p.name)+'</div><div style="font-size:12px;color:var(--sub)">'+esc(chName(p.chapter_id))+' · '+days+' 天没复习了</div></div><span class="lvl-btns"><button class="l1" onclick="event.stopPropagation();quickReview('+p.id+',1)">遗</button><button class="l2" onclick="event.stopPropagation();quickReview('+p.id+',2)">糊</button><button class="l3" onclick="event.stopPropagation();quickReview('+p.id+',3)">熟</button><button class="l4" onclick="event.stopPropagation();quickReview('+p.id+',4)">背</button><button class="l5" onclick="event.stopPropagation();quickReview('+p.id+',5)">卡</button></span></div>';
+    h+='<div class="list-item" style="cursor:pointer" onclick="openPoint('+p.id+')"><span class="sw" style="background:'+c+'"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px">'+esc(p.name)+'</div><div style="font-size:12px;color:var(--sub)">'+esc(chName(p.chapter_id))+' · '+days+' 天没复习了</div></div><span class="lvl-btns"><button class="l1" onclick="event.stopPropagation();quickReview('+p.id+',1)">遗</button><button class="l2" onclick="event.stopPropagation();quickReview('+p.id+',2)">糊</button><button class="l3" onclick="event.stopPropagation();quickReview('+p.id+',3)">熟</button><button class="l4" onclick="event.stopPropagation();quickReview('+p.id+',4)">背</button><button class="l5" onclick="event.stopPropagation();quickReview('+p.id+',5)">卡</button></span></div>';
    });
   }
  }
  else if(kind==='total'){
-  title='累计背诵';
+  document.getElementById('statTitle').textContent='累计背诵';
   if(!reviews.length){h='<div class="empty">还没有任何背诵记录</div>';}
   else{
    var byDay={};reviews.forEach(function(r){byDay[r.review_date]=(byDay[r.review_date]||0)+1;});
    var days2=Object.keys(byDay).sort().reverse();
    h+='<div style="font-size:13px;color:var(--sub);margin-bottom:6px">共 '+reviews.length+' 次 · 分布在 '+days2.length+' 天</div>';
    days2.slice(0,60).forEach(function(d){
-    h+='<div class="list-item" onclick="openDay(\''+d+'\')"><span class="sw" style="background:linear-gradient(135deg,var(--brand),var(--brand2))"></span><div style="flex:1;min-width:0;cursor:pointer"><div style="font-weight:600;font-size:14.5px;font-family:monospace">'+d+'</div></div><span style="font-size:13px;color:var(--sub);font-weight:600">'+byDay[d]+' 条</span></div>';
+    h+='<div class="list-item" style="cursor:pointer" onclick="openDay(\''+d+'\')"><span class="sw" style="background:linear-gradient(135deg,var(--brand),var(--brand2))"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px;font-family:monospace">'+d+'</div></div><span style="font-size:13px;color:var(--sub);font-weight:600">'+byDay[d]+' 条</span></div>';
    });
   }
  }
- document.getElementById('statTitle').textContent=title;
  document.getElementById('statCnt').textContent='';
  box.innerHTML=h;
  go('stat');
+}
+function statDayReview(pointId,level,date){
+ var r=reviews.filter(function(x){return x.point_id==pointId&&x.review_date===date;})[0];
+ if(!r)return;
+ rest('/kb_reviews?id=eq.'+r.id,'PATCH',{level:level}).then(function(){
+  r.level=level;
+  if(level>=4)upsertMeta(pointId,date,level);
+  renderStats();
+  toast('已更新为 '+LVL[level]);
+  openStat('today');
+ });
 }
 function colorOf(l){return {'1':'#c084fc','2':'#f87171','3':'#e0a82e','4':'#22c55e','5':'#e0a82e'}[l]||'var(--sub)';}
 document.getElementById('search').addEventListener('input',function(e){doSearch(e.target.value.trim());});
