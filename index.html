@@ -252,6 +252,8 @@ var QUOTES=[
  ['把大目标拆成今天的 5 条 你就能完成','你已经在路上 别回头']
 ];
 var doneToday={};
+var dueBatchSel={};
+var chSel={};
 function dayHash(d){
  var s=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
  var h=2166136261;h=h^s;h=Math.imul(h,16777619);h=h^(h>>>13);h=Math.imul(h,1277);h=h^(h>>>16);
@@ -350,6 +352,7 @@ function router(){
  }
  window.scrollTo(0,0);
 }
+var homeView='map', mapCh='0', dueBatch=false;
 function renderHome(){
  var exam=new Date(EXAM_Y,EXAM_M,EXAM_D);exam.setHours(0,0,0,0);
  var days=Math.ceil((exam-today)/86400000);
@@ -399,7 +402,7 @@ function renderHome(){
   return '<div class="cat-card" onclick="nav(\'chapter/'+c.id+'\')"><h3>'+esc(c.name)+'</h3><div class="bar"><i style="width:'+pct+'%"></i></div><div class="cnt">'+done+' / '+cps.length+' 已首背 '+pct+'%</div><span class="arrow">&#8594;</span></div>';
  }).join('')+'</div></div>';
  h+='<div class="card"><div class="card-h"><span class="ic">&#128293;</span>掌握地图 <span id="mapTag" style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px"></span></div>';
- h+='<div class="tabs"><div class="tab'+(homeView==='map'?' on':'')+' onclick="homeView=\'map\';renderHome()">知识点地图</div><div class="tab'+(homeView==='cal'?' on':'')+' onclick="homeView=\'cal\';renderHome()">打卡日历</div></div>';
+ h+='<div class="tabs"><div class="tab'+(homeView==='map'?' on':'')+'" onclick="homeView=\'map\';renderHome()">知识点地图</div><div class="tab'+(homeView==='cal'?' on':'')+'" onclick="homeView=\'cal\';renderHome()">打卡日历</div></div>';
  if(homeView==='map'){
   h+='<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px"><select id="mapCh" onchange="renderHome()" style="padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.05);color:var(--ink);font-family:inherit;font-size:13.5px"><option value="0">全部章节</option>'+chapters.map(function(c){return '<option value="'+c.id+'"'+(c.id==mapCh?' selected':'')+'>'+(c.sort_order||'')+' '+esc(c.name)+'</option>';}).join('')+'</select><span style="font-size:12px;color:var(--sub)">颜色随天数褪色：绿 → 黄 → 橙 → 红 · 点格子看详情</span></div>';
   h+='<div class="heat-scroll"><div class="map-grid" id="mapGrid" style="grid-template-columns:repeat(16,1fr)"></div></div>';
@@ -412,11 +415,10 @@ function renderHome(){
  document.getElementById('page-home').innerHTML=h;
  if(homeView==='map')setTimeout(renderMapCells,0);else setTimeout(renderHeatCells,0);
 }
-var homeView='map', mapCh='0', dueBatch=false;
 function renderDueBatchBar(){
  var sch='<option value="">改章节 →</option>'+chapters.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');
  var ca='<option value="">改题型 →</option><option>名词解释</option><option>简答</option><option>论述</option><option>其他</option>';
- return '<div class="batchbar on" style="position:static;margin-bottom:12px"><span class="cnt" id="dueBatchCnt">已选 '+Object.keys(dueBatchSel).length+' 条</span><select onchange="dueBatchMove(\'chapter\',this.value)">'+sch+'</select><select onchange="dueBatchMove(\'category\',this.value)">'+ca+'</select><button class="danger sm" onclick="dueBatchDel()">删除所选</button><button class="ghost sm" onclick="dueBatch=false;renderHome()">取消</button></div>';
+ return '<div class="batchbar on" style="position:static;margin-bottom:12px"><span class="cnt">已选 '+Object.keys(dueBatchSel).length+' 条</span><select onchange="dueBatchMove(\'chapter\',this.value)">'+sch+'</select><select onchange="dueBatchMove(\'category\',this.value)">'+ca+'</select><button class="danger sm" onclick="dueBatchDel()">删除所选</button><button class="ghost sm" onclick="dueBatch=false;dueBatchSel={};renderHome()">取消</button></div>';
 }
 function renderDueList(){
  var list=dueList();
@@ -427,8 +429,11 @@ function renderDueList(){
   var done=!!doneToday[p.id];
   var n=pointNotes(p.id)[0];
   h+='<div class="due-item'+(done?' done':'')+'">';
-  if(dueBatch)h+='<div class="chk-wrap" style="display:flex"><input type="checkbox" data-duechk="'+p.id+'"></div>';
-  else h+='<div class="ck'+(done?' on':'')+'" onclick="toggleDone('+p.id+')">'+(done?'&#10003;':'')+'</div>';
+  if(dueBatch){
+   h+='<div class="chk-wrap" style="display:flex"><input type="checkbox"'+(dueBatchSel[p.id]?' checked':'')+' onclick="if(this.checked)dueBatchSel[this.dataset.id]=1;else delete dueBatchSel[this.dataset.id];" data-id="'+p.id+'"></div>';
+  }else{
+   h+='<div class="ck'+(done?' on':'')+'" onclick="toggleDone('+p.id+')">'+(done?'&#10003;':'')+'</div>';
+  }
   h+='<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="nm" style="font-weight:600;font-size:14.5px;flex:1;min-width:120px">'+esc(p.name)+'</span>'+tagOf(p.category)+'</div>';
   h+='<div class="meta '+(lastLevel(p.id)===0||overdue?'over':'soon')+'">'+esc(chName(p.chapter_id))+' 首背 '+o.first+(overdue?' · 已逾期':'')+(n?' · '+pointNotes(p.id).length+' 条卡点备注':'')+'</div>';
   h+='<textarea class="note-box" placeholder="这里写容易卡壳、需要特别注意的地方，输入后自动保存…" oninput="onNote('+p.id+',this.value)">'+(n?n.content:'')+'</textarea>'+(n?'<div class="note-tag has">最近一次：'+n.note_date+'</div>':'')+'</div>';
@@ -449,10 +454,10 @@ function doneAll(){
  list.forEach(function(o){doneToday[o.point.id]=1;});
  renderHome();toast('已全部标记完成 '+list.length+' 条');
 }
-var dueBatchSel={};
 function dueBatchMove(field,val){
  var ks=Object.keys(dueBatchSel).filter(function(k){return dueBatchSel[k];});
- if(!ks.length||!val){toast('先勾选知识点');return;}
+ if(!ks.length){toast('先勾选知识点');return;}
+ if(!val){return;}
  var body={};body[field]=field==='chapter'?+val:val;
  ks.forEach(function(id){
   var p=points.filter(function(x){return x.id==id;})[0];if(!p)return;
@@ -543,51 +548,57 @@ function renderHeatCells(){
   c.onclick=function(){nav('day/'+c.dataset.date);};
  });
 }
+var chBatch=null;
 function renderChapter(id){
  var c=chOf(id);if(!c){nav('');return;}
- var cps=points.filter(function(p){return p.chapter_id==id;});
+ var cid=+id;
+ var cps=points.filter(function(p){return p.chapter_id==cid;});
  var todo=cps.filter(function(p){return !firstDate(p.id);});
  var donec=cps.filter(function(p){return firstDate(p.id);}).length;
  var h='<div class="back" onclick="back()">&#8592; 返回</div>';
- h+='<div class="card"><div class="card-h" style="margin-bottom:14px"><span class="ic">&#128214;</span>'+esc(c.name)+'<div class="ch-act"><button class="ghost sm" onclick="batchNew('+id+')">一键首背未背的</button><button class="ghost sm" onclick="chBatch='+id+';renderChapter('+id+')">'+(chBatch==id?'退出批量':'批量编辑')+'</button></div></div><div style="height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden;margin:12px 0 4px"><i style="display:block;height:100%;width:'+(cps.length?Math.round(donec/cps.length*100):0)+'%;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:8px"></i></div><div style="font-size:13px;color:var(--sub)">'+donec+' / '+cps.length+' 已首背'+(todo.length?' · 还有 '+todo.length+' 条待首背':'')+'</div></div>';
- if(chBatch==id){
+ h+='<div class="card"><div class="card-h" style="margin-bottom:14px"><span class="ic">&#128214;</span>'+esc(c.name)+'<div class="ch-act"><button class="ghost sm" onclick="batchNew('+cid+')">一键首背未背的</button><button class="ghost sm" onclick="chBatch=chBatch==='+cid+'?null:'+cid+';renderChapter('+cid+')">'+(chBatch==cid?'退出批量':'批量编辑')+'</button></div></div><div style="height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden;margin:12px 0 4px"><i style="display:block;height:100%;width:'+(cps.length?Math.round(donec/cps.length*100):0)+'%;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:8px"></i></div><div style="font-size:13px;color:var(--sub)">'+donec+' / '+cps.length+' 已首背'+(todo.length?' · 还有 '+todo.length+' 条待首背':'')+'</div></div>';
+ if(chBatch==cid){
   var sch='<option value="">改章节 →</option>'+chapters.map(function(cc){return '<option value="'+cc.id+'">'+esc(cc.name)+'</option>';}).join('');
   var ca='<option value="">改题型 →</option><option>名词解释</option><option>简答</option><option>论述</option><option>其他</option>';
-  h+='<div class="batchbar on" style="position:static"><span class="cnt" id="chBatchCnt">已选 '+Object.keys(chSel).length+' 条</span><select onchange="chMove('+id+',\'chapter\',this.value)">'+sch+'</select><select onchange="chMove('+id+',\'category\',this.value)">'+ca+'</select><button class="danger sm" onclick="chDel('+id+')">删除所选</button><button class="ghost sm" onclick="chBatch=null;renderChapter('+id+')">取消</button></div>';
+  var cnt=Object.keys(chSel).filter(function(k){return chSel[k];}).length;
+  h+='<div class="batchbar on" style="position:static"><span class="cnt">已选 '+cnt+' 条</span><select onchange="chMove('+cid+',\'chapter\',this.value)">'+sch+'</select><select onchange="chMove('+cid+',\'category\',this.value)">'+ca+'</select><button class="danger sm" onclick="chDel('+cid+')">删除所选</button><button class="ghost sm" onclick="chBatch=null;chSel={};renderChapter('+cid+')">取消</button></div>';
  }
  if(todo.length){
   h+='<div class="card"><h4 style="font-size:14px;color:var(--ink);font-weight:700;margin:0 0 14px;padding-left:10px;border-left:3px solid var(--l2)">待首背 <span style="float:right;color:var(--sub);font-weight:400;font-size:12px">'+todo.length+' 条</span></h4>';
-  todo.forEach(function(p){h+=pointRow(p);});
+  todo.forEach(function(p){h+=pointRow(p,cid);});
   h+='</div>';
  }
  ['名词解释','简答','论述','新增'].forEach(function(cat){
   var list=cps.filter(function(p){return (p.category||'简答')===cat;});
   if(!list.length)return;
   h+='<div class="card"><h4 style="font-size:14px;color:var(--ink);font-weight:700;margin:0 0 14px;padding-left:10px;border-left:3px solid var(--brand)">'+cat+' <span style="float:right;color:var(--sub);font-weight:400;font-size:12px">'+list.length+' 条</span></h4>';
-  list.forEach(function(p){h+=pointRow(p);});
+  list.forEach(function(p){h+=pointRow(p,cid);});
   h+='</div>';
  });
  h+='<footer>数据存于 Supabase 多设备打开同一网址自动同步</footer>';
  document.getElementById('page-chapter').innerHTML=h;
 }
-function pointRow(p){
+function pointRow(p,cid){
  var l=lastLevel(p.id);var n=pointNotes(p.id)[0];
- var chk=chBatch==p.chapter_id?'<div class="chk-wrap" style="display:flex"><input type="checkbox" data-chk="'+p.id+'"></div>':'';
- var acts=chBatch==p.chapter_id?'<button class="soft sm" onclick="delPoint('+p.id+')">删</button>':'<button class="ghost sm" onclick="openPointModal('+p.id+')">编辑</button><button class="ghost sm" onclick="nav(\'detail/'+p.id+'\')">注</button><span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span>';
+ var chk='';
+ if(chBatch==cid){
+  chk='<div class="chk-wrap" style="display:flex"><input type="checkbox"'+(chSel[p.id]?' checked':'')+' onclick="if(this.checked){chSel[this.dataset.id]=1;}else{delete chSel[this.dataset.id];}document.getElementById(\'chBatchCnt\')&&(document.getElementById(\'chBatchCnt\').textContent=\'已选 \'+Object.keys(chSel).filter(function(k){return chSel[k];}).length+\' 条\');" data-id="'+p.id+'"></div>';
+ }
+ var acts=chBatch==cid?'<button class="soft sm" onclick="delPoint('+p.id+')">删</button>':'<button class="ghost sm" onclick="openPointModal('+p.id+')">编辑</button><button class="ghost sm" onclick="nav(\'detail/'+p.id+'\')">注</button><span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span>';
  return '<div class="point" id="pt_'+p.id+'">'+chk+'<span class="lvl"'+(l?' data-l="'+l+'"':'')+'></span><div class="info" onclick="togglePoint('+p.id+')"><div class="nm">'+esc(p.name)+' '+tagOf(p.category)+(n?' <span class="tag td">有卡点</span>':'')+'</div><div class="prev">'+(clean(p.content)||'暂无内容 点编辑添加具体内容')+'</div></div><div class="acts" onclick="event.stopPropagation()">'+acts+'</div></div>';
 }
-var chBatch=null, chSel={};
-function chMove(chId,field,val){
+function chMove(cid,field,val){
  var ks=Object.keys(chSel).filter(function(k){return chSel[k];});
- if(!ks.length||!val){toast('先勾选知识点');return;}
+ if(!ks.length){toast('先勾选知识点');return;}
+ if(!val){return;}
  var body={};body[field]=field==='chapter'?+val:val;
  ks.forEach(function(id){
   var p=points.filter(function(x){return x.id==id;})[0];if(!p)return;
   Object.assign(p,body);rest('/kb_points?id=eq.'+p.id,'PATCH',body);
  });
- chSel={};chBatch=null;renderChapter(chId);toast('已更新 '+ks.length+' 条');
+ chSel={};chBatch=null;renderChapter(cid);toast('已更新 '+ks.length+' 条');
 }
-function chDel(chId){
+function chDel(cid){
  var ks=Object.keys(chSel).filter(function(k){return chSel[k];});
  if(!ks.length){toast('先勾选要删除的知识点');return;}
  if(!confirm('确定删除这 '+ks.length+' 条知识点？'))return;
@@ -597,7 +608,7 @@ function chDel(chId){
   .then(function(){return rest('/kb_points?id=eq.'+id,'DELETE');})
   .then(function(){
    points=points.filter(function(p){return p.id!=id;});reviews=reviews.filter(function(r){return r.point_id!=id;});notes=notes.filter(function(n){return n.point_id!=id;});delete metas[id];
-   if(--left<=0){chSel={};chBatch=null;renderChapter(chId);toast('已删除 '+ks.length+' 条');}
+   if(--left<=0){chSel={};chBatch=null;renderChapter(cid);toast('已删除 '+ks.length+' 条');}
   });
  });
 }
@@ -628,7 +639,7 @@ function renderDetail(id){
  if(p.content)h+='<div style="font-size:13.5px;line-height:1.8;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:16px">'+p.content+'</div>';
  h+='<div style="font-size:14px;font-weight:600;margin:0 0 10px;padding-left:10px;border-left:3px solid var(--l3)">卡点备注 <span style="font-weight:400;font-size:12px;color:var(--sub)">按日期倒序</span></div>';
  if(!ns.length){h+='<div class="empty">还没有卡点备注 在今日待复习页面对着知识点写</div>';}
- else{ns.forEach(function(n){h+='<div class="note-list" style="border:none;padding:0"><div class="nl-item"><span class="nl-date">'+n.note_date+'</span><span class="nl-text">'+esc(n.content)+'</span></div></div>';});}
+ else{ns.forEach(function(n){h+='<div style="border-top:1px dashed var(--line);padding:12px 0"><div style="font-family:monospace;font-size:12px;color:var(--sub)">'+n.note_date+'</div><div style="font-size:13.5px;line-height:1.7;margin-top:6px">'+esc(n.content)+'</div></div>';});}
  h+='<div class="lvl-btns" style="margin-top:18px"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button><button class="ghost" onclick="openPointModal('+p.id+')">编辑</button></div></div>';
  document.getElementById('page-detail').innerHTML=h;
 }
@@ -682,7 +693,7 @@ function renderStat(kind){
   }).join('')):'<div class="empty">没有正在褪色的</div>';
  }else if(kind==='total'||kind==='due'){
   title=kind==='total'?'累计背诵':'今日待复习';
-  var items=kind==='total'?reviews:dueList().map(function(o){return {point_id:o.point.id,review_date:o.first,level:lastLevel(o.point.id),_note:o};});
+  var items=kind==='total'?reviews:dueList().map(function(o){return {point_id:o.point.id,review_date:o.first,level:lastLevel(o.point.id)};});
   var byDay={};items.forEach(function(r){byDay[r.review_date]=(byDay[r.review_date]||0)+1;});
   var days2=Object.keys(byDay).sort().reverse();
   body=days2.length?'<div style="font-size:13px;color:var(--sub);margin-bottom:6px">共 '+items.length+' 条 · 分布在 '+days2.length+' 天</div>'+days2.slice(0,60).map(function(d){return '<div class="list-item" style="cursor:pointer" onclick="nav(\'day/'+d+'\')"><span class="sw" style="background:linear-gradient(135deg,var(--brand),var(--brand2))"></span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14.5px;font-family:monospace">'+d+'</div></div><span style="font-size:13px;color:var(--sub);font-weight:600">'+byDay[d]+' 条</span></div>';}).join(''):'<div class="empty">还没有记录</div>';
@@ -714,10 +725,11 @@ function quickReview(pointId,level){
   if(level>=4)upsertMeta(pointId,t,level);
   toast('已记录 '+LVL[level]);
   var hash=location.hash.replace(/^#/,'');
-  if(hash.indexOf('chapter/')===0)renderChapter(hash.split('/')[1]);
-  else if(hash.indexOf('detail/')===0)renderDetail(hash.split('/')[1]);
-  else if(hash.indexOf('day/')===0)renderDay(hash.split('/')[1]);
-  else if(hash.indexOf('stat/')===0)renderStat(hash.split('/')[1]);
+  var parts=hash.split('/');
+  if(parts[0]==='chapter')renderChapter(parts[1]);
+  else if(parts[0]==='detail')renderDetail(parts[1]);
+  else if(parts[0]==='day')renderDay(parts[1]);
+  else if(parts[0]==='stat')renderStat(parts[1]);
   else renderHome();
  };
  if(exist){
@@ -736,7 +748,7 @@ function delPoint(id){
  .then(function(){return rest('/kb_points?id=eq.'+id,'DELETE');})
  .then(function(){
   points=points.filter(function(p){return p.id!=id;});reviews=reviews.filter(function(r){return r.point_id!=id;});notes=notes.filter(function(n){return n.point_id!=id;});delete metas[id];
-  toast('已删除');var h=location.hash.replace(/^#/,'');renderChapter(h.split('/')[1]||0);
+  toast('已删除');chSel={};var h=location.hash.replace(/^#/,'');var parts=h.split('/');renderChapter(parts[1]||0);
  }).catch(function(){toast('删除失败');});
 }
 var curPoint=null;
