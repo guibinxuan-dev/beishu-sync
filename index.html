@@ -954,36 +954,73 @@ function enPickToday(){
  if(due.length)return due[0];
  return fresh[0]||cand[0];
 }
+// 数据源：优先用内联 EN_DATA（离线可用），数据库仅作备份同步
 function enSeed(){
+ enInitFromLocal();
+ // 尝试同步到数据库（失败不影响本地使用）
  rest('/kb_english_templates?select=id&limit=1').then(function(exist){
-  if(exist&&exist.length){enLoadAll();return;}
-  var chain=Promise.resolve();
-  EN_DATA.forEach(function(d){
-   chain=chain.then(function(){
-    return rest('/kb_english_templates?select=id','POST',{
-     group_key:d.group, group_order:d.order, item_key:d.key, name:d.name,
-     content:d.content, cn_prompt:d.prompt, notes:(d.memory||'')+' | '+(d.notes||''), sort_order:d.order
-    }).catch(function(){});
-   });
-  });
-  chain.then(function(){enLoadAll();});
- }).catch(function(){enLoadAll();});
+  if(exist&&exist.length){
+   enSyncFromRemote();
+  }else{
+   // 远程为空，把本地数据推上去（仅当确实为空时）
+   enPushLocal();
+  }
+ }).catch(function(){enRenderHomeCard();});
 }
-function enLoadAll(){
- rest('/kb_english_templates?select=*&order=group_order').then(function(t){enTpls=t||[];return rest('/kb_english_reviews?select=*&order=review_date.desc');})
- .then(function(r){enReviews=r||[];return rest('/kb_english_notes?select=*&order=note_date.desc');})
- .then(function(n){enNotes=n||[];return rest('/kb_meta?select=*');})
- .then(function(m){
-  enMetas={};(m||[]).forEach(function(x){enMetas[x.point_id||x.template_id]=x;});
-  // 把加载到的数据 id 回写 DATA（用于关联）
-  if(enTpls.length){
+
+function enInitFromLocal(){
+ enTpls=EN_DATA.map(function(d,i){return {
+  id:'local_'+d.order,
+  group_key:d.group, group_order:d.order, item_key:d.key,
+  name:d.name, content:d.content, cn_prompt:d.prompt,
+  notes:(d.memory||'')+' | '+(d.notes||''), sort_order:d.order
+ };});
+ // 把生成的 id 回写到 EN_DATA，供 enMark/enOpen 等按 id 使用
+ EN_DATA.forEach(function(d,i){d.id='local_'+d.order;});
+ enRenderHomeCard();
+}
+
+function enSyncFromRemote(){
+ rest('/kb_english_templates?select=*&order=group_order').then(function(t){
+  if(t&&t.length){
+   enTpls=t;
+   // 用远程 id 回写
    EN_DATA.forEach(function(d){
-    var t=enTpls.filter(function(t2){return t2.item_key===d.key;})[0];
-    if(t)d.id=t.id;
+    var tm=t.filter(function(x){return x.item_key===d.key;})[0];
+    if(tm)d.id=tm.id;
    });
   }
+  return rest('/kb_english_reviews?select=*&order=review_date.desc');
+ }).then(function(r){
+  if(r)enReviews=r;
+  return rest('/kb_english_notes?select=*&order=note_date.desc');
+ }).then(function(n){
+  if(n)enNotes=n;
+  return rest('/kb_meta?select=*');
+ }).then(function(m){
+  enMetas={};(m||[]).forEach(function(x){enMetas[x.point_id||x.template_id]=x;});
   enRenderHomeCard();
  }).catch(function(){enRenderHomeCard();});
+}
+
+function enPushLocal(){
+ var chain=Promise.resolve();
+ EN_DATA.forEach(function(d){
+  chain=chain.then(function(){
+   return rest('/kb_english_templates?select=id','POST',{
+    group_key:d.group, group_order:d.order, item_key:d.key, name:d.name,
+    content:d.content, cn_prompt:d.prompt, notes:(d.memory||'')+' | '+(d.notes||''), sort_order:d.order
+   }).then(function(r){
+    if(r&&r[0])d.id=r[0].id;
+   }).catch(function(){});
+  });
+ });
+ chain.then(function(){enRenderHomeCard();});
+}
+function enLoadAll(){
+ // 本地内联数据兜底：远程不可用时保证页面正常
+ if(!enTpls.length){enInitFromLocal();return;}
+ enRenderHomeCard();
 }
 function enRenderHomeCard(){
  var box=document.getElementById('enCard');if(!box)return;
