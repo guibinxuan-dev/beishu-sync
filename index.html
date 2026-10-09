@@ -187,27 +187,92 @@ body.light .list-item:hover{background:rgba(0,0,0,.012)}
 footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter-spacing:.6px}
 @media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.hero{padding:26px 22px 24px}.hero-num{font-size:56px}.card{padding:20px 18px}.topbar input{min-width:120px}.cat-grid{grid-template-columns:1fr}.lvl-btns button{width:30px;height:30px;font-size:11px}.point .acts{flex-wrap:wrap;width:100%;margin-top:6px;justify-content:flex-end}}
 </style>
+
+<style>
+
+/* ========== 英语模块 ========== */
+.en-hero{position:relative;margin:22px 0 26px;border-radius:32px;padding:32px 30px 26px;overflow:hidden;background:linear-gradient(135deg,rgba(63,214,171,.16),rgba(124,155,255,.10) 52%,rgba(176,124,255,.09)),var(--card);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);box-shadow:var(--shadow)}
+.en-hero-top{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--sub);letter-spacing:1.1px;text-transform:uppercase}
+.en-hero-top .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:pulse 2s infinite}
+.en-hero-title{font-size:26px;font-weight:800;letter-spacing:.5px;margin:12px 0 4px;background:linear-gradient(120deg,#fff 10%,#a8e6cf 55%,#c8d6ff 92%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1.25}
+body.light .en-hero-title{background:linear-gradient(120deg,#14181f,#1f6f5c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.en-hero-sub{font-size:13px;color:var(--sub);margin-bottom:18px}
+.en-hero-cta{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.en-hero-cta button{padding:12px 22px;font-size:14px;border-radius:14px}
+.en-hero-cta .ghostbtn{background:rgba(255,255,255,.05);color:var(--ink);border:1px solid var(--line);box-shadow:none;font-weight:600;padding:12px 22px;font-size:14px;border-radius:14px;cursor:pointer;font-family:inherit;transition:.18s}
+.en-hero-cta .ghostbtn:hover{background:rgba(255,255,255,.11);transform:translateY(-2px)}
+.en-hero-row{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+.en-hero-cell{flex:1;min-width:96px;background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:15px;padding:12px 14px}
+.en-hero-cell b{display:block;font-size:22px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(120deg,var(--accent),var(--brand));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2}
+.en-hero-cell span{font-size:10.5px;color:var(--sub);letter-spacing:.7px}
+.en-pill{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.6px;padding:3px 10px;border-radius:20px;background:rgba(63,214,171,.16);color:#5eead4;margin-left:8px;vertical-align:middle}
+.en-pill.a{background:rgba(124,155,255,.18);color:#a8c0ff}
+.en-pill.b{background:rgba(176,124,255,.18);color:#d4adff}
+.en-due-bar{display:flex;align-items:center;gap:11px;font-size:13.5px;margin-bottom:14px}
+.en-due-bar .lbl{color:var(--sub);font-size:12.5px}
+.en-due-bar b{font-size:16px;font-weight:800}
+.en-due-bar .en-pill{margin-left:auto}
+.en-due-acts{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.en-detail-tpl{font-size:14.5px;line-height:2;background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 16px;color:var(--ink);word-break:break-word;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+body.light .en-detail-tpl{background:rgba(0,0,0,.014)}
+.en-detail-tpl .ph{color:var(--accent);font-weight:600;background:rgba(63,214,171,.10);padding:1px 6px;border-radius:6px;font-size:13.5px;white-space:nowrap}
+.en-detail-h{font-size:13.5px;font-weight:700;margin:18px 0 8px;padding-left:10px;border-left:3px solid var(--accent);color:var(--ink)}
+.en-detail-notes{font-size:13.5px;line-height:1.75;color:var(--sub);background:rgba(255,255,255,.03);border:1px dashed var(--line);border-radius:12px;padding:12px 16px}
+body.light .en-detail-notes{background:rgba(0,0,0,.012)}
+.en-detail-prompt{font-size:13.5px;line-height:1.8;background:linear-gradient(135deg,rgba(63,214,171,.10),rgba(124,155,255,.07));border:1px solid rgba(63,214,171,.28);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+.en-detail-prompt b{color:#5eead4}
+.en-detail-prompt .sc{display:block;font-size:12.5px;color:var(--sub);margin-top:7px}
+.en-hist-item{display:flex;gap:11px;align-items:center;padding:11px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.en-hist-item:last-child{border-bottom:none}
+.en-hist-item .d{font-family:monospace;font-size:11.5px;color:var(--sub);min-width:104px;flex-shrink:0}
+.en-hist-item .r{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:700;flex-shrink:0}
+.en-hist-item .r.pass{background:rgba(34,197,94,.16);color:#4ade80}
+.en-hist-item .r.vague{background:rgba(224,168,46,.18);color:#f0c068}
+.en-hist-item .r.forget{background:rgba(248,113,113,.16);color:#fca5a5}
+.en-hist-item .c{flex:1;color:var(--ink)}
+.en-mod-h{display:flex;align-items:center;gap:11px;font-size:15px;font-weight:700;margin-bottom:16px}
+.en-mod-h .ic{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;background:linear-gradient(135deg,var(--accent),var(--brand));color:#08090c;flex:0 0 auto;box-shadow:0 4px 12px rgba(63,214,171,.3);font-weight:800}
+.en-mod-h .cnt{margin-left:auto;font-size:11.5px;color:var(--sub);font-weight:400}
+.en-mod-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.en-mod-tab{padding:9px 18px;font-size:13.5px;font-weight:600;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--sub);cursor:pointer;transition:.18s}
+.en-mod-tab:hover{background:rgba(255,255,255,.08)}
+.en-mod-tab.on{background:linear-gradient(135deg,var(--accent),var(--brand));color:#08090c;border-color:transparent;box-shadow:0 5px 16px rgba(63,214,171,.3)}
+.en-list-item{display:flex;align-items:flex-start;gap:12px;padding:14px 6px;border-bottom:1px dashed var(--line);transition:.18s;border-radius:10px;cursor:pointer}
+.en-list-item:hover{background:rgba(255,255,255,.025);padding-left:12px}
+body.light .en-list-item:hover{background:rgba(0,0,0,.012)}
+.en-list-item:last-child{border-bottom:none}
+.en-list-item .mk{width:9px;height:9px;border-radius:50%;flex:0 0 auto;margin-top:7px;background:rgba(255,255,255,.09)}
+body.light .en-list-item .mk{background:rgba(0,0,0,.09)}
+.en-list-item .mk.on{background:var(--accent);box-shadow:0 0 10px rgba(63,214,171,.5)}
+.en-list-item .en-li-main{flex:1;min-width:0}
+.en-list-item .en-li-name{font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.en-list-item .en-li-meta{font-size:11.5px;color:var(--sub);margin-top:5px}
+.en-note-input{width:100%;margin-top:16px;padding:11px 14px;border:1px solid var(--line);border-radius:12px;font-size:13px;background:rgba(255,255,255,.035);color:var(--ink);font-family:inherit;resize:vertical;min-height:44px;display:block;line-height:1.6}
+body.light .en-note-input{background:rgba(0,0,0,.012)}
+.en-note-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(63,214,171,.14)}
+.en-note-input::placeholder{color:var(--sub);font-size:12.5px}
+.en-empty{padding:26px;text-align:center;color:var(--sub);font-size:13.5px}
+@media(max-width:680px){
+ .en-hero{padding:26px 22px 22px}
+ .en-hero-title{font-size:22px}
+}
+</style>
 </head>
 <body>
 <div class="wrap">
-
 <div class="page on" id="page-home"></div>
 <div class="page" id="page-chapter"></div>
 <div class="page" id="page-detail"></div>
-
 </div>
-
 <div class="topbar">
- <span class="logo" onclick="nav('')" style="cursor:pointer">&#128214; 背书地图</span>
+ <span class="logo" onclick="nav('')" style="cursor:pointer">&#128214; 背书地图</span><button class="ghost" onclick="enGo()" style="background:linear-gradient(135deg,rgba(63,214,171,.18),rgba(124,155,255,.14));border-color:rgba(63,214,171,.32);color:#5eead4">🇬🇧 英语</button>
  <input type="text" id="search" placeholder="搜索知识点名称或内容">
  <button class="ghost" onclick="openPointModal()">＋ 知识点</button>
  <button class="ghost" id="darkBtn" onclick="toggleTheme()">切换主题</button>
 </div>
-
 <div class="mask" id="mask"><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"></div>
 <div class="heat-tip" id="tip"></div>
-
 <script>
 var SUPABASE_URL='https://jnnsmjjhjhwrcxnklonf.supabase.co';
 var APIKEY='sb_publishable_2w2iM-cklg-Aof9dP7xB_Q_OfWQmj8V';
@@ -262,7 +327,7 @@ function dayHash(d){
 function todayQuote(){return QUOTES[dayHash(today)%QUOTES.length];}
 function ts(){return today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());}
 function pad(n){return n<10?'0'+n:''+n;}
-function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'&quot;');}
 function clean(s){var d=document.createElement('div');d.innerHTML=s;return d.textContent||'';}
 function daysBetween(a,b){var x=new Date(a);x.setHours(0,0,0,0);return Math.round((new Date(b)-x)/86400000);}
 function addDaysStr(s,n){var x=new Date(s);x.setDate(x.getDate()+n);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());}
@@ -412,7 +477,8 @@ function renderHome(){
  }
  h+='</div>';
  h+='<footer>数据存于 Supabase 多设备打开同一网址自动同步 默认密码 beishu2024</footer>';
- document.getElementById('page-home').innerHTML=h;
+     h += '<div id="enCardBox"></div>';
+document.getElementById('page-home').innerHTML=h;
  if(homeView==='map')setTimeout(renderMapCells,0);else setTimeout(renderHeatCells,0);
 }
 function renderDueBatchBar(){
@@ -837,6 +903,464 @@ function loadAll(){
  if(pwd===PASSWORD){localStorage.setItem('kb_login','1');loadAll();}
  else{toast('密码错误');setTimeout(function(){location.reload();},700);}
 })();
+
+/* ========== 英语模块 ========== */
+var EN_ITEMS = [{group_key: "A模板",
+  group_order: 1,
+  item_key: "P1-图画",
+  content: "Presented before us is a thought-provoking scene in which [画面主体及动作]. What makes the picture particularly striking is that [关键细节或对比]. Simple as the picture may seem, it conveys a meaningful message about [主题].",
+  cn_prompt: "描述一张图画（如祖孙三代各自看手机），按「画面主体→关键细节→核心寓意」写",
+  notes: "记忆顺序：画面主体 → 关键细节 → 核心寓意。若主语是 Several villagers 用 are；A group of villagers 建议用 is。主题要具体到 the inheritance of traditional culture 这种表达。",
+  sort_order: 1},
+ {group_key: "A模板",
+  group_order: 2,
+  item_key: "P1-动态表",
+  content: "The [table/line graph/bar chart] illustrates how [主题] changed from [起始年份] to [结束年份]. During this period, [A] experienced a noticeable [rise/fall], while [B] showed [a similar trend/an opposite trend]. Taken together, the figures reveal a clear change in [主题或社会意义].",
+  cn_prompt: "描述一张动态图（如耐用消费品拥有量变化），突出主要趋势",
+  notes: "记忆顺序：材料类型与时间 → 主要变化 → 数据反映的意义。材料类型须准确：表格 table、折线图 line graph、柱状图 bar chart。数据多时优先突出主要趋势，不机械罗列。",
+  sort_order: 2},
+ {group_key: "A模板",
+  group_order: 3,
+  item_key: "P1-静态",
+  content: "The chart presents the distribution of [调查主题]. Specifically, [A] accounts for the largest proportion, at [数字]%. By contrast, [B] represents the smallest share, at only [数字]%. This striking difference reflects a broader change in our society.",
+  cn_prompt: "描述一张静态图（如饼图），写最大比例与最小比例",
+  notes: "记忆顺序：调查主题 → 最大比例 → 最小比例 → 社会意义。chart 是统称；具体是饼图可换成 pie chart。若非比例分布而是人数/频率比较，要调整 proportion/share，不能强套。",
+  sort_order: 3},
+ {group_key: "A模板",
+  group_order: 4,
+  item_key: "P1-混合",
+  content: "The two forms of information jointly illustrate the current situation of [主题]. As shown in the picture, [画面内容]. Meanwhile, the chart indicates that [主要数据或趋势]. Although presented in different forms, they point to the same meaningful change in our society.",
+  cn_prompt: "描述一道图画+图表混合题，把图与表串成同一寓意",
+  notes: "记忆顺序：总主题 → 图片内容 → 图表信息 → 共同寓意。",
+  sort_order: 4},
+ {group_key: "A模板",
+  group_order: 5,
+  item_key: "P1-文字",
+  content: "The provided statement presents a thought-provoking view that [改写原文观点]. It highlights the importance of [主题] in our daily lives and social development. Personally, I strongly agree with this idea, as it is highly relevant to our present society.",
+  cn_prompt: "引述一句名言并表明立场（如「知识就是力量」）",
+  notes: "记忆顺序：改写观点 → 强调价值 → 表明立场。若原文观点有争议或题目要求评价而非赞同，不要机械用 I strongly agree，应按题调整立场。",
+  sort_order: 5},
+ {group_key: "A模板",
+  group_order: 6,
+  item_key: "P2-正面",
+  content: "There are several interconnected reasons why this phenomenon deserves our attention. To begin with, [主题] can bring considerable benefits to individuals by enabling them to [作用一]. Moreover, [第二个原因或社会条件] has created more favorable conditions for [主题或趋势]. More importantly, this phenomenon reflects not merely a change in behavior, but a broader transformation in people's attitudes toward [主题].",
+  cn_prompt: "用正面论证写「阅读的重要性」，把四层功能句填出来",
+  notes: "四功能须记清：① There are several... 总起 ② To begin with... 第一层（个人作用/直接影响）③ Moreover... 第二层（社会条件/科技/经济/观念）④ More importantly... 深层意义（价值观/生活方式/社会变化）。",
+  sort_order: 6},
+ {group_key: "A模板",
+  group_order: 7,
+  item_key: "P2-负面",
+  content: "There are several interconnected reasons why this phenomenon deserves our attention. To begin with, excessive [行为或现象] may prevent individuals from [负面影响一]. Moreover, [相关原因或社会条件] may further aggravate this problem. More importantly, this phenomenon reflects not merely a change in behavior, but a broader problem in people's attitudes toward [主题].",
+  cn_prompt: "用负面论证写「沉迷手机的危害」，更换前两句论证方向",
+  notes: "只换前两句论证方向。正面题强调 benefits/opportunities/development；负面题强调 risks/problems/negative effects。第三句原因必须符合题意，不能凭空认定某种社会条件加剧问题。",
+  sort_order: 7},
+ {group_key: "A模板",
+  group_order: 8,
+  item_key: "P3-通用",
+  content: "In light of the above, [主题或现象] deserves our thoughtful attention. As individuals, we should enhance our awareness of [主题] and translate it into concrete actions in our daily lives. Meanwhile, relevant institutions should take effective measures to create a more favorable environment for [目标]. With the joint efforts of individuals and society, we can better [目标或解决的问题] and build a more promising future.",
+  cn_prompt: "用 P3 四句结构收尾一个话题（如环保）",
+  notes: "四句功能：① In light of the above... 总结 ② As individuals... 个人行动 ③ Meanwhile, relevant institutions... 社会/机构 ④ With the joint efforts... 展望。替换示例：传统文化 preserve and promote；环保 protect the environment；健康 maintain a healthy lifestyle；科技 make better use of technology；消费升级 balance consumption with environmental responsibility；消极行为 address this problem effectively。不是每题都要写政府，侧重个人习惯时可换家庭/学校/社区。",
+  sort_order: 8},
+ {group_key: "A模板",
+  group_order: 9,
+  item_key: "图表-趋势",
+  content: "趋势词：rise significantly / increase steadily / decline sharply / decrease slightly / remain stable / fluctuate / reach a peak of / rise from A to B / show an upward trend / show an opposite trend。严格背诵句：During this period, [A] experienced a noticeable rise from [数字] to [数字], while [B] showed a similar upward trend. Taken together, the figures reveal a clear change in [主题].",
+  cn_prompt: "用趋势句描述一张上升折线图（如手机拥有量从 A 升到 B）",
+  notes: "只在图表题使用。数据准确性：若单位是「每百户拥有量」不能误写成百分比；只有真正表示比例时才能用 %、proportion、share。",
+  sort_order: 9},
+ {group_key: "A模板",
+  group_order: 10,
+  item_key: "图表-比例",
+  content: "对比词：account for the largest proportion / represent the smallest share / account for ... percent / By contrast, / a striking difference / distribution / survey results。严格背诵句：Specifically, [A] accounts for the largest proportion, at [数字]%. By contrast, [B] represents the smallest share, at only [数字]%. This striking difference reflects a broader change in our society.",
+  cn_prompt: "用比例句描述一张饼图（如消费结构分布）",
+  notes: "严格背诵句只在真正表示比例时用 %、proportion、share。",
+  sort_order: 10},
+ {group_key: "B语料",
+  group_order: 11,
+  item_key: "个人成长与优秀品质",
+  content: "develop self-discipline 培养自律 / strengthen one's sense of responsibility 增强责任感 / cope with difficulties in life 应对生活中的困难 / deal with pressure more effectively 更有效地应对压力 / improve one's problem-solving skills 提升解决问题的能力 / stand out in a competitive environment 在竞争激烈的环境中脱颖而出 / lay a solid foundation for the future 为未来打下坚实基础 / persistent effort 坚持不懈的努力 / personal growth 个人成长 / fulfill one's potential 实现个人潜能。可直接放进 P2：To begin with, perseverance can bring considerable benefits to individuals by enabling them to cope with difficulties more effectively. Moreover, developing self-discipline helps young people lay a solid foundation for the future.",
+  cn_prompt: "用「培养自律/坚持不懈」相关语料写进 P2 正面论证",
+  notes: "适用：坚持、自律、勤奋、责任感、面对困难、青年成长。",
+  sort_order: 11},
+ {group_key: "B语料",
+  group_order: 12,
+  item_key: "传统文化与传承",
+  content: "preserve traditional culture 传承传统文化 / promote traditional culture 弘扬传统文化 / protect cultural heritage 保护文化遗产 / deepen one's understanding of national history 加深对本国历史的了解 / strengthen cultural identity 增强文化认同 / connect different generations 连接不同世代 / give traditional culture new life 让传统文化焕发新的活力 / continue to thrive in modern society 在现代社会中延续 / cultural diversity 文化多样性 / pass down from generation to generation 代代相传。可直接放进 P2：To begin with, traditional cultural activities enable people to deepen their understanding of national history and strengthen cultural identity. More importantly, the preservation of traditional culture reflects a broader recognition of the value of our cultural heritage.",
+  cn_prompt: "用「龙舟赛/文化认同」相关语料写进 P2",
+  notes: "适用：传统节日、龙舟赛、非物质文化遗产、文化认同、文化传播。",
+  sort_order: 12},
+ {group_key: "B语料",
+  group_order: 13,
+  item_key: "科技与数字生活",
+  content: "the rapid development of technology 科技的快速发展 / the widespread use of the Internet and smartphones 广泛使用互联网和智能手机 / provide greater convenience 提供更大的便利 / improve work efficiency 提高工作效率 / access information 获取信息 / broaden one's horizons 拓宽知识面 / excessive reliance on digital devices 过度依赖数字设备 / reduce face-to-face interaction 减少面对面交流 / protect personal privacy 保护个人隐私 / make responsible use of technology 合理使用科技。正面套 P2：To begin with, digital technology can bring considerable benefits to individuals by enabling them to access information more efficiently. 负面：To begin with, excessive reliance on digital devices may reduce face-to-face interaction and weaken personal relationships.",
+  cn_prompt: "用「科技便利/过度依赖」相关语料，按题目选正面或负面论证",
+  notes: "适用：智能手机、互联网、人工智能、数字技术、科技便利与风险。",
+  sort_order: 13},
+ {group_key: "B语料",
+  group_order: 14,
+  item_key: "经济发展与消费升级",
+  content: "the rapid development of the economy 经济的快速发展 / disposable income 可支配收入 / an improvement in living standards 生活水平提高 / material living conditions 物质生活条件 / a more comfortable life 更舒适的生活 / a more convenient lifestyle 更便利的生活方式 / consumption upgrading 消费升级 / household appliances 家用电器 / improve the quality of life 提高生活质量 / responsible consumption 理性消费 / a green and energy-efficient lifestyle 绿色、节能的生活方式 / balance consumption with environmental responsibility 兼顾消费与环境责任。可直接放进 P2：To begin with, the growing ownership of household appliances enables people to enjoy a more convenient and comfortable life. Moreover, rising disposable income has created more favorable conditions for consumption upgrading.",
+  cn_prompt: "用「家用电器/可支配收入」相关语料写进 P2，对应 2025 表格题",
+  notes: "适用：耐用消费品表格、生活水平、家用电器、消费方式变化。",
+  sort_order: 14},
+ {group_key: "B语料",
+  group_order: 15,
+  item_key: "环境保护与可持续发展",
+  content: "environmental protection 环境保护 / environmental pollution 环境污染 / conserve natural resources 节约自然资源 / reduce unnecessary waste 减少不必要的浪费 / take environmentally friendly measures 采取环保措施 / raise environmental awareness 提高环保意识 / sustainable development 可持续发展 / protect the interests of future generations 保护子孙后代的利益 / a green lifestyle 绿色生活方式 / joint efforts 共同努力。可直接放进 P3：As individuals, we should raise our environmental awareness and translate it into concrete actions in our daily lives. With the joint efforts of individuals and society, we can promote sustainable development and build a more promising future.",
+  cn_prompt: "用「环保意识/可持续发展」相关语料写进 P3",
+  notes: "适用：环保、低碳生活、资源浪费、绿色消费、可持续发展。",
+  sort_order: 15},
+ {group_key: "B语料",
+  group_order: 16,
+  item_key: "教育、阅读与知识积累",
+  content: "develop a reading habit 培养阅读习惯 / accumulate knowledge 积累知识 / broaden one's horizons 拓宽视野 / develop independent thinking 培养独立思考能力 / stimulate creativity 激发创造力 / lifelong learning 终身学习 / acquire new knowledge 获取新知识 / improve overall abilities 提高综合能力 / prepare for future development 为未来发展做好准备 / develop a positive attitude toward learning 形成积极的学习态度。可直接放进 P2：To begin with, reading can bring considerable benefits to individuals by enabling them to accumulate knowledge and broaden their horizons. More importantly, a commitment to lifelong learning reflects a positive attitude toward personal growth.",
+  cn_prompt: "用「阅读/终身学习」相关语料写进 P2 正面论证",
+  notes: "适用：阅读习惯、终身学习、教育价值、知识积累、个人发展。",
+  sort_order: 16},
+ {group_key: "B语料",
+  group_order: 17,
+  item_key: "通用原因句",
+  content: "经济因素：With the rapid development of the economy, people's disposable income has increased, creating more opportunities for [主题或行为]. 科技因素：Advances in technology have made it easier for people to [具体行为], thereby increasing its popularity. 生活方式因素：As the pace of modern life continues to accelerate, people are paying greater attention to [需求或主题]. 观念变化：People have become increasingly aware of the importance of [主题], which has encouraged them to [具体行为]. 社会条件：The development of modern society has created more favorable conditions for [主题或趋势]. 个人收益：By enabling people to [具体作用], [主题或行为] can contribute to their personal growth and overall well-being. 选择指引：消费品拥有量上升→经济、科技；阅读学习→观念变化、个人收益；传统文化→文化认同、社会条件；数字生活→科技（负面题写过度依赖影响）；环保→观念变化、个人责任、社会措施。",
+  cn_prompt: "就一个具体题目（如「阅读习惯变化」）挑选 2-3 条原因句组合使用",
+  notes: "不绑定单一主题，按题挑选。语料是备用零件，不是每篇都要全用。别把「经济发展」硬套进每一题。",
+  sort_order: 17}
+];
+var enItems = [];      /* 从 Supabase 加载 */
+var enReviews = [];    /* 应用验证记录 */
+var enNotes = [];      /* 卡点备注 */
+var enMetas = {};      /* id -> meta */
+var enView = 'home';   /* home / list */
+var enOpenId = null;
+var enNoteTimer = null;
+var EN_LEVELS = { pass: '想起来了', vague: '有点印象', forget: '忘了' };
+
+/* 拉取英语模块数据（表不存在时静默跳过，不影响专业课） */
+function enLoadAll() {
+  var done = function () {
+    enRenderCard();
+    var h = location.hash.replace(/^#/, '');
+    if (h === 'english' || h.indexOf('english/') === 0) { renderEn(); }
+  };
+  rest('/kb_english_templates?select=*&order=group_order', 'GET').then(function (rows) {
+    if (rows && rows.length) { enItems = rows; }
+    return rest('/kb_english_reviews?select=*&order=review_date.desc', 'GET');
+  }).then(function (rows) {
+    enReviews = (rows || []);
+    return rest('/kb_english_notes?select=*&order=note_date.desc,created_at.desc', 'GET');
+  }).then(function (rows) {
+    enNotes = (rows || []);
+    return rest('/kb_english_meta?select=*', 'GET');
+  }).then(function (rows) {
+    enMetas = {};
+    (rows || []).forEach(function (m) { enMetas[m.template_id] = m; });
+    done();
+  }).catch(function () { done(); });
+}
+
+/* 首次部署：把 EN_ITEMS 灌进库（仅当表为空时） */
+function enSeed() {
+  rest('/kb_english_templates?select=id&order=id&limit=1', 'GET').then(function (rows) {
+    if (rows && rows.length) { enLoadAll(); return; }
+    var chain = Promise.resolve();
+    EN_ITEMS.forEach(function (it) {
+      chain = chain.then(function () {
+        return rest('/kb_english_templates?select=*', 'POST', {
+          group_key: it.group_key, group_order: it.group_order, item_key: it.item_key,
+          content: it.content, cn_prompt: it.cn_prompt, notes: it.notes, sort_order: it.sort_order
+        }).then(function (r) {
+          if (r && r[0]) { enItems.push(r[0]); }
+        }).catch(function () { });
+      });
+    });
+    chain.then(function () {
+      enItems.sort(function (a, b) { return (a.group_order || 0) - (b.group_order || 0); });
+      enRenderCard();
+    });
+  }).catch(function () { enLoadAll(); });
+}
+
+/* ---------- 排期 ---------- */
+function enDueId() {
+  /* 1) 已首背且今天到期的（应用验证/复习） */
+  var seen = {};
+  enItems.forEach(function (it) { seen[it.id] = 1; });
+  var cands = enItems.filter(function (it) {
+    var m = enMetas[it.id]; if (!m || !m.last_applied) return false;
+    var last = new Date(m.last_applied); last.setHours(0, 0, 0, 0);
+    var days = Math.round((today - last) / 86400000);
+    var lv = (enItemLevel(it.id) || 0);
+    var gap = (lv >= 4) ? 7 : 3;
+    return days >= gap;
+  });
+  cands.sort(function (a, b) {
+    var da = enMetas[a.id] ? enMetas[a.id].last_applied : '', db = enMetas[b.id] ? enMetas[b.id].last_applied : '';
+    return (da < db) ? -1 : 1;
+  });
+  if (cands.length) { return cands[0].id; }
+  /* 2) 未首背的，按 group_order 顺序派 */
+  var fresh = enItems.filter(function (it) { return !enMetas[it.id]; });
+  fresh.sort(function (a, b) { return (a.group_order || 0) - (b.group_order || 0); });
+  if (fresh.length) { return fresh[0].id; }
+  /* 3) 全部完成一轮，从队首重新开始（7天抽查） */
+  var sorted = enItems.slice().sort(function (a, b) { return (a.group_order || 0) - (b.group_order || 0); });
+  return sorted.length ? sorted[0].id : null;
+}
+
+function enItemLevel(id) {
+  var rs = enItemReviews(id);
+  return rs.length ? rs[rs.length - 1].level : 0;
+}
+function enItemReviews(id) {
+  return enReviews.filter(function (r) { return r.template_id === id; })
+    .sort(function (a, b) { return a.review_date.localeCompare(b.review_date); });
+}
+
+/* ---------- 首页卡片 ---------- */
+function enRenderCard() {
+  var box = document.getElementById('enCardBox');
+  if (!box) { return; }
+  var total = enItems.length || EN_ITEMS.length;
+  var done = enItems.filter(function (it) { return enMetas[it.id]; }).length;
+  var due = enDueId();
+  var it = due ? enItemById(due) : null;
+  var t = ts();
+  var todays = enReviews.filter(function (r) { return r.review_date === t; }).length;
+  var mastered = enItems.filter(function (it) { return enItemLevel(it.id) >= 4; }).length;
+  var h = '';
+  h += '<div class="en-hero">';
+  h += '  <div class="en-hero-top"><span class="dot"></span> 每日英语 · 应用验证模式</div>';
+  h += '  <div class="en-hero-title">🇬🇧 考研英语大作文</div>';
+  h += '  <div class="en-hero-sub">17 片 · 单条粒度 · 每天 1 片 · 应用验证代替死记</div>';
+  h += '  <div class="en-hero-cta">';
+  if (it) {
+    h += '    <button onclick="enOpen(' + it.id + ')">开始今日 1 片</button>';
+    h += '    <button class="ghostbtn" onclick="enOpen(' + it.id + ')">今日任务：' + esc(it.item_key) + '</button>';
+  } else {
+    h += '    <button onclick="enGo()">进入英语模块</button>';
+  }
+  h += '    <button class="ghostbtn" onclick="enGo()">查看全部 17 片</button>';
+  h += '  </div>';
+  h += '  <div class="en-hero-row">';
+  h += '    <div class="en-hero-cell"><b>' + todays + '</b><span>今日已应用</span></div>';
+  h += '    <div class="en-hero-cell"><b>' + mastered + '</b><span>已通过验证</span></div>';
+  h += '    <div class="en-hero-cell"><b>' + done + '/' + total + '</b><span>已首背</span></div>';
+  h += '  </div>';
+  h += '</div>';
+  box.innerHTML = h;
+}
+
+function enItemById(id) {
+  return enItems.filter(function (x) { return x.id === id; })[0]
+    || EN_ITEMS.filter(function (x) { return x.sort_order === id || x.item_key === id; })[0]
+    || null;
+}
+
+/* ---------- 路由 ---------- */
+function renderEn() {
+  if (enOpenId) { enRenderDetail(enOpenId); }
+  else { enRenderList(); }
+}
+function enGo() { enView = 'home'; enOpenId = null; nav('english'); }
+function enOpen(id) { enOpenId = id; nav('english/' + id); }
+function enBack() { if (enOpenId) { enOpenId = null; enGo(); } else { nav(''); } }
+window.enOpen = enOpen; window.enGo = enGo; window.enBack = enBack;
+
+/* ---------- 列表页 ---------- */
+function enRenderList() {
+  var h = '';
+  h += '<div class="back" onclick="enBack()">&#8592; 返回首页</div>';
+  var due = enDueId();
+  var it = due ? enItemById(due) : null;
+  if (it) {
+    h += '<div class="card" style="border-color:rgba(63,214,171,.3)">';
+    h += '  <div class="en-due-bar"><span class="lbl">今日 1 片</span><b>' + esc(it.item_key) + '</b><span class="en-pill">' + esc(it.group_key) + '</span></div>';
+    h += '  <div style="font-size:12.5px;color:var(--sub)">' + esc(it.cn_prompt) + '</div>';
+    h += '  <div class="en-due-acts"><button onclick="enOpen(' + it.id + ')">开始今日 1 片</button></div>';
+    h += '</div>';
+  }
+  h += '<div class="card"><div class="en-mod-h"><span class="ic">A</span>模板类 · 10 片<span class="cnt">首背顺序：P2 → P3 → 五类 P1 → 图表</span></div>';
+  h += enListGroup('A模板');
+  h += '</div>';
+  h += '<div class="card"><div class="en-mod-h"><span class="ic">B</span>语料库 · 7 组<span class="cnt">按功能背，不要散着背</span></div>';
+  h += enListGroup('B语料');
+  h += '</div>';
+  h += '<footer>英语模块数据存于同一 Supabase 库 多设备打开同一网址自动同步</footer>';
+  document.getElementById('page-detail').innerHTML = h;
+}
+function enListGroup(gk) {
+  var list = enItems.filter(function (it) { return it.group_key === gk; })
+    .sort(function (a, b) { return (a.group_order || 0) - (b.group_order || 0); });
+  if (!list.length) { return '<div class="en-empty">数据加载中…</div>'; }
+  var h = '';
+  list.forEach(function (it) {
+    var lv = enItemLevel(it.id);
+    var m = enMetas[it.id];
+    var meta = '';
+    if (m && m.last_applied) { meta += '上次应用 ' + m.last_applied; }
+    if (lv) { meta += (meta ? ' · ' : '') + 'L' + lv + ' ' + (EN_LEVELS.pass ? '' : ''); }
+    var ns = enItemNotes(it.id);
+    if (ns.length) { meta += (meta ? ' · ' : '') + ns.length + ' 条卡点'; }
+    h += '<div class="en-list-item" onclick="enOpen(' + it.id + ')">';
+    h += '  <span class="mk ' + (lv >= 4 ? 'on' : '') + '"></span>';
+    h += '  <div class="en-li-main">';
+    h += '    <div class="en-li-name">' + esc(it.item_key) + '<span class="en-pill ' + (gk === 'A模板' ? 'a' : 'b') + '">' + (it.group_order < 10 ? '0' + it.group_order : it.group_order) + '</span></div>';
+    h += '    <div class="en-li-meta">' + esc(meta || '未首背') + '</div>';
+    h += '  </div>';
+    h += '</div>';
+  });
+  return h;
+}
+
+/* ---------- 详情页 ---------- */
+function enRenderDetail(id) {
+  var it = enItemById(id); if (!it) { enGo(); return; }
+  var lv = enItemLevel(id);
+  var m = enMetas[id];
+  var ns = enItemNotes(id);
+  var myNote = ns.length ? ns[0].content : '';
+  var h = '';
+  h += '<div class="back" onclick="enBack()">&#8592; 返回</div>';
+  h += '<div class="card">';
+  h += '  <div class="card-h" style="margin-bottom:14px"><span class="ic">🇬🇧</span>' + esc(it.item_key) + '<span class="en-pill">' + esc(it.group_key) + '</span></div>';
+  h += '  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px">';
+  h += '    <span style="font-size:13px;color:var(--sub)">掌握：<b style="font-size:17px;color:' + (lv >= 4 ? 'var(--accent)' : 'var(--sub)') + '">' + (lv ? 'L' + lv : '未首背') + '</b> ' + (lv ? EN_LEVELS.pass && '' : '') + '</span>';
+  h += '    <span style="font-size:13px;color:var(--sub)">' + esc(m && m.last_applied ? '上次应用 ' + m.last_applied : '尚未首次应用') + '</span>';
+  h += '  </div>';
+  /* 模板原文：把 [xxx] 占位高亮 */
+  h += '  <div class="en-detail-h">模板原文</div>';
+  h += '  <div class="en-detail-tpl">' + highlightPh(it.content) + '</div>';
+  /* 使用注意 */
+  h += '  <div class="en-detail-h">使用注意 / 记忆顺序</div>';
+  h += '  <div class="en-detail-notes">' + esc(it.notes) + '</div>';
+  /* 应用验证场景 */
+  h += '  <div class="en-detail-h">应用验证 · 场景</div>';
+  h += '  <div class="en-detail-prompt"><b>' + esc(it.cn_prompt) + '</b><span class="sc">提示：对照上面的模板原文，把它现场写/默出来。写完再自评。</span></div>';
+  /* 自评 */
+  h += '  <div style="font-size:13.5px;font-weight:700;margin:0 0 10px;padding-left:10px;border-left:3px solid var(--accent)">应用验证自评</div>';
+  h += '  <div class="lvl-btns" style="margin-bottom:6px">';
+  h += '    <button class="l4" style="width:auto;padding:0 18px;background:#22c55e" onclick="enSelf(' + id + ',4)">想起来了</button>';
+  h += '    <button class="l3" style="width:auto;padding:0 18px;background:#e0a82e" onclick="enSelf(' + id + ',3)">有点印象</button>';
+  h += '    <button class="l2" style="width:auto;padding:0 18px;background:#f87171" onclick="enSelf(' + id + ',2)">忘了</button>';
+  h += '  </div>';
+  /* 卡点备注 */
+  h += '  <div style="font-size:13.5px;font-weight:700;margin:20px 0 10px;padding-left:10px;border-left:3px solid var(--accent)">卡点备注 <span style="font-weight:400;font-size:12px;color:var(--sub)">按日期倒序</span></div>';
+  if (!ns.length) { h += '<div class="en-empty" style="padding:16px 0">还没有卡点备注 记一下容易卡的地方</div>'; }
+  ns.forEach(function (n) {
+    h += '<div class="en-hist-item"><span class="d">' + n.note_date + '</span><span class="c" style="color:var(--sub)">' + esc(n.content) + '</span></div>';
+  });
+  h += '  <textarea class="en-note-input" id="enNoteBox" placeholder="这里记容易卡壳、需要特别注意的地方，输入后自动保存…">' + esc(myNote) + '</textarea>';
+  h += '</div>';
+  document.getElementById('page-detail').innerHTML = h;
+  var box = document.getElementById('enNoteBox');
+  if (box) { box.oninput = function () { enNoteInput(id, box.value); }; }
+}
+function highlightPh(s) {
+  /* 转义后再把 [方括号] 占位词高亮，避免 XSS */
+  var safe = esc(s);
+  return safe.replace(/\[[^\]]+\]/g, function (m) { return '<span class="ph">' + m + '</span>'; });
+}
+function enItemNotes(id) {
+  return enNotes.filter(function (n) { return n.template_id === id; })
+    .sort(function (a, b) { return b.note_date.localeCompare(a.note_date); });
+}
+
+/* ---------- 自评 + 备注 ---------- */
+function enSelf(id, level) {
+  var t = ts();
+  var exist = enReviews.filter(function (r) { return r.template_id === id && r.review_date === t; })[0];
+  var after = function (r) {
+    var lvText = level === 4 ? '想起来了（应用通过，7天后抽查）'
+      : level === 3 ? '有点印象（3天后重来）' : '忘了（明天再背）';
+    toast('已记录：' + lvText);
+    /* 更新 meta：记录上次应用结果 */
+    var m = enMetas[id];
+    var body = { template_id: id, last_applied: t, apply_result: level >= 4 ? 'pass' : (level === 3 ? 'vague' : 'forget') };
+    if (m) {
+      rest('/kb_english_meta?id=eq.' + m.id, 'PATCH', { last_applied: t, apply_result: body.apply_result }).then(function () {
+        m.last_applied = t; m.apply_result = body.apply_result;
+      });
+    } else {
+      rest('/kb_english_meta?select=*', 'POST', body).then(function (r) {
+        if (r && r[0]) { enMetas[id] = r[0]; } else { enMetas[id] = body; }
+      }).catch(function () { });
+    }
+    enRenderDetail(id);
+    enRenderCard();
+  };
+  if (exist) {
+    rest('/kb_english_reviews?id=eq.' + exist.id, 'PATCH', { level: level, stage: '应用验证' }).then(function () {
+      exist.level = level; after();
+    });
+  } else {
+    rest('/kb_english_reviews?select=*', 'POST', { template_id: id, review_date: t, level: level, stage: '应用验证' }).then(function (r) {
+      if (r && r[0]) { enReviews.unshift(r[0]); } else { enReviews.push({ template_id: id, review_date: t, level: level, stage: '应用验证' }); }
+      after();
+    }).catch(function () { toast('记录失败'); });
+  }
+}
+function enNoteInput(id, val) {
+  clearTimeout(enNoteTimer);
+  var v = val.trim();
+  enNoteTimer = setTimeout(function () {
+    var nd = enItemNotes(id)[0];
+    if (nd) {
+      if (!v) {
+        rest('/kb_english_notes?id=eq.' + nd.id, 'DELETE').then(function () {
+          enNotes = enNotes.filter(function (x) { return x.id !== nd.id; });
+        });
+      } else {
+        rest('/kb_english_notes?id=eq.' + nd.id, 'PATCH', { content: v }).then(function () { nd.content = v; });
+      }
+    } else if (v) {
+      rest('/kb_english_notes?select=*', 'POST', { template_id: id, review_date: ts(), content: v }).then(function (r) {
+        if (r && r[0]) { enNotes.unshift(r[0]); }
+      });
+    }
+  }, 1200);
+}
+
+/* ---------- 路由挂载 ---------- */
+var _enOrigRouter = router;
+function enRouter() {
+  var h = location.hash.replace(/^#/, '');
+  if (h === 'english' || h.indexOf('english/') === 0) {
+    document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('on'); });
+    document.getElementById('page-detail').classList.add('on');
+    window.scrollTo(0, 0);
+    if (h.indexOf('english/') === 0) { enOpenId = parseInt(h.split('/')[1], 10) || null; }
+    else { enOpenId = null; }
+    renderEn();
+    return true;
+  }
+  return false;
+}
+var _enOrigLoad = loadAll;
+function enPatchedLoad() {
+  var orig = arguments;
+  var ret = _enOrigLoad.apply(this, orig);
+  enSeed();
+  return ret;
+}
+/* 用拦截方式挂载路由，避免覆盖其它 hash */
+(function () {
+  /* 在 hashchange 前先判断英语路由 */
+  window.addEventListener('hashchange', function () { enRouter(); }, true);
+  /* 首页渲染后刷新英语卡片 */
+  var _enOrigRenderHome = renderHome;
+  renderHome = function () {
+    _enOrigRenderHome.apply(this, arguments);
+    enRenderCard();
+  };
+  /* 登录后种子 + 首次加载时判断英语路由 */
+  var _enOrigLoadAll = loadAll;
+  loadAll = function () {
+    var ret = _enOrigLoadAll.apply(this, arguments);
+    enSeed();
+    enRouter();
+    return ret;
+  };
+})();
+
 </script>
 </body>
 </html>
