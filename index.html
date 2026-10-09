@@ -254,6 +254,7 @@ body.light .en-progress i{background:rgba(0,0,0,.07)}
  <input type="text" id="search" placeholder="搜索知识点名称或内容">
  <button class="ghost" onclick="openPointModal()">＋ 知识点</button>
  <button class="ghost" id="darkBtn" onclick="toggleTheme()">切换主题</button>
+ <button class="ghost" onclick="nav('english')">🇬🇧 英语</button>
 </div>
 <div class="mask" id="mask"><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"></div>
@@ -446,6 +447,7 @@ function renderHome(){
  h+='<div class="stat" onclick="nav(\'stat/fading\')"><b>'+fading+'</b><span>正在褪色</span></div>';
  h+='<div class="stat" onclick="nav(\'stat/total\')"><b>'+reviews.length+'</b><span>累计背诵</span></div>';
  h+='</div>';
+ h+='<div class="card en-card" id="enCard"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">加载中…</span></div></div>';
  h+='<div class="card"><div class="card-h"><span class="ic">&#128204;</span>今日待复习 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+(duec?'共 '+duec+' 条':'今天没有')+'</span><div class="ch-act"><button class="ghost sm" onclick="dueBatch=!dueBatch;renderHome()">'+(dueBatch?'退出批量':'批量编辑')+'</button><button class="ghost sm" onclick="doneAll()">全部完成</button></div></div>'+(dueBatch?renderDueBatchBar():'')+renderDueList()+'</div>';
  var ng=[];
  chapters.forEach(function(c){
@@ -453,7 +455,7 @@ function renderHome(){
   if(cps.length)ng.push({c:c,cps:cps});
  });
  h+='<div class="card"><div class="card-h"><span class="ic">&#128214;</span>待首背 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+(ng.length?'有 '+ng.length+' 章未首背':'已全部首背过')+'</span></div>'+(ng.length?ng.map(function(g){return '<div class="cat-grid" style="grid-template-columns:1fr"><div class="cat-card" onclick="nav(\'chapter/'+g.c.id+'\')"><h3 style="font-size:15px">'+esc(g.c.name)+'</h3><div class="cnt" style="margin-top:6px">'+g.cps.length+' 条待首背</div><span class="arrow">&#8594;</span></div></div>';}).join(''):'<div class="empty">全部知识点都首背过了 可以去复习了</div>')+'</div>';
-h+='<div class=\"card en-card\" id=\"enCard\"><div class=\"card-h\"><span class=\"ic\">&#127757;</span>每日英语 <span style=\"font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px\">加载中…</span></div></div>' + '<div class=\"card\"><div class=\"card-h\"><span class=\"ic\">&#128214;</span>章节</div><div class=\"cat-grid\">' + chapters.map(function(c){
+'<div class=\"card\"><div class=\"card-h\"><span class=\"ic\">&#128214;</span>章节</div><div class=\"cat-grid\">' + chapters.map(function(c){
   var cps=points.filter(function(p){return p.chapter_id==c.id;});
   var done=cps.filter(function(p){return firstDate(p.id);}).length;
   var pct=cps.length?Math.round(done/cps.length*100):0;
