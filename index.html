@@ -185,7 +185,7 @@ body.light .list-item:hover{background:rgba(0,0,0,.012)}
 .list-item:last-child{border-bottom:none}
 .list-item .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
 footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter-spacing:.6px}
-@media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.hero{padding:26px 22px 24px}.hero-num{font-size:56px}.card{padding:20px 18px}.topbar input{min-width:120px}.cat-grid{grid-template-columns:1fr}.lvl-btns button{width:30px;height:30px;font-size:11px}.point{align-items:flex-start}.point .info{flex:1 1 auto;min-width:0}.point .info .nm{white-space:normal;word-break:break-word}.point .acts{flex:0 0 auto;flex-wrap:wrap;width:auto;margin-top:0;margin-left:auto;justify-content:flex-end;max-width:46%}.point .acts button{padding:5px 9px;font-size:11px}.point .prev{margin:8px 0 0;font-size:12.5px}.lvl-btns button{width:32px;height:32px;font-size:11.5px}}
+@media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.hero{padding:26px 22px 24px}.hero-num{font-size:56px}.card{padding:20px 18px}.topbar input{min-width:120px}.cat-grid{grid-template-columns:1fr}.lvl-btns button{width:30px;height:30px;font-size:11px}.point{align-items:flex-start}.point .info{flex:1 1 auto;min-width:0}.point .info .nm{white-space:normal;word-break:break-word}.point .acts{flex:0 0 auto;flex-wrap:wrap;width:auto;margin-top:0;margin-left:auto;justify-content:flex-end;max-width:46%}.point .acts button{padding:5px 9px;font-size:11px}.point .prev{margin:8px 0 0;font-size:12.5px}.lvl-btns button{width:32px;height:32px;font-size:11.5px}.detail-content{max-height:calc(100vh - 220px);overflow-y:auto;-webkit-overflow-scrolling:touch}.detail-bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;padding:12px 14px;padding-bottom:calc(12px + env(safe-area-inset-bottom));background:rgba(24,24,27,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);z-index:50}.detail-bar button{flex:1;padding:11px 0;font-size:15px}.detail-bar .ghost{flex:0 0 auto;padding:11px 16px}}
 
 /* ========== 每日英语模块 ========== */
 .en-card{background:linear-gradient(135deg,rgba(63,214,171,.10),rgba(124,155,255,.07) 55%,rgba(176,124,255,.07)),var(--card);}
@@ -732,31 +732,40 @@ function batchNew(cid){
 function togglePoint(id){
  var p=points.filter(function(x){return x.id==id;})[0];
  if(!p)return;
- if(p.content&&String(p.content).trim()){
-  var el=document.getElementById('pt_'+id);
-  if(el){el.classList.toggle('expanded');if(el.classList.contains('expanded'))el.classList.add('focus');else el.classList.remove('focus');}
- }else{
+ var w=window.innerWidth||document.documentElement.clientWidth||800;
+ // 手机端直接进详情页查看内容（详情页已能显示 content，无需就地展开挤成一长条）
+ // 电脑端保留就地展开，兼顾两种操作习惯
+ if(w<=680){
   location.hash='detail/'+id;
+ }else{
+  if(p.content&&String(p.content).trim()){
+   var el=document.getElementById('pt_'+id);
+   if(el){el.classList.toggle('expanded');if(el.classList.contains('expanded'))el.classList.add('focus');else el.classList.remove('focus');}
+  }else{
+   location.hash='detail/'+id;
+  }
  }
 }
 function renderDetail(id){
  var p=points.filter(function(x){return x.id==id;})[0];if(!p){nav('');return;}
  var l=lastLevel(p.id);var d=firstDate(id);var days=fadeDays(p.id);var ns=pointNotes(id);
  var c=fadeColor(p.id);
- var h='<div class="back" onclick="back()">&#8592; 返回</div>';
+ var h='<div class="back" onclick="back()">&#8592; 返回</div>'+(window.innerWidth<=680?'<div style="padding-bottom:88px"></div>':'')+'';
  h+='<div class="card"><div class="card-h" style="margin-bottom:14px"><span class="ic">&#128214;</span>'+esc(p.name)+'<span style="font-size:12px;color:var(--sub);font-weight:400;margin-left:6px">'+esc(chName(p.chapter_id))+'</span></div>';
  if(days>=0)h+='<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px"><span style="width:28px;height:28px;border-radius:8px;background:'+c+';flex:0 0 auto;box-shadow:0 0 12px '+c+'66"></span><div style="font-size:13px;color:var(--sub)">上次背熟：'+lastMasterDate(p.id)+' · <b style="color:'+c+'">'+(days===0?'今天':'已 '+days+' 天 正在褪色')+'</b></div></div>';
  h+='<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px"><span class="tag '+(p.category==='名词解释'?'tm':p.category==='论述'?'td':'ts')+'">'+p.category+'</span><span style="font-size:13px;color:var(--sub)">当前等级：<b style="color:'+colorOf(l)+';font-size:17px">L'+l+'</b> '+(l?LVL[l]:'未首背')+'</span>'+(d?'<span style="font-size:13px;color:var(--sub)">首背 '+d+'</span>':'')+(isDue(p.id)?'<span style="font-size:13px;color:var(--l3)">· 今日待复习</span>':'')+'</div>';
  if(p.content){
   var lines=String(p.content).split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
-  h+='<div style="font-size:14px;line-height:1.85;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px">'+lines.map(function(l){return '<p style="margin:0 0 10px">'+esc(l)+'</p>';}).join('')+'</div>';
+  h+='<div class="detail-content" style="font-size:14px;line-height:1.85;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px">'+lines.map(function(l){return '<p style="margin:0 0 10px">'+esc(l)+'</p>';}).join('')+'</div>';
  }else{
   h+='<div class="empty">这个知识点还没有填写内容，点下方「编辑」添加具体内容</div>';
  }
  h+='<div style="font-size:14px;font-weight:600;margin:0 0 10px;padding-left:10px;border-left:3px solid var(--l3)">卡点备注 <span style="font-weight:400;font-size:12px;color:var(--sub)">按日期倒序</span></div>';
  if(!ns.length){h+='<div class="empty">还没有卡点备注 在今日待复习页面对着知识点写</div>';}
  else{ns.forEach(function(n){h+='<div style="border-top:1px dashed var(--line);padding:12px 0"><div style="font-family:monospace;font-size:12px;color:var(--sub)">'+n.note_date+'</div><div style="font-size:13.5px;line-height:1.7;margin-top:6px">'+esc(n.content)+'</div></div>';});}
- h+='<div class="lvl-btns" style="margin-top:18px"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button><button class="ghost" onclick="openPointModal('+p.id+')">编辑</button></div></div>';
+ var isMobile=window.innerWidth<=680;
+ var btns='<div class="'+(isMobile?'detail-bar':'lvl-btns')+'" style="'+(isMobile?'':'margin-top:18px')+'"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button><button class="ghost" onclick="openPointModal('+p.id+')">'+(isMobile?'编辑':'编辑')+'</button></div>';
+ h+=isMobile?btns:'</div>'+btns;
  document.getElementById('page-detail').innerHTML=h;
 }
 function renderDay(date){
