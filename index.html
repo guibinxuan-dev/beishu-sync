@@ -241,6 +241,44 @@ body.light .en-progress i{background:rgba(0,0,0,.07)}
 .en-progress i.on{background:linear-gradient(90deg,var(--accent),var(--brand))}
 .en-progress i.cur{box-shadow:0 0 0 2px var(--accent)}
 @media(max-width:680px){.en-mini .en-act{width:100%}.en-mini .en-act button{width:100%}}
+
+/* ========== 小作文模块（SW）========== */
+.sw-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.sw-tab{padding:8px 18px;font-size:13.5px;font-weight:600;border-radius:11px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--sub);cursor:pointer;transition:.18s}
+.sw-tab.on{background:linear-gradient(135deg,#38bdf8,#818cf8);color:#fff;border-color:transparent;box-shadow:0 5px 16px rgba(56,189,248,.3)}
+.sw-pri{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle}
+.sw-pri.p1{background:rgba(56,189,248,.18);color:#7dd3fc}
+.sw-pri.p2{background:rgba(74,222,128,.18);color:#86efac}
+.sw-pri.p3{background:rgba(250,204,21,.18);color:#fde047}
+.sw-pri.p4{background:rgba(244,114,182,.18);color:#f9a8d4}
+.sw-pri.p5{background:rgba(148,163,184,.22);color:#cbd5e1}
+.sw-layer{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:6px;margin-left:4px;vertical-align:middle}
+.sw-layer.l1{background:rgba(251,146,60,.2);color:#fdba74}
+.sw-layer.l2{background:rgba(129,140,248,.2);color:#a5b4fc}
+.sw-layer.l3{background:rgba(52,211,153,.2);color:#6ee7b7}
+.sw-fixed{background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.3);border-radius:12px;padding:14px 16px;margin:10px 0;font-size:14px;line-height:1.9;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.sw-fixed .lbl{display:block;font-size:11px;font-weight:700;color:#38bdf8;letter-spacing:.6px;margin-bottom:6px}
+.sw-howto{background:rgba(250,204,21,.08);border-left:3px solid #facc15;border-radius:0 10px 10px 0;padding:11px 14px;margin:12px 0;font-size:13.5px;line-height:1.8}
+.sw-howto .lbl{display:block;font-size:11px;font-weight:700;color:#facc15;letter-spacing:.6px;margin-bottom:5px}
+.sw-topics{margin:12px 0}
+.sw-topics .lbl{display:block;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.6px;margin-bottom:7px}
+.sw-topics li{list-style:none;padding:6px 0 6px 20px;position:relative;font-size:13.5px;line-height:1.7}
+.sw-topics li:before{content:"▸";position:absolute;left:2px;color:var(--accent);font-size:12px}
+.sw-bar{display:flex;align-items:center;gap:12px;margin:14px 0 6px}
+.sw-bar .track{flex:1;height:8px;border-radius:8px;background:rgba(255,255,255,.08);overflow:hidden}
+body.light .sw-bar .track{background:rgba(0,0,0,.07)}
+.sw-bar .fill{height:100%;background:linear-gradient(90deg,#38bdf8,#818cf8);transition:width .3s}
+.sw-bar .num{font-size:12.5px;color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sw-cat{font-size:13px;font-weight:700;color:var(--ink);margin:20px 0 10px;padding-left:10px;border-left:3px solid #38bdf8}
+.sw-cat .g-cnt{float:right;font-weight:400;font-size:12px;color:var(--sub)}
+.sw-cat .g-cnt b{color:#38bdf8;font-weight:700}
+.sw-lock{background:rgba(148,163,184,.08);border:1px dashed var(--line);border-radius:12px;padding:12px 16px;margin:8px 0;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--sub)}
+.sw-lock .ic{font-size:18px;flex-shrink:0}
+.sw-empty{text-align:center;padding:40px 20px;color:var(--sub);font-size:14px}
+.sw-empty .big{font-size:32px;margin-bottom:12px;display:block}
+.sw-pulse{animation:swp 1.4s ease-in-out infinite}
+@keyframes swp{0%,100%{opacity:1}50%{opacity:.45}}
+.sw-soft{font-size:12.5px;color:var(--sub);line-height:1.7;margin:8px 0}
 </style>
 </head>
 <body>
@@ -254,7 +292,8 @@ body.light .en-progress i{background:rgba(0,0,0,.07)}
  <input type="text" id="search" placeholder="搜索知识点名称或内容">
  <button class="ghost" onclick="openPointModal()">＋ 知识点</button>
  <button class="ghost" id="darkBtn" onclick="toggleTheme()">切换主题</button>
- <button class="ghost" onclick="nav('english')">🇬🇧 英语</button>
+ <button class="ghost" onclick="nav('english/w')">✍️ 小作文</button>
+ <button class="ghost" onclick="nav('english')">🇬🇧 大作文</button>
 </div>
 <div class="mask" id="mask"><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"></div>
@@ -389,7 +428,8 @@ function router(){
  if(parts[0]==='english'){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
   document.getElementById('page-detail').classList.add('on');
-  if(parts[1]){enCur=+parts[1];enView='detail';renderEnDetail(enCur);}
+  if(parts[1]==='w'){swView='home';renderWriting();}
+  else if(parts[1]){enCur=+parts[1];enView='detail';renderEnDetail(enCur);}
   else{enView='home';renderEnglish();}
   window.scrollTo(0,0);return;
  }
@@ -408,13 +448,6 @@ function router(){
  }else{
   document.getElementById('page-home').classList.add('on');renderHome();
  }
-
-	 if(parts[0]==='english'){
-	  document.getElementById('page-detail').classList.add('on');
-	  if(parts[1]){enCur=+parts[1];enView='detail';renderEnDetail(enCur);}
-	  else{enView='home';renderEnglish();}
-	  window.scrollTo(0,0);return;
-	 }
  window.scrollTo(0,0);
 }
 var homeView='map', mapCh='0', dueBatch=false;
@@ -453,6 +486,7 @@ function renderHome(){
  h+='<div class="stat" onclick="nav(\'stat/fading\')"><b>'+fading+'</b><span>正在褪色</span></div>';
  h+='<div class="stat" onclick="nav(\'stat/total\')"><b>'+reviews.length+'</b><span>累计背诵</span></div>';
  h+='</div>';
+ h+='<div class="card en-card" id="swCard"><div class="card-h"><span class="ic">&#9998;</span>考研英语 · 小作文 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">背熟才解锁 · 3 天一档</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;english/w&quot;)">去背诵</button></div></div><div class="empty">正在准备今日小作文…</div></div>';
  h+='<div class="card en-card" id="enCard"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 片 · 应用验证</span></div><div class="empty">正在准备今日语料…</div></div>';
  h+='<div class="card"><div class="card-h"><span class="ic">&#128204;</span>今日待复习 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+(duec?'共 '+duec+' 条':'今天没有')+'</span><div class="ch-act"><button class="ghost sm" onclick="dueBatch=!dueBatch;renderHome()">'+(dueBatch?'退出批量':'批量编辑')+'</button><button class="ghost sm" onclick="doneAll()">全部完成</button></div></div>'+(dueBatch?renderDueBatchBar():'')+renderDueList()+'</div>';
  var ng=[];
@@ -480,6 +514,7 @@ function renderHome(){
  h+='<footer>数据存于 Supabase 多设备打开同一网址自动同步 默认密码 beishu2024</footer>';
  document.getElementById('page-home').innerHTML=h;
  setTimeout(function(){try{enRenderHomeCard();}catch(e){console.error('enCard',e);}},0);
+ setTimeout(function(){try{swRenderHomeCard();}catch(e){console.error('swCard',e);}},0);
  if(homeView==='map')setTimeout(renderMapCells,0);else setTimeout(renderHeatCells,0);
 }
 function renderDueBatchBar(){
@@ -902,7 +937,7 @@ function loadAll(){
  .then(function(p){points=p||[];return rest('/kb_reviews?select=*&order=review_date.desc');})
  .then(function(r){reviews=r||[];return rest('/kb_notes?select=*&order=note_date.desc,created_at.desc');})
  .then(function(n){notes=n||[];return rest('/kb_meta?select=*');})
- .then(function(m){metas={};(m||[]).forEach(function(x){metas[x.point_id]=x;});enSeed();router();})
+ .then(function(m){metas={};(m||[]).forEach(function(x){metas[x.point_id]=x;});swLoadReviews();enSeed();router();})
  .catch(function(e){console.error(e);toast('加载失败');});
 }
 (function(){
@@ -914,6 +949,38 @@ function loadAll(){
 
 /* ===== 每日英语模块 ===== */
 var EN_DATA = [{"id": 1,"order": 1, "group": "A-模板", "key": "P1-图画", "name": "图画类 P1 首段", "content": "Presented before us is a thought-provoking scene in which [画面主体及动作]. What makes the picture particularly striking is that [关键细节或对比]. Simple as the picture may seem, it conveys a meaningful message about [主题].", "memory": "记忆顺序：画面主体 → 关键细节 → 核心寓意", "notes": "主语是 Several villagers 时谓语用 are；是 A group of villagers 时写作建议用 is。主题不要只写宽泛名词，尽量明确到 the inheritance of traditional culture、the importance of perseverance 这类具体表达。", "prompt": "用中文描述一个「祖孙三代各自低头看手机」的画面，按 画面主体→关键细节→核心寓意 的顺序写三句英文"}, {"id": 2,"order": 2, "group": "A-模板", "key": "P1-动态图", "name": "动态图 / 表格类 P1 首段", "content": "The [table/line graph/bar chart] illustrates how [主题] changed from [起始年份] to [结束年份]. During this period, [A] experienced a noticeable [rise/fall], while [B] showed [a similar trend/an opposite trend]. Taken together, the figures reveal a clear change in [主题或社会意义].", "memory": "记忆顺序：材料类型与时间 → 主要变化 → 数据反映的意义", "notes": "材料类型必须准确：表格 table、折线图 line graph、柱状图 bar chart。数据较多时优先突出主要趋势，不要机械罗列所有数字。", "prompt": "用中文给出「2015—2025 某产品销量」的上升数据，写三句英文描述趋势"}, {"id": 3,"order": 3, "group": "A-模板", "key": "P1-静态图", "name": "静态图 P1 首段", "content": "The chart presents the distribution of [调查主题]. Specifically, [A] accounts for the largest proportion, at [数字]%. By contrast, [B] represents the smallest share, at only [数字]%. This striking difference reflects a broader change in our society.", "memory": "记忆顺序：调查主题 → 最大比例 → 最小比例 → 社会意义", "notes": "chart 是统称；具体是饼图可换成 pie chart。若题目并非比例分布而是人数或频率比较，要调整 proportion/share，不能强行套用。", "prompt": "用中文给出「各年龄段日均阅读时长」的比例，写三句英文描述"}, {"id": 4,"order": 4, "group": "A-模板", "key": "P1-混合", "name": "图画 + 图表混合类 P1 首段", "content": "The two forms of information jointly illustrate the current situation of [主题]. As shown in the picture, [画面内容]. Meanwhile, the chart indicates that [主要数据或趋势]. Although presented in different forms, they point to the same meaningful change in our society.", "memory": "记忆顺序：总主题 → 图片内容 → 图表信息 → 共同寓意", "notes": "", "prompt": "用中文给出「一张反映环保行为的图片 + 一张垃圾分类比例图」，写四句英文"}, {"id": 5,"order": 5, "group": "A-模板", "key": "P1-文字", "name": "文字类 P1 首段", "content": "The provided statement presents a thought-provoking view that [改写原文观点]. It highlights the importance of [主题] in our daily lives and social development. Personally, I strongly agree with this idea, as it is highly relevant to our present society.", "memory": "记忆顺序：改写观点 → 强调价值 → 表明立场", "notes": "若原文观点存在争议，或题目要求评价而非赞同，不要机械用 I strongly agree，应根据题目调整立场。", "prompt": "用中文给出一句待评价的观点，改写并表明立场，写三句英文"}, {"id": 6,"order": 6, "group": "A-模板", "key": "P2-正面", "name": "通用 P2 正面论证", "content": "There are several interconnected reasons why this phenomenon deserves our attention. To begin with, [主题] can bring considerable benefits to individuals by enabling them to [作用一]. Moreover, [第二个原因或社会条件] has created more favorable conditions for [主题或趋势]. More importantly, this phenomenon reflects not merely a change in behavior, but a broader transformation in people's attitudes toward [主题].", "table": "| 句子 | 功能 | 考场上需要填什么 |\n| There are several... | 总起 | 引出分析 |\n| To begin with... | 第一层 | 个人作用或直接影响 |\n| Moreover... | 第二层 | 社会条件、科技、经济、观念等 |\n| More importantly... | 深层意义 | 价值观、生活方式、社会变化 |", "notes": "四句功能必须记清楚：总起 / 第一层 / 第二层 / 深层意义。", "prompt": "用正面论证写一句「阅读让人成长」，套用 To begin with 和 Moreover 两层"}, {"id": 7,"order": 7, "group": "A-模板", "key": "P2-负面", "name": "通用 P2 负面论证（替换版）", "content": "There are several interconnected reasons why this phenomenon deserves our attention. To begin with, excessive [行为或现象] may prevent individuals from [负面影响一]. Moreover, [相关原因或社会条件] may further aggravate this problem. More importantly, this phenomenon reflects not merely a change in behavior, but a broader problem in people's attitudes toward [主题].", "notes": "正面题强调 benefits、opportunities、development；负面题强调 risks、problems、negative effects。第三句原因必须符合题意，不能为了套模板凭空认定某种社会条件加剧了问题。", "prompt": "用负面论证写「过度依赖网络」的危害，套用 To begin with 和 Moreover 两层"}, {"id": 8,"order": 8, "group": "A-模板", "key": "P3", "name": "通用 P3 第三段", "content": "In light of the above, [主题或现象] deserves our thoughtful attention. As individuals, we should enhance our awareness of [主题] and translate it into concrete actions in our daily lives. Meanwhile, relevant institutions should take effective measures to create a more favorable environment for [目标]. With the joint efforts of individuals and society, we can better [目标或解决的问题] and build a more promising future.", "rule": "总结：In light of the above...｜个人行动：As individuals...｜社会/机构：Meanwhile, relevant institutions...｜展望：With the joint efforts...", "notes": "不是每题都必须写政府。若侧重个人习惯、成长或日常选择，可把 relevant institutions 换成更贴切的社会主体，或写家庭、学校、社区。", "prompt": "围绕「环境保护」收尾，用 As individuals 和 With the joint efforts 两层收束"}, {"id": 9,"order": 9, "group": "A-模板", "key": "图表-趋势", "name": "图表专用：动态图趋势表达", "content": "严格背诵句：During this period, [A] experienced a noticeable rise from [数字] to [数字], while [B] showed a similar upward trend. / Taken together, the figures reveal a clear change in [主题].", "vocab": ["rise significantly 显著上升", "increase steadily 稳步增长", "decline sharply 大幅下降", "decrease slightly 略有下降", "remain stable 保持稳定", "fluctuate 出现波动", "reach a peak of 达到最高点", "rise from A to B 从A上升至B", "show an upward trend 呈现上升趋势", "show an opposite trend 呈现相反趋势"], "notes": "Taken together 句只在图表题用，不要塞进图画、文字类作文。", "prompt": "用中文给出两组数据的一升一降，写两句英文描述趋势"}, {"id": 10,"order": 10, "group": "A-模板", "key": "图表-比例", "name": "图表专用：静态图比例与对比", "content": "严格背诵句：Specifically, [A] accounts for the largest proportion, at [数字]%. By contrast, [B] represents the smallest share, at only [数字]%. This striking difference reflects a broader change in our society.", "vocab": ["account for the largest proportion 占最大比例", "represent the smallest share 占最小比例", "account for ... percent 占…百分比", "By contrast, 相比之下", "a striking difference 明显差异", "distribution 分布情况", "survey results 调查结果"], "notes": "数据单位是「每百户拥有量」时不能误写成百分比；只有真正表示比例时才能用 %、proportion 或 share。", "prompt": "用中文给出最大占比与最小占比两组数据，写三句英文描述"}, {"id": 11,"order": 11, "group": "B-语料", "key": "语料-个人成长", "name": "个人成长与优秀品质", "content": "适用主题：坚持、自律、勤奋、责任感、面对困难、青年成长", "vocab": ["develop self-discipline 培养自律", "strengthen one's sense of responsibility 增强责任感", "cope with difficulties in life 应对生活中的困难", "deal with pressure more effectively 更有效地应对压力", "improve one's problem-solving skills 提升解决问题的能力", "stand out in a competitive environment 在竞争激烈的环境中脱颖而出", "lay a solid foundation for the future 为未来打下坚实基础", "persistent effort 坚持不懈的努力", "personal growth 个人成长", "fulfill one's potential 实现个人潜能"], "plug": "To begin with, perseverance can bring considerable benefits to individuals by enabling them to cope with difficulties more effectively. / Moreover, developing self-discipline helps young people lay a solid foundation for the future.", "notes": "", "prompt": "用中文给出「坚持与自律」的语境，用这组语料套进 P2 写两句"}, {"id": 12,"order": 12, "group": "B-语料", "key": "语料-传统文化", "name": "传统文化与文化传承", "content": "适用主题：传统节日、龙舟赛、非物质文化遗产、文化认同、文化传播", "vocab": ["preserve traditional culture 传承传统文化", "promote traditional culture 弘扬传统文化", "protect cultural heritage 保护文化遗产", "deepen one's understanding of national history 加深对本国历史的了解", "strengthen cultural identity 增强文化认同", "connect different generations 连接不同世代", "give traditional culture new life 让传统文化焕发新的活力", "continue to thrive in modern society 在现代社会中延续", "cultural diversity 文化多样性", "pass down from generation to generation 代代相传"], "plug": "To begin with, traditional cultural activities enable people to deepen their understanding of national history and strengthen cultural identity. / More importantly, the preservation of traditional culture reflects a broader recognition of the value of our cultural heritage.", "notes": "", "prompt": "用中文给出「端午节龙舟赛」的语境，用这组语料套进 P2 写两句"}, {"id": 13,"order": 13, "group": "B-语料", "key": "语料-科技数字", "name": "科技与数字生活", "content": "适用主题：智能手机、互联网、人工智能、数字技术、科技便利与风险", "vocab": ["the rapid development of technology 科技的快速发展", "the widespread use of the Internet and smartphones 广泛使用互联网和智能手机", "provide greater convenience 提供更大的便利", "improve work efficiency 提高工作效率", "access information 获取信息", "broaden one's horizons 拓宽知识面", "excessive reliance on digital devices 过度依赖数字设备", "reduce face-to-face interaction 减少面对面交流", "protect personal privacy 保护个人隐私", "make responsible use of technology 合理使用科技"], "plug": "正面：To begin with, digital technology can bring considerable benefits to individuals by enabling them to access information more efficiently. / 负面：To begin with, excessive reliance on digital devices may reduce face-to-face interaction and weaken personal relationships.", "notes": "数字生活题材：优先科技因素；若是负面题，重点写过度依赖造成的影响。", "prompt": "用中文给出「智能手机」语境，分别写一句正面、一句负面的论证"}, {"id": 14,"order": 14, "group": "B-语料", "key": "语料-经济发展", "name": "经济发展与消费升级", "content": "适用主题：耐用消费品表格、生活水平、家用电器、消费方式变化", "vocab": ["the rapid development of the economy 经济的快速发展", "disposable income 可支配收入", "an improvement in living standards 生活水平提高", "material living conditions 物质生活条件", "a more comfortable life 更舒适的生活", "a more convenient lifestyle 更便利的生活方式", "consumption upgrading 消费升级", "household appliances 家用电器", "improve the quality of life 提高生活质量", "responsible consumption 理性消费", "a green and energy-efficient lifestyle 绿色、节能的生活方式", "balance consumption with environmental responsibility 兼顾消费与环境责任"], "plug": "To begin with, the growing ownership of household appliances enables people to enjoy a more convenient and comfortable life. / Moreover, rising disposable income has created more favorable conditions for consumption upgrading.", "notes": "", "prompt": "用中文给出「家用电器普及」的语境，用这组语料套进 P2 写两句"}, {"id": 15,"order": 15, "group": "B-语料", "key": "语料-环保", "name": "环境保护与可持续发展", "content": "适用主题：环保、低碳生活、资源浪费、绿色消费、可持续发展", "vocab": ["environmental protection 环境保护", "environmental pollution 环境污染", "conserve natural resources 节约自然资源", "reduce unnecessary waste 减少不必要的浪费", "take environmentally friendly measures 采取环保措施", "raise environmental awareness 提高环保意识", "sustainable development 可持续发展", "protect the interests of future generations 保护子孙后代的利益", "a green lifestyle 绿色生活方式", "joint efforts 共同努力"], "plug": "As individuals, we should raise our environmental awareness and translate it into concrete actions in our daily lives. / With the joint efforts of individuals and society, we can promote sustainable development and build a more promising future.", "notes": "环保题材优先观念变化、个人责任、社会措施。", "prompt": "用中文给出「减少一次性塑料」的语境，用这组语料套进 P3 写两句"}, {"id": 16,"order": 16, "group": "B-语料", "key": "语料-教育阅读", "name": "教育、阅读与知识积累", "content": "适用主题：阅读习惯、终身学习、教育价值、知识积累、个人发展", "vocab": ["develop a reading habit 培养阅读习惯", "accumulate knowledge 积累知识", "broaden one's horizons 拓宽视野", "develop independent thinking 培养独立思考能力", "stimulate creativity 激发创造力", "lifelong learning 终身学习", "acquire new knowledge 获取新知识", "improve overall abilities 提高综合能力", "prepare for future development 为未来发展做好准备", "develop a positive attitude toward learning 形成积极的学习态度"], "plug": "To begin with, reading can bring considerable benefits to individuals by enabling them to accumulate knowledge and broaden their horizons. / More importantly, a commitment to lifelong learning reflects a positive attitude toward personal growth.", "notes": "", "prompt": "用中文给出「终身阅读」的语境，用这组语料套进 P2 写两句"}, {"id": 17,"order": 17, "group": "B-语料", "key": "语料-通用原因", "name": "通用原因句（六类宏观分析）", "content": "语料是备用零件，不是每篇作文都要全部使用。", "vocab": ["经济因素：With the rapid development of the economy, people's disposable income has increased, creating more opportunities for [主题或行为].", "科技因素：Advances in technology have made it easier for people to [具体行为], thereby increasing its popularity.", "生活方式：As the pace of modern life continues to accelerate, people are paying greater attention to [需求或主题].", "观念变化：People have become increasingly aware of the importance of [主题], which has encouraged them to [具体行为].", "社会条件：The development of modern society has created more favorable conditions for [主题或趋势].", "个人收益：By enabling people to [具体作用], [主题或行为] can contribute to their personal growth and overall well-being."], "rule": "消费品拥有量上升：优先经济、科技因素｜阅读或学习：优先观念变化、个人收益｜传统文化：优先文化认同、社会条件｜数字生活：优先科技因素，负面题重点写过度依赖的影响｜环保：优先观念变化、个人责任、社会措施。不要把「经济发展」硬套进每一道题。", "notes": "", "prompt": "用中文给出「为何人们越来越重视健康生活」的语境，挑选合适的宏观原因句写一句"}];
+
+/* =================== 小作文模块（SW）===================
+   三层结构：L1 结构骨架 / L2 体裁模板 / L3 个人语料库
+   循环：体裁 3 天一档，背熟才解锁下一档（默认 unlockDays=3）
+   优先级：按你资料的五档背诵顺序内置在 priority 字段
+   =========================================================== */
+var SW_DATA=[
+/* ---------------- L1 结构骨架 ---------------- */
+{"id":101,"layer":1,"cat":"skeleton","key":"skel-letter","name":"书信通用骨架（所有书信共用）","pri":1,"fixed":"Dear [称呼],\n\nI am writing to [写信目的]. I would like to provide you with some details concerning [主题].\n\nTo begin with, [要点一]. In addition, [要点二]. Finally, [要点三].\n\nI hope this information will be helpful. Please feel free to contact me if you need any further information. I look forward to your reply.\n\nYours sincerely,\nLi Ming","fixedNotes":"固定背诵句：I am writing to… / I would like to provide you with some details concerning… / To begin with… In addition… Finally… / Please feel free to contact me if you need any further information.","howto":"来意 → 三点展开 → 礼貌收尾。任何书信先把这个骨架默写顺，再按题型改第一段和结尾。","notes":"这是基础骨架，不是所有书信的最终答案。感谢信、道歉信、祝贺信必须按情感目的改第一段和结尾，不能原样套。","check":"① 格式正确 ② 题目要点是否一一写到 ③ 时态/单复数/主谓一致 ④ 语气符合收信人身份 ⑤ 词数与拼写标点","prompt":"默写这封骨架：给同学写一封信，目的是推荐一本好书，要点是「内容好 / 易读 / 适合入门」。只填骨架，不写完整内容。"},
+{"id":102,"layer":1,"cat":"skeleton","key":"skel-notice","name":"通知 / 招募启事格式（标题+主体+日期）","pri":4,"fixed":"Notice\n\nTo [通知目的], [发布主体] is going to organize [活动名称]. The event will take place at [地点] on [时间].\n\nDuring the event, participants will [活动内容]. We are also looking for [招募对象], who are expected to [职责或要求]. Those who are interested are welcome to [报名方式] before [截止日期].\n\nWe look forward to your participation.\n\n[发布主体]\n[日期]","fixedNotes":"格式四件套：标题 Notice / 发布主体与目的 / 时间地点活动内容 / 报名方式+截止日期。以学生会名义发布，结尾写 The Students' Union，不要写 Yours sincerely。","howto":"先背格式四件套，再填具体内容。招募类必须写出职责、要求、报名方式和截止日期。","notes":"如果题目是招募志愿者，正文必须明确写出职责、要求、报名方式和截止日期，不能只写「欢迎大家参加」。","check":"① 标题 ② 发布主体 ③ 时间/地点 ④ 活动内容 ⑤ 职责要求 ⑥ 报名方式 ⑦ 截止日期","prompt":"默写这封通知骨架：学生会要组织一场英语演讲比赛，需要招募 5 名志愿者做现场引导，截止 10 月 25 日。"},
+{"id":103,"layer":1,"cat":"skeleton","key":"skel-minutes","name":"会议纪要格式（讨论+决议+行动项）","pri":5,"fixed":"Minutes of the Meeting\n\nDate: [日期]\nTime: [时间]\nVenue: [地点]\nParticipants: [参会人员]\n\nMain Topics and Discussion\nThe meeting focused on [会议主题]. First, the participants discussed [议题一] and agreed that [主要结论]. Next, they considered [议题二] and decided to [具体决定].\n\nDecisions and Action Items\nIt was agreed that [任务一] would be completed by [负责人] before [期限]. In addition, [负责人] would be responsible for [任务二].\n\nThe meeting ended with a clear plan for the next steps.","fixedNotes":"核心不是抒情，是准确记录：讨论内容 / 决定 / 后续任务。必备词组：focus on / discuss / agree that / decide to / be responsible for / action items / before the deadline。","howto":"记录四要素：时间地点参会人 / 讨论事项 / 决定 / 行动项（谁负责、何时完成）。","notes":"会议纪要不按书信三段式。题目要求记录会议时间、地点、参会人员和决议时，必须把这些写出来。","check":"① 会议基本信息完整 ② 讨论事项 ③ 决定 ④ 行动项（负责人+期限）","prompt":"默写纪要骨架：班委会议讨论「期中考试复习安排」，决定由学习委员整理资料，班长负责通知，截止本周五。"},
+
+/* ---------------- L2 体裁模板 ---------------- */
+{"id":201,"layer":2,"cat":"suggest","key":"lt-suggest","name":"建议信（高频）","pri":2,"fixed":"I am writing to offer some suggestions concerning [主题]. I hope the following advice will be helpful.\n\nTo begin with, I strongly recommend that you [建议一]. In addition, it would be beneficial to [建议二]. Finally, you should also pay attention to [建议三], which may help you achieve better results.\n\nI sincerely hope that you will find these suggestions useful. Please feel free to contact me if you need any further assistance.","fixedNotes":"固定句：I strongly recommend that you… / It would be beneficial to… / pay attention to… / achieve better results.","grammar":"recommend that you + 动词原形，如 recommend that you focus，不要写 focuses。","topics":["给同学建议如何提高英语写作","给学弟学妹建议如何准备考研","给图书馆建议改善阅读环境"],"notes":"建议信的核心是「具体可执行的建议」，不要空喊口号。每条建议都要能落到动作上。","check":"① 格式 ② 三条建议是否具体 ③ recommend 后接动词原形 ④ 语气礼貌 ⑤ 结尾是否邀请对方联系","prompt":"写一封建议信：你的朋友准备考研，请你给他 3 条具体建议。"},
+{"id":202,"layer":2,"cat":"invite","key":"lt-invite","name":"邀请信（高频）","pri":2,"fixed":"I am delighted to invite you to [活动名称], which will be held at [地点] on [时间]. I believe your participation would make the event more meaningful.\n\nThe event is intended to [活动目的]. During the event, participants will [活动内容]. I would also be grateful if you could [希望对方承担的任务或角色].\n\nI sincerely hope you can join us. I look forward to your reply.","fixedNotes":"固定句：I am delighted to invite you to… / which will be held at… on… / The event is intended to… / your participation would make the event more meaningful.","topics":["邀请外教担任英语演讲比赛评委","邀请校友回校做职业规划讲座","邀请朋友参加毕业十周年聚会"],"notes":"邀请信必须把时间、地点、活动内容写清，并说明希望对方承担的角色或任务。","check":"① 格式 ② 时间地点明确 ③ 活动目的 ④ 对方角色 ⑤ 期待回复","prompt":"写一封邀请信：邀请一位教授来参加你校的学术论坛并做主题发言。"},
+{"id":203,"layer":2,"cat":"recommend","key":"lt-recommend","name":"推荐信（高频）","pri":2,"fixed":"I am writing to recommend [人或事物] to you, as I believe it would be a suitable choice for [目的].\n\nTo begin with, [推荐对象] is particularly appealing because [理由一]. In addition, it can help you [理由二]. Considering these advantages, I believe it is well worth your attention.\n\nI hope my recommendation will be helpful to you. Please feel free to contact me if you need further information.","fixedNotes":"固定句：I am writing to recommend… / be a suitable choice for… / be particularly appealing because… / be well worth your attention.","topics":["推荐一本书给正在备考的朋友","推荐一位同学申请研究生","推荐一座城市作为旅游目的地"],"notes":"推荐信要有真实感：理由一 + 理由二 必须具体，不能只堆形容词。","check":"① 格式 ② 推荐对象明确 ③ 两个理由具体 ④ 与推荐目的吻合","prompt":"写一封推荐信：向你的老师推荐一位同学申请他门下的研究生。"},
+{"id":204,"layer":2,"cat":"inquire","key":"lt-inquire","name":"咨询信","pri":3,"fixed":"I am writing to inquire about [咨询主题], as I would like to obtain some further information.\n\nTo begin with, could you please tell me [问题一]? In addition, I would like to know [问题二]. Finally, could you clarify [问题三]?\n\nI would appreciate it if you could reply at your earliest convenience. Thank you for your time and assistance.","fixedNotes":"固定句：I am writing to inquire about… / could you please tell me…? / I would like to know… / I would appreciate it if you could…","topics":["咨询夏令营的报名条件与费用","咨询交换生项目的申请流程","咨询图书馆的借阅规则"],"notes":"咨询信就是「礼貌地问三个问题」，问题要具体、可回答。","check":"① 格式 ② 三个问题具体 ③ 语气礼貌 ④ 结尾致谢","prompt":"写一封咨询信：你想参加某大学的暑期夏令营，咨询报名条件和所需材料。"},
+{"id":205,"layer":2,"cat":"apology","key":"lt-apology","name":"道歉信","pri":3,"fixed":"Please accept my sincere apology for [道歉事项]. I am truly sorry for any inconvenience this may have caused.\n\nUnfortunately, [解释原因], which made it impossible for me to [未能完成的事情]. To make up for this, I would like to [补救措施].\n\nI sincerely hope you can understand my situation and accept my apology. Thank you for your understanding.","fixedNotes":"固定句：Please accept my sincere apology for… / any inconvenience this may have caused / To make up for this,… / I sincerely hope you can understand my situation.","topics":["为爽约朋友的聚会道歉","为迟交作业道歉","为损坏借阅的书道歉"],"notes":"道歉信三要素：道歉 + 原因 + 补救。原因要合理，补救措施要具体。","check":"① 格式 ② 道歉明确 ③ 原因合理 ④ 补救措施具体 ⑤ 请求谅解","prompt":"写一封道歉信：你答应帮同学带资料却忘了，为此道歉并提出补救。"},
+{"id":206,"layer":2,"cat":"gratitude","key":"lt-gratitude","name":"感谢信","pri":3,"fixed":"I am writing to express my sincere gratitude for your help with [具体事情]. Your support has meant a great deal to me.\n\nThanks to your assistance, I was able to [取得的结果]. I particularly appreciate the time and effort you devoted to [具体帮助], which made a real difference.\n\nThank you again for your kindness and support. I wish you all the best.","fixedNotes":"固定句：express my sincere gratitude for… / Your support has meant a great deal to me. / Thanks to your assistance,… / made a real difference.","topics":["感谢老师的指导帮助","感谢朋友在你生病时的照顾","感谢实习单位给予的机会"],"notes":"感谢信要「具体」：感谢什么、带来什么结果，不能泛泛说谢谢。","check":"① 格式 ② 感谢的具体事情 ③ 结果 ④ 再次致谢 ⑤ 祝福","prompt":"写一封感谢信：感谢你的导师在你写论文期间给予的指导。"},
+{"id":207,"layer":2,"cat":"apply","key":"lt-apply","name":"申请信","pri":3,"fixed":"I am writing to apply for [职位或项目]. I am very interested in this opportunity and believe that my qualifications make me a suitable candidate.\n\nTo begin with, I have acquired relevant knowledge in [领域]. In addition, I have developed strong [技能一] and [技能二] through [经历]. I am also responsible and willing to learn, which would help me contribute to the program.\n\nI would appreciate the opportunity to be considered for this position. I look forward to your reply.","fixedNotes":"固定句：I am writing to apply for… / my qualifications make me a suitable candidate / acquire relevant knowledge / contribute to the program.","topics":["申请一份实习","申请加入学生会","申请奖学金"],"notes":"申请信的核心是「资历与岗位匹配」，三个支撑点：知识 / 技能 / 态度。","check":"① 格式 ② 申请的职位/项目 ③ 知识+技能+态度 ④ 表达意愿","prompt":"写一封申请信：你申请某公司的暑期实习岗位。"},
+{"id":208,"layer":2,"cat":"complaint","key":"lt-complaint","name":"投诉信","pri":3,"fixed":"Dear Sir or Madam,\n\nI am writing to express my dissatisfaction with [商品或服务]. Unfortunately, [具体问题] has caused considerable inconvenience.\n\nTo begin with, [问题一]. Furthermore, [问题二]. I would therefore appreciate it if you could [希望对方采取的措施], so that this matter can be resolved as soon as possible.\n\nI look forward to your response and a satisfactory solution.\n\nYours faithfully,\nLi Ming","fixedNotes":"固定句：express my dissatisfaction with… / cause considerable inconvenience / resolve this matter / a satisfactory solution. 注意落款是 Yours faithfully（不知道对方姓名时用）。","topics":["投诉网购的商品质量问题","投诉食堂卫生问题","投诉宿舍噪音"],"notes":"投诉信要客观、具体，既指出问题也提出你希望对方采取的措施。","check":"① 格式（Yours faithfully）② 问题具体 ③ 希望采取的措施 ④ 语气不过激","prompt":"写一封投诉信：你网购的一件衣服有质量问题，要求退换。"},
+{"id":209,"layer":2,"cat":"congrat","key":"lt-congrat","name":"祝贺信","pri":5,"fixed":"Congratulations on your achievement in [领域或具体事件]! I was delighted to hear the good news.\n\nYour success is a reflection of your hard work and dedication. I am confident that this achievement will encourage you to pursue even greater goals.\n\nOnce again, congratulations on your well-deserved success. I wish you all the best in the future.","fixedNotes":"固定句：Congratulations on…! / a reflection of your hard work and dedication / pursue even greater goals / well-deserved success.","topics":["祝贺朋友考研成功","祝贺同学获得奖学金","祝贺老师出版新书"],"notes":"祝贺信语气要真诚热烈，重点是肯定对方的努力。","check":"① 格式 ② 祝贺的具体事件 ③ 肯定努力 ④ 祝福未来","prompt":"写一封祝贺信：你的朋友成功考取了理想的研究生院校。"},
+{"id":210,"layer":2,"cat":"resign","key":"lt-resign","name":"辞职信","pri":5,"fixed":"I am writing to formally resign from my position as [职位] at [单位], effective [日期].\n\nI have decided to [离职原因，如 pursue further academic studies]. I truly appreciate the opportunities and experience I have gained here, and I will do my best to complete the handover process before my departure.\n\nI want to apologize for any inconvenience this may cause and thank you for your support during my time here.","fixedNotes":"辞职专用语料：formally resign from my position / pursue further academic studies / complete the handover process / apologize for any inconvenience caused.","topics":["辞职去继续深造","辞职换一份更适合的工作"],"notes":"辞职信语气要克制、得体，肯定收获、致谢、承诺交接。","check":"① 格式 ② 离职原因 ③ 承诺交接 ④ 致歉与致谢","prompt":"写一封辞职信：你决定辞职去读研，提前一个月告知。"},
+{"id":211,"layer":2,"cat":"job","key":"lt-job","name":"求职信","pri":5,"fixed":"I am writing to express my keen interest in the [职位] advertised on [渠道]. I believe my qualifications align with your requirements.\n\nI have acquired relevant knowledge and developed strong [技能] through [经历]. I would appreciate the opportunity to attend an interview at your convenience.\n\nI look forward to your reply and the possibility of contributing to your team.","fixedNotes":"求职专用语料：express my keen interest in this position / my qualifications align with your requirements / I would appreciate the opportunity to attend an interview.","topics":["应聘英语助教","应聘公司行政岗位","应聘志愿者协调员"],"notes":"求职信重点是「匹配」：我的资历符合你的要求，并争取面试机会。","check":"① 格式 ② 应聘职位来源 ③ 资历匹配 ④ 争取面试","prompt":"写一封求职信：你应聘某培训机构的英语助教岗位。"},
+
+/* ---------------- L3 个人语料库（跨题型复用） ---------------- */
+{"id":301,"layer":3,"cat":"vocab","key":"vc-activity","name":"语料① 活动与比赛","pri":1,"fixed":"可复用表达（跨题型）：\nbroaden one's horizons 拓宽视野\nenrich campus life 丰富校园生活\ngain experience 积累经验\npromote communication 增进交流\npromote cultural exchange 促进文化交流\ndemonstrate one's abilities 展示才能\nimprove teamwork skills 提高团队合作能力\nprovide a valuable opportunity 提供宝贵机会\norganize an event 组织活动\nparticipate in an event 参加活动","howto":"直接套用：The activity is intended to broaden students' horizons and enrich campus life. / It also provides a valuable opportunity for students to demonstrate their abilities and improve teamwork skills.","topics":["英语演讲比赛的意义","校园文化节的活动描述","志愿者活动的价值"],"notes":"语料是「零件」，不是每篇都要全用。活动类作文优先搬这组。","check":"① 是否贴合题型 ② 语法正确 ③ 是否比生硬堆高级词更自然","prompt":"用这组语料写两句：描述你校即将举办的英语文化节及其意义。"},
+{"id":302,"layer":3,"cat":"vocab","key":"vc-timeplace","name":"语料② 时间、地点与安排","pri":1,"fixed":"可复用表达（跨题型）：\ntake place on/at/in... 将于……举行\nThe event will take place at 9 a.m. next Friday in the university auditorium. 活动将于下周五上午 9 点在大学礼堂举行\nduring the event 活动期间\nThe arrangements are as follows. 活动安排如下\nspecific details 具体细节\nregister for... 报名参加\nregistration deadline 报名截止日期\nprepare in advance 提前准备\narrive on time 按时到达","howto":"直接套用：Please register before the deadline and arrive on time.","topics":["通知里的时间地点","邀请信的活动安排","活动类描述"],"notes":"通知和邀请信几乎必用这组，务必记牢搭配介词。","check":"① take place 后介词正确 ② 时间地点顺序 ③ 截止日期表达","prompt":"用这组语料写两句话：通知一场讲座的时间、地点、报名方式和截止日期。"},
+{"id":303,"layer":3,"cat":"vocab","key":"vc-suggest","name":"语料③ 建议与解决问题","pri":1,"fixed":"可复用表达（跨题型）：\noffer suggestions 提出建议\nfocus on 重点关注\ntake effective measures 采取有效措施\naddress the problem 解决问题\nimprove the current situation 改善现状\ndevelop good habits 养成良好习惯\nmake a reasonable plan 制定合理计划\ntake ... into full consideration 充分考虑","howto":"直接套用：I strongly recommend that you make a reasonable plan and follow it consistently. / It would be beneficial to take these suggestions into consideration.","topics":["给朋友的备考建议","如何改善学习习惯","解决拖延问题"],"notes":"建议信和正面论证都常用这组。","check":"① recommend 后接动词原形 ② 建议具体可执行 ③ 语气","prompt":"用这组语料写两句建议：给你的学弟学妹如何高效备考。"},
+{"id":304,"layer":3,"cat":"vocab","key":"vc-ability","name":"语料④ 个人能力与申请","pri":1,"fixed":"可复用表达（跨题型）：\nrelevant knowledge 相关知识\npractical experience 实践经验\ncommunication skills 沟通能力\norganizational skills 组织能力\nteamwork skills 团队合作能力\na strong sense of responsibility 强烈的责任感\nbe willing to learn 乐于学习\nbe qualified for the position 胜任这一职位","howto":"直接套用：I have acquired relevant knowledge and developed strong communication skills through practical experience. / I am responsible, cooperative, and willing to learn.","topics":["申请信的资历陈述","推荐信的能力描述","求职信的自我介绍"],"notes":"申请信、推荐信、求职信三类都靠这组撑内容。","check":"① 知识与经历的搭配 ② 语气 ③ 与申请目的的匹配","prompt":"用这组语料写两句：介绍你自己申请某实习岗位的优势。"},
+{"id":305,"layer":3,"cat":"vocab","key":"vc-polite","name":"语料⑤ 礼貌表达与结尾","pri":1,"fixed":"可复用表达（跨题型）：\nThank you for your assistance. 感谢您的帮助\nThank you for your time and consideration. 感谢您的时间和考虑\nI hope you can understand my situation. 希望您能理解\nI look forward to your reply. 期待您的回复\nPlease feel free to contact me if you have any questions. 如有问题请联系我\nI hope these suggestions will be helpful. 希望这些建议有帮助\nThank you again for your kindness and support. 再次表示感谢","howto":"礼貌程度和语气比刻意用冷僻词更重要。这组是各类书信的「收尾零件」，按题型选两句即可。","topics":["各类书信的结尾","礼貌请求","致谢收束"],"notes":"小作文中，礼貌程度、语气和题目要求的匹配，比刻意使用冷僻词更重要。","check":"① 语气是否符合收信人身份 ② 结尾是否得体","prompt":"用这组语料给一封信写一个礼貌的结尾段（邀请信场景）。"}
+];
 var enTpls=[], enReviews=[], enNotes=[], enMetas={};
 var enView='home'; // home | detail
 var enCur=null;
@@ -1025,6 +1092,26 @@ function enLoadAll(){
   }
   enRenderHomeCard();
  }).catch(function(){enRenderHomeCard();});
+}
+function swRenderHomeCard(){
+ var today=swToday();
+ var cat=swCurrentCat();
+ var totalL2=SW_DATA.filter(function(d){return d.layer===2;}).length;
+ var doneL2=Object.keys(swProgress).filter(function(k){return (swProgress[k].day||0)>=SW_UNLOCK;}).length;
+ var pct=Math.round(doneL2/totalL2*100);
+ var items=swPickToday();
+ var label='';
+ if(!cat){label='全部体裁已背熟，可自由抽练';}
+ else{var prog=swProgress[cat]||{day:0};label='当前档 '+cat+' · 连续 '+prog.day+'/'+SW_UNLOCK+' 天达标';}
+ var h='<div class="card en-card"><div class="card-h"><span class="ic">&#9998;</span>考研英语 · 小作文 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">背熟才解锁 · 3 天一档</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;english/w&quot;)">去背诵</button></div></div>';
+ h+='<div class="en-mini"><div class="en-body"><div class="en-name">今日待背：'+(items[0]?swEsc(items[0].name):'全部已完成')+' <span class="tag ts">'+swLayerName(items[0]?items[0].layer:1)+'</span></div>';
+ h+='<div class="en-meta">'+doneL2+'/'+totalL2+' 体裁已背熟 · '+pct+'%';
+ if(items[0])h+=' · '+label;else h+=' · 自由复习模式';
+ h+='</div></div><div class="en-act"><button onclick="nav(&quot;english/w&quot;)">开始今日背诵</button></div></div>';
+ if(items.length>1){h+='<div class="en-meta" style="margin-top:10px;font-size:12.5px">另含语料：'+items.slice(1).map(function(d){return swEsc(d.name);}).join(' / ')+'</div>';}
+ h+='</div>';
+ var el=document.getElementById('swCard');
+ if(el){el.outerHTML=h;}
 }
 function enRenderHomeCard(){
  var box=document.getElementById('enCard');if(!box)return;
@@ -1185,6 +1272,292 @@ function enMark(order,level){
 function enTodayMark(){
  var d=enPickToday();if(!d||!d.id){toast('今天没有待背的');return;}
  enMark(d.order,4);
+}
+
+/* =================== 小作文模块逻辑（SW）====================
+   三层循环：体裁(L2) / 格式(L1骨架+通知纪要) / 语料(L3)
+   推进规则：背熟才解锁（unlockDays=3，连续 3 天自评≥4 才解锁下一档）
+   =========================================================== */
+var swView='home';          // home | detail
+var swCur=null;             // 当前条目 id
+var swTab='all';            // 小作文内子页签：all / letters / skeleton / vocab
+var SW_KEY='kb_sw_reviews'; // 自评记录表
+var SW_NOTE_KEY='kb_sw_notes';
+var SW_PROG_KEY='kb_sw_progress'; // 体裁档位进度
+var SW_UNLOCK=3;            // 连续几天自评≥4 才解锁下一档
+var swReviews=[];
+var swNotes=[];
+
+function swEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function swToday(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function swAddDays(s,n){var x=new Date(s);x.setDate(x.getDate()+n);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());}
+function swStoreGet(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+function swStoreSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+// 本地优先读自评记录（兼容旧字段名 sw_id / template_id）
+function swLoadReviews(){
+ var raw=swStoreGet(SW_KEY);
+ if(!raw||!raw.length){raw=swStoreGet('kb_english_reviews');} // 兜底：无则空
+ swReviews=Array.isArray(raw)?raw:[];
+ swReviews.forEach(function(r){ if(r.sw_id&&!r.template_id){r.template_id=r.sw_id;} });
+ swNotes=swStoreGet(SW_NOTE_KEY)||[];
+}
+function swSaveReviews(){swStoreSet(SW_KEY,swReviews);}
+function swSaveNotes(){swStoreSet(SW_NOTE_KEY,swNotes);}
+function swSaveProgress(){swStoreSet(SW_PROG_KEY,swProgress);}
+
+// 体裁档位进度：记录每个 L2 体裁"已连续自评≥4 的天数"
+var swProgress={}; // { [cat]: {day:天数, date:最近自评日期} }
+
+// 取某条记录数组
+function swRevOf(id){return swReviews.filter(function(r){return (r.template_id||r.sw_id)==id;});}
+function swNoteOf(id){return swNotes.filter(function(n){return (n.template_id||n.sw_id)==id;}).sort(function(a,b){return String(b.note_date||b.date||'').localeCompare(String(a.note_date||a.date||''));});}
+function swLastLevel(id){var rs=swRevOf(id);return rs.length?rs[rs.length-1].level:0;}
+function swLastDate(id){var rs=swRevOf(id);return rs.length?(rs[rs.length-1].review_date||rs[rs.length-1].date||''):'';}
+
+// 优先级分组（1→5）
+function swByPriority(){var g={};SW_DATA.forEach(function(d){var p=d.pri||5;(g[p]=g[p]||[]).push(d);});return g;}
+function swLayerName(l){return l==1?'L1 结构骨架':l==2?'L2 体裁模板':'L3 个人语料';}
+
+/* 解锁逻辑：连续 unlock 天自评≥4 才解锁下一档
+   显示顺序：优先推当前档（正在背的），档内按 priority 排序 */
+function swCurrentCat(){
+ var groups=swByPriority();
+ var catOrder=['suggest','invite','recommend','inquire','apology','gratitude','apply','complaint','congrat','resign','job'];
+ // 找到第一个「尚未背熟（连续天数<unlock）」的体裁
+ for(var i=0;i<catOrder.length;i++){
+  var cat=catOrder[i];
+  var list=SW_DATA.filter(function(d){return d.layer===2&&d.cat===cat;});
+  if(!list.length)continue;
+  var prog=swProgress[cat]||{day:0};
+  if(prog.day<SW_UNLOCK){return cat;}
+ }
+ return null; // 全部解锁
+}
+function swIsLocked(id){
+ var d=SW_DATA.filter(function(x){return x.id==id;})[0];if(!d)return false;
+ if(d.layer!==2)return false;
+ var prog=swProgress[d.cat]||{day:0};
+ return prog.day<SW_UNLOCK;
+}
+function swLockReason(id){
+ var d=SW_DATA.filter(function(x){return x.id==id;})[0];if(!d||d.layer!==2)return '';
+ var prog=swProgress[d.cat]||{day:0};
+ var daysLeft=SW_UNLOCK-prog.day;
+ var cur=swCurrentCat();
+ if(!cur)return '全部体裁已背熟，可自由复习';
+ if(cur!==d.cat)return '当前档：'+cur+'（再背 '+daysLeft+' 天即可解锁下一档）';
+ return '当前档，再背 '+daysLeft+' 天解锁下一档';
+}
+
+// 今日待背：优先当前体裁档 + 一个语料条 + 骨架轮换
+function swPickToday(){
+ var cat=swCurrentCat();
+ var today=swToday();
+ var picked=[];
+ // 1) 当前体裁：优先推「今天还没自评过」的那条
+ var pool=SW_DATA.filter(function(d){return d.layer===2&&d.cat===cat;});
+ var todo=pool.filter(function(d){return swLastDate(d.id)!==today;});
+ var pick=todo.length?todo[0]:(pool[0]||null);
+ if(pick)picked.push(pick);
+ // 2) 语料条（L3）：每天轮换一条，按 priority 顺序循环
+ var vc=SW_DATA.filter(function(d){return d.layer===3;});
+ var idx=(function(){
+  var total=swReviews.filter(function(r){return {}.hasOwnProperty.call(SW_DATA.reduce(function(o,d){o[d.id]=d;return o;},{}),r.template_id||r.sw_id);}).length;
+  return total%vc.length;
+ })(picked);
+ // 用累计自评次数做偏移，保证每天稳定推进一条
+ var offset=Math.floor(swReviews.length/vc.length);
+ if(vc.length)picked.push(vc[(offset)%vc.length]);
+ return picked;
+}
+
+function renderWriting(){
+ if(swView==='detail'){renderSwDetail(swCur);return;}
+ var today=swToday();
+ var items=swPickToday();
+ var cat=swCurrentCat();
+ var h='<div class="back" onclick="nav(&quot;&quot;)">&#8592; 返回首页</div>';
+ h+='<div class="sw-tabs"><div class="sw-tab on">&#9998; 小作文</div><div class="sw-tab" onclick="enView=\'home\';renderEnglish();nav(\'english\')">&#127757; 大作文</div></div>';
+ h+='<div class="card en-card"><div class="card-h"><span class="ic">&#9998;</span>考研英语一 · 小作文 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">背熟才解锁 · 3 天一档</span></div>';
+ // 当前档进度条
+ var totalL2=SW_DATA.filter(function(d){return d.layer===2;}).length;
+ var doneL2=Object.keys(swProgress).filter(function(k){return (swProgress[k].day||0)>=SW_UNLOCK;}).length;
+ var pct=Math.round(doneL2/totalL2*100);
+ h+='<div class="sw-bar"><div class="track"><div class="fill" style="width:'+pct+'%"></div></div><div class="num">'+doneL2+' / '+totalL2+' 体裁已背熟 · '+pct+'%</div></div>';
+ if(cat){
+  var prog=swProgress[cat]||{day:0};
+  h+='<div style="font-size:13px;color:var(--sub);margin-top:10px">当前档：<b style="color:#38bdf8">'+cat+'</b> · 已连续 '+prog.day+' / '+SW_UNLOCK+' 天达标，达标后解锁下一档</div>';
+ }else{
+  h+='<div style="font-size:13px;color:#4ade80;margin-top:10px">&#127881; 全部 11 种体裁已背熟，现在可自由抽练巩固</div>';
+ }
+ h+='</div>';
+
+ // 今日待背清单
+ h+='<div class="card"><div class="en-group-h">今日待背 <span class="g-cnt">'+today+' · 背熟才解锁</span></div>';
+ if(!items.length){
+  h+='<div class="sw-empty"><span class="big">&#127881;</span>全部体裁已背熟，去「体裁库」自由抽练吧</div>';
+ }else{
+  items.forEach(function(d){
+   var l=swLastLevel(d.id);
+   var st=l>=4?'s4':l>=3?'s3':l>=2?'s2':l>=1?'s1':'s0';
+   var stxt=l>=4?'已背熟':l>=1?['','遗忘','模糊','有点印象','能默写'][l]:'今日待背';
+   h+='<div class="en-item'+(swIsLocked(d.id)?' sw-locked':'')+'" onclick="swOpen('+d.id+')"><span class="no">L'+d.layer+'</span><div class="mid"><div class="mn">'+swEsc(d.name);
+   h+=' <span class="sw-layer l'+d.layer+'">'+swLayerName(d.layer)+'</span>';
+   h+=' <span class="sw-pri p'+(d.pri||5)+'">第 '+d.pri+' 优先</span></div>';
+   h+='<div class="mg">'+(swLastDate(d.id)?('上次 '+swLastDate(d.id)+' · '+stxt):'尚未首背')+(swIsLocked(d.id)?' · 🔒 '+swLockReason(d.id):'')+'</div></div>';
+   h+='<span class="st '+st+'">'+stxt+'</span><span class="arw">&#8594;</span></div>';
+  });
+ }
+ h+='</div>';
+
+ // 按优先级分组的体裁库
+ var g=swByPriority();
+ for(var p=1;p<=5;p++){
+  if(!g[p]||!g[p].length)continue;
+  var dl=g[p];
+  var dDone=dl.filter(function(d){return swLastLevel(d.id)>=4;}).length;
+  h+='<div class="card"><div class="sw-cat">第 '+p+' 优先 <span class="g-cnt">'+dDone+' / '+dl.length+' 已背熟</span></div>';
+  dl.forEach(function(d){
+   var l=swLastLevel(d.id);
+   var st=l>=4?'s4':l>=3?'s3':l>=2?'s2':l>=1?'s1':'s0';
+   var stxt=l>=4?'已背熟':l>=1?['','遗忘','模糊','有点印象','能默写'][l]:'未首背';
+   var locked=swIsLocked(d.id);
+   h+='<div class="en-item" onclick="swOpen('+d.id+')"><span class="no">'+(d.layer===1?'构':d.layer===2?(d.pri||'?'):'料')+'</span><div class="mid"><div class="mn">'+swEsc(d.name);
+   if(d.layer===2){var pg=swProgress[d.cat]||{day:0};h+=' <span class="tag tm">'+pg.day+'/'+SW_UNLOCK+' 天</span>';}
+   if(locked)h+=' <span class="tag td">🔒 未解锁</span>';
+   h+='</div><div class="mg">'+(swLastDate(d.id)?('上次 '+swLastDate(d.id)):'尚未首背')+'</div></div>';
+   h+='<span class="st '+st+'">'+stxt+'</span><span class="arw">&#8594;</span></div>';
+  });
+  h+='</div>';
+ }
+ h+='<footer>小作文 · 结构骨架 + 体裁模板 + 个人语料库，三层独立循环｜背熟才解锁下一档</footer>';
+ document.getElementById('page-detail').innerHTML=h;
+}
+
+function swOpen(id){
+ var d=SW_DATA.filter(function(x){return x.id==id;})[0];if(!d){nav('english/w');return;}
+ swCur=id;swView='detail';nav('english/w/'+id);
+}
+function renderSwDetail(id){
+ var d=SW_DATA.filter(function(x){return x.id==id;})[0];if(!d){nav('english/w');return;}
+ var l=swLastLevel(d.id);
+ var h='<div class="back" onclick="nav(&quot;english/w&quot;)">&#8592; 返回小作文</div>';
+ h+='<div class="card en-card"><div class="card-h"><span class="ic">&#9998;</span>'+swEsc(d.name)+' <span style="font-size:12px;color:var(--sub);font-weight:400;margin-left:6px">'+swLayerName(d.layer)+' · 第 '+d.pri+' 优先</span></div>';
+ h+='<div style="margin-bottom:12px"><span class="sw-layer l'+d.layer+'">'+swLayerName(d.layer)+'</span>';
+ if(swIsLocked(d.id))h+=' <span class="tag td">🔒 '+swLockReason(d.id)+'</span>';
+ if(swLastDate(d.id))h+=' <span class="tag tm">上次 '+swLastDate(d.id)+' · '+(l>=4?'已背熟':['','遗忘','模糊','有点印象','能默写'][l])+'</span>';
+ else h+=' <span class="tag to">尚未首背</span>';
+ h+='</div>';
+
+ // 固定句原文
+ h+='<div class="sw-fixed"><span class="lbl">固定背诵原文（严格按此记忆，按 [ ] 提示替换）</span>'+swEsc(d.fixed)+'</div>';
+
+ // 固定背诵要点
+ if(d.fixedNotes){
+  h+='<div class="en-box"><span class="lbl">固定背诵句（必须记牢）</span><div style="font-size:13.5px;line-height:1.85">'+swEsc(d.fixedNotes)+'</div></div>';
+ }
+ // 语法提醒
+ if(d.grammar){
+  h+='<div class="en-box warn"><span class="lbl">&#9888; 语法提醒</span><div style="font-size:13.5px;line-height:1.7">'+swEsc(d.grammar)+'</div></div>';
+ }
+ // 记忆方法 / 使用说明
+ if(d.howto){
+  h+='<div class="sw-howto"><span class="lbl">怎么背 / 怎么用</span>'+swEsc(d.howto)+'</div>';
+ }
+ // 常考话题
+ if(d.topics&&d.topics.length){
+  h+='<div class="sw-topics"><span class="lbl">常考话题（点「应用验证」按这些练）</span><ul>'+d.topics.map(function(t){return '<li>'+swEsc(t)+'</li>';}).join('')+'</ul></div>';
+ }
+ // 五步自查表
+ if(d.check){
+  h+='<div class="en-box"><span class="lbl">写完必查 5 件事</span><div style="font-size:13.5px;line-height:1.9">'+d.check.split('｜').map(function(s){return '✓ '+swEsc(s);}).join('<br>')+'</div></div>';
+ }
+ // 使用注意
+ if(d.notes){
+  h+='<div class="en-box warn"><span class="lbl">&#9888; 使用注意（容易踩坑）</span><div style="font-size:13.5px;line-height:1.7">'+swEsc(d.notes)+'</div></div>';
+ }
+ // 应用验证
+ h+='<div class="en-prompt"><span class="lbl">&#128203; 应用验证（把 [ ] 换成具体内容写一遍）</span><p>'+swEsc(d.prompt)+'</p></div>';
+
+ // 自评
+ h+='<div style="font-size:14px;font-weight:600;margin:0 0 10px;padding-left:10px;border-left:3px solid var(--accent)">自评（点一下即记录，连续 3 天「能默写」解锁下一档）</div>';
+ h+='<div class="en-marks">';
+ h+='<button class="l4" onclick="swMark('+d.id+',4)">&#9989; 能默写（应用通过）</button>';
+ h+='<button class="l3" onclick="swMark('+d.id+',3)">&#128527; 有点印象</button>';
+ h+='<button class="l2" onclick="swMark('+d.id+',2)">&#128561; 忘了</button>';
+ h+='</div>';
+
+ // 卡点备注
+ h+='<div style="font-size:14px;font-weight:600;margin:22px 0 10px;padding-left:10px;border-left:3px solid var(--l3)">卡点备注 <span style="font-weight:400;font-size:12px;color:var(--sub)">输入后自动保存</span></div>';
+ var ns=swNoteOf(d.id);
+ h+='<textarea class="note-box" id="swNoteBox" placeholder="记容易写错、容易忘的表达…" oninput="swNote('+d.id+',this.value)">'+(ns[0]?(ns[0].content||ns[0].text||''):'')+'</textarea>';
+ if(ns.length){
+  h+='<div class="note-list">';
+  ns.forEach(function(n){h+='<div class="nl-item"><span class="nl-date">'+swEsc(n.note_date||n.date||'')+'</span><span class="nl-text">'+swEsc(n.content||n.text||'')+'</span></div>';});
+  h+='</div>';
+ }
+ h+='</div>';
+ document.getElementById('page-detail').innerHTML=h;
+}
+
+var swNoteTimer=null;
+function swNote(id,val){
+ clearTimeout(swNoteTimer);
+ var v=val.trim();var d=swToday();
+ var key='note_'+id;
+ swNoteTimer=setTimeout(function(){
+  var ns=swNotes.filter(function(n){return (n.template_id||n.sw_id)==id;}).sort(function(a,b){return String(b.note_date||b.date||'').localeCompare(String(a.note_date||a.date||''));});
+  if(ns[0]){
+   ns[0].content=v;ns[0].text=v;
+   if(!v)swNotes=swNotes.filter(function(n){return (n.template_id||n.sw_id)!=id;});
+  }else if(v){
+   swNotes.push({template_id:id,sw_id:id,note_date:d,date:d,content:v,text:v});
+  }
+  swSaveNotes();
+  // 云端同步（失败不影响本地）
+  try{
+   if(!v){rest('/kb_sw_notes?template_id=eq.'+id,'DELETE');}
+   else if(ns[0]){rest('/kb_sw_notes?template_id=eq.'+id,'PATCH',{content:v,text:v});}
+   else{rest('/kb_sw_notes?select=*','POST',{template_id:id,sw_id:id,note_date:d,date:d,content:v,text:v});}
+  }catch(e){}
+ },1200);
+}
+
+function swMark(id,level){
+ var d=SW_DATA.filter(function(x){return x.id==id;})[0];if(!d){toast('数据未加载完，请刷新');return;}
+ var t=swToday();
+ var rec={template_id:id,sw_id:id,review_date:t,date:t,level:level};
+ var exist=swRevOf(id).filter(function(r){return (r.review_date||r.date)===t;});
+ if(exist.length){
+  exist[0].level=level;
+ }else{
+  swReviews.push(rec);
+ }
+ swSaveReviews();
+
+ // 体裁档位推进：只有 L2 体裁才计入「背熟才解锁」
+ if(d.layer===2){
+  var prog=swProgress[d.cat]||{day:0,date:''};
+  if(level>=4){
+   if(prog.date!==t){ // 同一天重复自评不重复计数
+    prog.day=(prog.date&&swAddDays(prog.date,1)===t)?prog.day+1:1;
+    prog.date=t;
+    toast('能默写 · 连续 '+prog.day+' / '+SW_UNLOCK+' 天达标');
+   }else{
+    toast('已记录今天的自评（同一天不重复计数）');
+   }
+  }else{
+   // 自评<4 视为未达标，连续天数清零，明天重新累计
+   prog.day=0;prog.date=t;
+   toast('今天未达标，明天继续，别气馁');
+  }
+  swProgress[d.cat]=prog;
+  swSaveProgress();
+ }else{
+  toast(level>=4?'已掌握 · 7 天后抽查':'已记录，继续巩固');
+ }
+ try{renderWriting();if(swView==='detail')renderSwDetail(id);}catch(e){}
 }
 </script>
 </body>
