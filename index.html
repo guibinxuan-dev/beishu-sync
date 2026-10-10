@@ -399,16 +399,14 @@ function router(){
  }else if(parts[0]==='stat'){
   document.getElementById('page-detail').classList.add('on');
   renderStat(parts[1]||'today');
+ }else if(parts[0]==='english'){
+  document.getElementById('page-detail').classList.add('on');
+  if(parts[1]){enCur=parts[1];enView='detail';renderEnDetail(enCur);}
+  else{enView='home';renderEnglish();}
+  window.scrollTo(0,0);return;
  }else{
   document.getElementById('page-home').classList.add('on');renderHome();
  }
-
-	 if(parts[0]==='english'){
-	  document.getElementById('page-detail').classList.add('on');
-	  if(parts[1]){enCur=+parts[1];enView='detail';renderEnDetail(enCur);}
-	  else{enView='home';renderEnglish();}
-	  window.scrollTo(0,0);return;
-	 }
  window.scrollTo(0,0);
 }
 var homeView='map', mapCh='0', dueBatch=false;
@@ -447,7 +445,7 @@ function renderHome(){
  h+='<div class="stat" onclick="nav(\'stat/fading\')"><b>'+fading+'</b><span>正在褪色</span></div>';
  h+='<div class="stat" onclick="nav(\'stat/total\')"><b>'+reviews.length+'</b><span>累计背诵</span></div>';
  h+='</div>';
- h+='<div class="card en-card" id="enCard"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">加载中…</span></div></div>';
+ h+='<div class="card en-card" id="enCard" onclick="nav(&quot;english&quot;)" style="cursor:pointer"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px" id="enCardStatus">加载中…</span></div></div>';
  h+='<div class="card"><div class="card-h"><span class="ic">&#128204;</span>今日待复习 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+(duec?'共 '+duec+' 条':'今天没有')+'</span><div class="ch-act"><button class="ghost sm" onclick="dueBatch=!dueBatch;renderHome()">'+(dueBatch?'退出批量':'批量编辑')+'</button><button class="ghost sm" onclick="doneAll()">全部完成</button></div></div>'+(dueBatch?renderDueBatchBar():'')+renderDueList()+'</div>';
  var ng=[];
  chapters.forEach(function(c){
@@ -474,6 +472,7 @@ function renderHome(){
  h+='<footer>数据存于 Supabase 多设备打开同一网址自动同步 默认密码 beishu2024</footer>';
  document.getElementById('page-home').innerHTML=h;
  if(homeView==='map')setTimeout(renderMapCells,0);else setTimeout(renderHeatCells,0);
+ setTimeout(enRenderHomeCard,0);
 }
 function renderDueBatchBar(){
  var sch='<option value="">改章节 →</option>'+chapters.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');
