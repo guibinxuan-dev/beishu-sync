@@ -215,6 +215,18 @@ footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter
 .quiz-history .hi-note:empty{display:none}
 .quiz-history .hi-score{font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
 @media(max-width:680px){.quiz-stat b{font-size:20px}.quiz-q{font-size:17px}}
+.due-card{background:linear-gradient(135deg,rgba(63,214,171,.10),rgba(124,155,255,.07) 55%,rgba(192,132,252,.07)),var(--card);}
+.due-card .card-h .ic{background:linear-gradient(135deg,#3fd6ab,#7c9bff);box-shadow:0 4px 12px rgba(63,214,171,.3)}
+.due-summary{display:flex;gap:18px;align-items:center;flex-wrap:wrap;padding:6px 0;cursor:pointer}
+.due-num{display:flex;flex-direction:column;gap:2px}
+.due-num b{font-size:30px;color:var(--brand);line-height:1;font-variant-numeric:tabular-nums}
+.due-num span{font-size:12px;color:var(--sub)}
+.due-line{flex:1;min-width:180px;display:flex;flex-direction:column;gap:6px}
+.due-bar{height:8px;border-radius:8px;background:rgba(255,255,255,.08);overflow:hidden}
+body.light .due-bar{background:rgba(0,0,0,.07)}
+.due-bar i{display:block;height:100%;background:linear-gradient(90deg,#3fd6ab,#38bdf8);transition:width .3s}
+.due-line>span{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
+@media(max-width:680px){.due-num b{font-size:26px}.due-line{min-width:140px}}
 
 /* ========== 每日英语模块 ========== */
 .en-card{background:linear-gradient(135deg,rgba(63,214,171,.10),rgba(124,155,255,.07) 55%,rgba(176,124,255,.07)),var(--card);}
@@ -466,15 +478,20 @@ function router(){
   document.getElementById('page-chapter').classList.add('on');
   renderChapter(parts[1]);
  }else if(parts[0]==='detail'){
-	}else if(parts[0]==='quiz'){
-	 document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
-	 document.getElementById('page-detail').classList.add('on');
-	 if(parts[1]==='pick')pickQuiz(true);
-	 else if(parts[1]==='answer')renderQuizAnswer();
-	 else if(parts[1]==='hist')renderQuizHistory();
-	 else renderQuizHome();
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
   document.getElementById('page-detail').classList.add('on');
   renderDetail(parts[1]);
+ }else if(parts[0]==='quiz'){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.getElementById('page-detail').classList.add('on');
+  if(parts[1]==='pick')pickQuiz(true);
+  else if(parts[1]==='answer')renderQuizAnswer();
+  else if(parts[1]==='hist')renderQuizHistory();
+  else renderQuizHome();
+ }else if(parts[0]==='due'){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.getElementById('page-detail').classList.add('on');
+  renderDuePage();
  }else if(parts[0]==='day'){
   document.getElementById('page-detail').classList.add('on');
   renderDay(parts[1]);
@@ -513,7 +530,7 @@ function renderHome(){
  h+='<div class="hero-row">';
  h+='<div class="hero-cell" onclick="nav(\'stat/today\')"><b>'+todays+'</b><span>今日背诵</span></div>';
  h+='<div class="hero-cell" onclick="nav(\'stat/done\')"><b>'+mastered+'</b><span>已背熟</span></div>';
- h+='<div class="hero-cell" onclick="nav(\'stat/due\')"><b>'+duec+'</b><span>今日待复习</span></div>';
+ h+='<div class="hero-cell" onclick="nav(\'due\')"><b>'+duec+'</b><span>今日待复习</span></div>';
  h+='<div class="hero-cell" onclick="nav(\'stat/streak\')"><b>'+streak+'</b><span>连续打卡</span></div>';
  h+='</div></div>';
  h+='<div class="stats">';
@@ -525,14 +542,14 @@ function renderHome(){
  h+='<div class="card en-card" id="swCard"><div class="card-h"><span class="ic">&#9998;</span>考研英语 · 小作文 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">背熟才解锁 · 3 天一档</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;english/w&quot;)">去背诵</button></div></div><div class="empty">正在准备今日小作文…</div></div>';
  h+='<div class="card en-card" id="enCard"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 片 · 应用验证</span></div><div class="empty">正在准备今日语料…</div></div>';
  h+='<div class="card quiz-card"><div class="card-h"><span class="ic">&#128221;</span>抽默写 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 题 · 抽到即默 · 自己打分</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;quiz&quot;)">进入</button></div></div><div class="quiz-stat"><div><div>今日已默 <b id="quizDone">0</b> / 1 <span id="quizExtra" style="display:none;color:var(--brand)">+<span id="quizExtraN">0</span> 额外</span></div><div><span id="quizStreak">连续 0 天</span> · 共默 <span id="quizTotal">0</span> 次</div></div><button class="ghost" onclick="pickQuiz(false)">&#127919; 抽一题</button></div></div>';
- h+='<div class="card"><div class="card-h"><span class="ic">&#128204;</span>今日待复习 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+(duec?'共 '+duec+' 条':'今天没有')+'</span><div class="ch-act"><button class="ghost sm" onclick="dueBatch=!dueBatch;renderHome()">'+(dueBatch?'退出批量':'批量编辑')+'</button><button class="ghost sm" onclick="doneAll()">全部完成</button></div></div>'+(dueBatch?renderDueBatchBar():'')+renderDueList()+'</div>';
+ h+='<div class="card due-card"><div class="card-h"><span class="ic">&#128204;</span>今日待复习 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">点击进入清单</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;due&quot;)">进入复习</button></div></div><div class="due-summary" onclick="nav(&quot;due&quot;)"><div class="due-num"><b id="dueNum">'+duec+'</b><span>条待复习</span></div><div class="due-line"><div class="due-bar"><i id="dueBar" style="width:0%"></i></div><span id="dueRate">0/0 已完成</span></div></div></div>';
  var ng=[];
  chapters.forEach(function(c){
   var cps=points.filter(function(p){return p.chapter_id==c.id&&!firstDate(p.id);});
   if(cps.length)ng.push({c:c,cps:cps});
  });
  h+='<div class="card"><div class="card-h"><span class="ic">&#128214;</span>待首背 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+(ng.length?'有 '+ng.length+' 章未首背':'已全部首背过')+'</span></div>'+(ng.length?ng.map(function(g){return '<div class="cat-grid" style="grid-template-columns:1fr"><div class="cat-card" onclick="nav(\'chapter/'+g.c.id+'\')"><h3 style="font-size:15px">'+esc(g.c.name)+'</h3><div class="cnt" style="margin-top:6px">'+g.cps.length+' 条待首背</div><span class="arrow">&#8594;</span></div></div>';}).join(''):'<div class="empty">全部知识点都首背过了 可以去复习了</div>')+'</div>';
-'<div class=\"card\"><div class=\"card-h\"><span class=\"ic\">&#128214;</span>章节</div><div class=\"cat-grid\">' + chapters.map(function(c){
+h+='<div class="card"><div class="card-h"><span class="ic">&#128214;</span>章节</div><div class=\"cat-grid\">' + chapters.map(function(c){
   var cps=points.filter(function(p){return p.chapter_id==c.id;});
   var done=cps.filter(function(p){return firstDate(p.id);}).length;
   var pct=cps.length?Math.round(done/cps.length*100):0;
@@ -996,21 +1013,59 @@ function pickQuiz(extra){
   }
  });
 }
+function renderDuePage(){
+ var list=dueList();
+ var t=ts();
+ var done=list.filter(function(o){return o.point.review_date===t&&o.point.last_reviewed_at&&String(o.point.last_reviewed_at).slice(0,10)===t;}).length;
+ var pct=list.length?Math.round(done/list.length*100):0;
+ var h='<div class="back" onclick="nav(\'\')">&#8592; 返回首页</div>';
+ h+='<div class="card due-card"><div class="card-h"><span class="ic">&#128204;</span>今日待复习 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">按艾宾浩斯节奏推送</span></div>';
+ h+='<div class="due-summary"><div class="due-num"><b>'+list.length+'</b><span>条待复习</span></div><div class="due-line"><div class="due-bar"><i style="width:'+pct+'%"></i></div><span>'+done+'/'+list.length+' 已完成</span></div></div>';
+ h+='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="ghost sm" onclick="doneAll()">&#9989; 全部标完成</button><button class="ghost sm" onclick="dueBatch=!dueBatch;renderDuePage()">'+(dueBatch?'&#10060; 退出批量':'&#9745; 批量编辑')+'</button></div>';
+ h+='</div>';
+ if(dueBatch)h+=renderDueBatchBar();
+ if(!list.length){h+='<div class="card"><div class="empty">&#127881; 今天的复习任务都清空了<br><span style="font-size:12px">去抽个默写保持手感吧</span></div></div>';}
+ list.forEach(function(o){
+  var p=o.point; if(!p)return;
+  var l=lastLevel(p.id),d=firstDate(p.id),color=colorOf(l);
+  h+='<div class="point'+(dueBatch&&chSel[p.id]?' sel':'')+'" id="pt_'+p.id+'" onclick="'+(dueBatch?'toggleSel('+p.id+')':'togglePoint('+p.id+')')+'">';
+  h+='<div class="info"><div class="nm">'+esc(p.name)+'</div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px">'+tagOf(p.category)+'<span class="tag">'+esc(chName(p.chapter_id))+'</span><span class="tag" style="color:'+color+'">L'+l+' '+LVL[Math.min(l,4)]+'</span></div></div>';
+  h+='<div class="acts">'+(dueBatch?'<span class="btn-text">选择</span>':quickReview(p.id))+'</div>';
+  if(p.content&&String(p.content).trim())h+='<div class="prev" style="display:none">'+String(p.content).split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;}).map(function(l){return '<p>'+esc(l)+'</p>';}).join('')+'</div>';
+  h+='</div>';
+ });
+ document.getElementById('page-detail').innerHTML=h;
+ window.scrollTo(0,0);
+}
 function renderQuizHome(){
+ // 兜底：先立即渲染骨架，避免 Supabase 拉数据时页面空白（看起来像点了没反应）
+ var pool=quizPickPool();
+ var skeleton='<div class="back" onclick="nav(\')">&#8592; 返回首页</div>'
+  +'<div class="card quiz-card"><div class="card-h"><span class="ic">&#128221;</span>抽默写</div>'
+  +'<div class="quiz-stat"><div><div id="quizBaseTxt">加载中…</div><div id="quizHomeInfo">可默知识点 '+pool.length+' 个</div></div>'
+  +'<button class="ghost" id="quizMainBtn" onclick="pickQuiz(false)">&#127919; 抽今日基础题</button></div>'
+  +'<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><button class="ghost sm" onclick="nav(\'quiz/hist\')">&#128203; 默写历史</button><button class="ghost sm" onclick="renderQuizTips()">&#128161; 我的薄弱点</button></div>'
+  +'</div><div id="quizTipsWrap"></div>';
+ var box=document.getElementById('page-detail');
+ if(box)box.innerHTML=skeleton;
  loadQuizCache().then(function(all){
   var t=quizTodayKey();
   var today=all.filter(function(q){return String(q.created_at).slice(0,10)===t;});
   var base=today.filter(function(q){return !q.extra;}).length;
   var extra=today.filter(function(q){return q.extra;}).length;
-  var h='<div class="back" onclick="nav(\'\')">&#8592; 返回首页</div>';
+  var h='<div class="back" onclick="nav(\')">&#8592; 返回首页</div>';
   h+='<div class="card quiz-card"><div class="card-h"><span class="ic">&#128221;</span>抽默写</div>';
-  h+='<div class="quiz-stat"><div><div>今日已默 <b>'+(Math.min(base,1))+'</b> / 1 基础题'+(extra>0?' <span style="color:var(--brand)">+ '+extra+' 额外</span>':'')+'</div><div id="quizHomeInfo">共默 '+all.length+' 次 · 可默知识点 '+quizPickPool().length+' 个</div></div><button class="ghost" onclick="pickQuiz(false)">&#127919; '+(base>=1?'再抽一题（额外）':'抽今日基础题')+'</button></div>';
+  h+='<div class="quiz-stat"><div><div>今日已默 <b>'+(Math.min(base,1))+'</b> / 1 基础题'+(extra>0?' <span style="color:var(--brand)">+ '+extra+' 额外</span>':'')+'</div><div id="quizHomeInfo">共默 '+all.length+' 次 · 可默知识点 '+quizPickPool().length+' 个</div></div><button class="ghost" id="quizMainBtn" onclick="pickQuiz(false)">&#127919; '+(base>=1?'再抽一题（额外）':'抽今日基础题')+'</button></div>';
   h+='<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><button class="ghost sm" onclick="nav(\'quiz/hist\')">&#128203; 默写历史</button><button class="ghost sm" onclick="renderQuizTips()">&#128161; 我的薄弱点</button></div>';
   h+='</div>';
   h+='<div id="quizTipsWrap"></div>';
-  document.getElementById('page-detail').innerHTML=h;
+  if(box)box.innerHTML=h;
   quizRefreshHome();
   if(base>=1){var btn=document.querySelector('#page-detail .quiz-stat .ghost');if(btn)btn.setAttribute('onclick','pickQuiz(true)');}
+ }).catch(function(err){
+  var box2=document.getElementById('page-detail');
+  if(box2)box2.innerHTML=skeleton+'<div class="card"><div class="empty">&#9888; 抽默写数据加载失败<br><span style="font-size:12px">请检查网络或 Supabase 配置，可重试：</span><br><button class="ghost sm" onclick="renderQuizHome()">重新加载</button></div></div>';
+  console.error('loadQuizCache failed',err);
  });
 }
 function renderQuizAnswer(){
