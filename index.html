@@ -260,7 +260,6 @@ body.light .en-progress i{background:rgba(0,0,0,.07)}
 <div class="toast" id="toast"></div>
 <div class="heat-tip" id="tip"></div>
 <script>
-var EN_CARD_HTML='<div class="card en-card" id="enCard"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">加载中…</span></div></div>';
 var SUPABASE_URL='https://jnnsmjjhjhwrcxnklonf.supabase.co';
 var APIKEY='sb_publishable_2w2iM-cklg-Aof9dP7xB_Q_OfWQmj8V';
 var PASSWORD='beishu2024';
@@ -387,6 +386,13 @@ function router(){
  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
  if(!h){document.getElementById('page-home').classList.add('on');renderHome();window.scrollTo(0,0);return;}
  var parts=h.split('/');
+ if(parts[0]==='english'){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.getElementById('page-detail').classList.add('on');
+  if(parts[1]){enCur=+parts[1];enView='detail';renderEnDetail(enCur);}
+  else{enView='home';renderEnglish();}
+  window.scrollTo(0,0);return;
+ }
  if(parts[0]==='chapter'){
   document.getElementById('page-chapter').classList.add('on');
   renderChapter(parts[1]);
@@ -399,14 +405,16 @@ function router(){
  }else if(parts[0]==='stat'){
   document.getElementById('page-detail').classList.add('on');
   renderStat(parts[1]||'today');
- }else if(parts[0]==='english'){
-  document.getElementById('page-detail').classList.add('on');
-  if(parts[1]){enCur=parts[1];enView='detail';renderEnDetail(enCur);}
-  else{enView='home';renderEnglish();}
-  window.scrollTo(0,0);return;
  }else{
   document.getElementById('page-home').classList.add('on');renderHome();
  }
+
+	 if(parts[0]==='english'){
+	  document.getElementById('page-detail').classList.add('on');
+	  if(parts[1]){enCur=+parts[1];enView='detail';renderEnDetail(enCur);}
+	  else{enView='home';renderEnglish();}
+	  window.scrollTo(0,0);return;
+	 }
  window.scrollTo(0,0);
 }
 var homeView='map', mapCh='0', dueBatch=false;
@@ -445,7 +453,7 @@ function renderHome(){
  h+='<div class="stat" onclick="nav(\'stat/fading\')"><b>'+fading+'</b><span>正在褪色</span></div>';
  h+='<div class="stat" onclick="nav(\'stat/total\')"><b>'+reviews.length+'</b><span>累计背诵</span></div>';
  h+='</div>';
- h+='<div class="card en-card" id="enCard" onclick="nav(&quot;english&quot;)" style="cursor:pointer"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px" id="enCardStatus">加载中…</span></div></div>';
+ h+='<div class="card en-card" id="enCard"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 片 · 应用验证</span></div><div class="empty">正在准备今日语料…</div></div>';
  h+='<div class="card"><div class="card-h"><span class="ic">&#128204;</span>今日待复习 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+(duec?'共 '+duec+' 条':'今天没有')+'</span><div class="ch-act"><button class="ghost sm" onclick="dueBatch=!dueBatch;renderHome()">'+(dueBatch?'退出批量':'批量编辑')+'</button><button class="ghost sm" onclick="doneAll()">全部完成</button></div></div>'+(dueBatch?renderDueBatchBar():'')+renderDueList()+'</div>';
  var ng=[];
  chapters.forEach(function(c){
@@ -471,8 +479,8 @@ function renderHome(){
  h+='</div>';
  h+='<footer>数据存于 Supabase 多设备打开同一网址自动同步 默认密码 beishu2024</footer>';
  document.getElementById('page-home').innerHTML=h;
+ setTimeout(function(){try{enRenderHomeCard();}catch(e){console.error('enCard',e);}},0);
  if(homeView==='map')setTimeout(renderMapCells,0);else setTimeout(renderHeatCells,0);
- setTimeout(enRenderHomeCard,0);
 }
 function renderDueBatchBar(){
  var sch='<option value="">改章节 →</option>'+chapters.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');
@@ -905,11 +913,45 @@ function loadAll(){
 })();
 
 /* ===== 每日英语模块 ===== */
-var EN_DATA = [{"order": 1, "group": "A-模板", "key": "P1-图画", "name": "图画类 P1 首段", "content": "Presented before us is a thought-provoking scene in which [画面主体及动作]. What makes the picture particularly striking is that [关键细节或对比]. Simple as the picture may seem, it conveys a meaningful message about [主题].", "memory": "记忆顺序：画面主体 → 关键细节 → 核心寓意", "notes": "主语是 Several villagers 时谓语用 are；是 A group of villagers 时写作建议用 is。主题不要只写宽泛名词，尽量明确到 the inheritance of traditional culture、the importance of perseverance 这类具体表达。", "prompt": "用中文描述一个「祖孙三代各自低头看手机」的画面，按 画面主体→关键细节→核心寓意 的顺序写三句英文"}, {"order": 2, "group": "A-模板", "key": "P1-动态图", "name": "动态图 / 表格类 P1 首段", "content": "The [table/line graph/bar chart] illustrates how [主题] changed from [起始年份] to [结束年份]. During this period, [A] experienced a noticeable [rise/fall], while [B] showed [a similar trend/an opposite trend]. Taken together, the figures reveal a clear change in [主题或社会意义].", "memory": "记忆顺序：材料类型与时间 → 主要变化 → 数据反映的意义", "notes": "材料类型必须准确：表格 table、折线图 line graph、柱状图 bar chart。数据较多时优先突出主要趋势，不要机械罗列所有数字。", "prompt": "用中文给出「2015—2025 某产品销量」的上升数据，写三句英文描述趋势"}, {"order": 3, "group": "A-模板", "key": "P1-静态图", "name": "静态图 P1 首段", "content": "The chart presents the distribution of [调查主题]. Specifically, [A] accounts for the largest proportion, at [数字]%. By contrast, [B] represents the smallest share, at only [数字]%. This striking difference reflects a broader change in our society.", "memory": "记忆顺序：调查主题 → 最大比例 → 最小比例 → 社会意义", "notes": "chart 是统称；具体是饼图可换成 pie chart。若题目并非比例分布而是人数或频率比较，要调整 proportion/share，不能强行套用。", "prompt": "用中文给出「各年龄段日均阅读时长」的比例，写三句英文描述"}, {"order": 4, "group": "A-模板", "key": "P1-混合", "name": "图画 + 图表混合类 P1 首段", "content": "The two forms of information jointly illustrate the current situation of [主题]. As shown in the picture, [画面内容]. Meanwhile, the chart indicates that [主要数据或趋势]. Although presented in different forms, they point to the same meaningful change in our society.", "memory": "记忆顺序：总主题 → 图片内容 → 图表信息 → 共同寓意", "notes": "", "prompt": "用中文给出「一张反映环保行为的图片 + 一张垃圾分类比例图」，写四句英文"}, {"order": 5, "group": "A-模板", "key": "P1-文字", "name": "文字类 P1 首段", "content": "The provided statement presents a thought-provoking view that [改写原文观点]. It highlights the importance of [主题] in our daily lives and social development. Personally, I strongly agree with this idea, as it is highly relevant to our present society.", "memory": "记忆顺序：改写观点 → 强调价值 → 表明立场", "notes": "若原文观点存在争议，或题目要求评价而非赞同，不要机械用 I strongly agree，应根据题目调整立场。", "prompt": "用中文给出一句待评价的观点，改写并表明立场，写三句英文"}, {"order": 6, "group": "A-模板", "key": "P2-正面", "name": "通用 P2 正面论证", "content": "There are several interconnected reasons why this phenomenon deserves our attention. To begin with, [主题] can bring considerable benefits to individuals by enabling them to [作用一]. Moreover, [第二个原因或社会条件] has created more favorable conditions for [主题或趋势]. More importantly, this phenomenon reflects not merely a change in behavior, but a broader transformation in people's attitudes toward [主题].", "table": "| 句子 | 功能 | 考场上需要填什么 |\n| There are several... | 总起 | 引出分析 |\n| To begin with... | 第一层 | 个人作用或直接影响 |\n| Moreover... | 第二层 | 社会条件、科技、经济、观念等 |\n| More importantly... | 深层意义 | 价值观、生活方式、社会变化 |", "notes": "四句功能必须记清楚：总起 / 第一层 / 第二层 / 深层意义。", "prompt": "用正面论证写一句「阅读让人成长」，套用 To begin with 和 Moreover 两层"}, {"order": 7, "group": "A-模板", "key": "P2-负面", "name": "通用 P2 负面论证（替换版）", "content": "There are several interconnected reasons why this phenomenon deserves our attention. To begin with, excessive [行为或现象] may prevent individuals from [负面影响一]. Moreover, [相关原因或社会条件] may further aggravate this problem. More importantly, this phenomenon reflects not merely a change in behavior, but a broader problem in people's attitudes toward [主题].", "notes": "正面题强调 benefits、opportunities、development；负面题强调 risks、problems、negative effects。第三句原因必须符合题意，不能为了套模板凭空认定某种社会条件加剧了问题。", "prompt": "用负面论证写「过度依赖网络」的危害，套用 To begin with 和 Moreover 两层"}, {"order": 8, "group": "A-模板", "key": "P3", "name": "通用 P3 第三段", "content": "In light of the above, [主题或现象] deserves our thoughtful attention. As individuals, we should enhance our awareness of [主题] and translate it into concrete actions in our daily lives. Meanwhile, relevant institutions should take effective measures to create a more favorable environment for [目标]. With the joint efforts of individuals and society, we can better [目标或解决的问题] and build a more promising future.", "rule": "总结：In light of the above...｜个人行动：As individuals...｜社会/机构：Meanwhile, relevant institutions...｜展望：With the joint efforts...", "notes": "不是每题都必须写政府。若侧重个人习惯、成长或日常选择，可把 relevant institutions 换成更贴切的社会主体，或写家庭、学校、社区。", "prompt": "围绕「环境保护」收尾，用 As individuals 和 With the joint efforts 两层收束"}, {"order": 9, "group": "A-模板", "key": "图表-趋势", "name": "图表专用：动态图趋势表达", "content": "严格背诵句：During this period, [A] experienced a noticeable rise from [数字] to [数字], while [B] showed a similar upward trend. / Taken together, the figures reveal a clear change in [主题].", "vocab": ["rise significantly 显著上升", "increase steadily 稳步增长", "decline sharply 大幅下降", "decrease slightly 略有下降", "remain stable 保持稳定", "fluctuate 出现波动", "reach a peak of 达到最高点", "rise from A to B 从A上升至B", "show an upward trend 呈现上升趋势", "show an opposite trend 呈现相反趋势"], "notes": "Taken together 句只在图表题用，不要塞进图画、文字类作文。", "prompt": "用中文给出两组数据的一升一降，写两句英文描述趋势"}, {"order": 10, "group": "A-模板", "key": "图表-比例", "name": "图表专用：静态图比例与对比", "content": "严格背诵句：Specifically, [A] accounts for the largest proportion, at [数字]%. By contrast, [B] represents the smallest share, at only [数字]%. This striking difference reflects a broader change in our society.", "vocab": ["account for the largest proportion 占最大比例", "represent the smallest share 占最小比例", "account for ... percent 占…百分比", "By contrast, 相比之下", "a striking difference 明显差异", "distribution 分布情况", "survey results 调查结果"], "notes": "数据单位是「每百户拥有量」时不能误写成百分比；只有真正表示比例时才能用 %、proportion 或 share。", "prompt": "用中文给出最大占比与最小占比两组数据，写三句英文描述"}, {"order": 11, "group": "B-语料", "key": "语料-个人成长", "name": "个人成长与优秀品质", "content": "适用主题：坚持、自律、勤奋、责任感、面对困难、青年成长", "vocab": ["develop self-discipline 培养自律", "strengthen one's sense of responsibility 增强责任感", "cope with difficulties in life 应对生活中的困难", "deal with pressure more effectively 更有效地应对压力", "improve one's problem-solving skills 提升解决问题的能力", "stand out in a competitive environment 在竞争激烈的环境中脱颖而出", "lay a solid foundation for the future 为未来打下坚实基础", "persistent effort 坚持不懈的努力", "personal growth 个人成长", "fulfill one's potential 实现个人潜能"], "plug": "To begin with, perseverance can bring considerable benefits to individuals by enabling them to cope with difficulties more effectively. / Moreover, developing self-discipline helps young people lay a solid foundation for the future.", "notes": "", "prompt": "用中文给出「坚持与自律」的语境，用这组语料套进 P2 写两句"}, {"order": 12, "group": "B-语料", "key": "语料-传统文化", "name": "传统文化与文化传承", "content": "适用主题：传统节日、龙舟赛、非物质文化遗产、文化认同、文化传播", "vocab": ["preserve traditional culture 传承传统文化", "promote traditional culture 弘扬传统文化", "protect cultural heritage 保护文化遗产", "deepen one's understanding of national history 加深对本国历史的了解", "strengthen cultural identity 增强文化认同", "connect different generations 连接不同世代", "give traditional culture new life 让传统文化焕发新的活力", "continue to thrive in modern society 在现代社会中延续", "cultural diversity 文化多样性", "pass down from generation to generation 代代相传"], "plug": "To begin with, traditional cultural activities enable people to deepen their understanding of national history and strengthen cultural identity. / More importantly, the preservation of traditional culture reflects a broader recognition of the value of our cultural heritage.", "notes": "", "prompt": "用中文给出「端午节龙舟赛」的语境，用这组语料套进 P2 写两句"}, {"order": 13, "group": "B-语料", "key": "语料-科技数字", "name": "科技与数字生活", "content": "适用主题：智能手机、互联网、人工智能、数字技术、科技便利与风险", "vocab": ["the rapid development of technology 科技的快速发展", "the widespread use of the Internet and smartphones 广泛使用互联网和智能手机", "provide greater convenience 提供更大的便利", "improve work efficiency 提高工作效率", "access information 获取信息", "broaden one's horizons 拓宽知识面", "excessive reliance on digital devices 过度依赖数字设备", "reduce face-to-face interaction 减少面对面交流", "protect personal privacy 保护个人隐私", "make responsible use of technology 合理使用科技"], "plug": "正面：To begin with, digital technology can bring considerable benefits to individuals by enabling them to access information more efficiently. / 负面：To begin with, excessive reliance on digital devices may reduce face-to-face interaction and weaken personal relationships.", "notes": "数字生活题材：优先科技因素；若是负面题，重点写过度依赖造成的影响。", "prompt": "用中文给出「智能手机」语境，分别写一句正面、一句负面的论证"}, {"order": 14, "group": "B-语料", "key": "语料-经济发展", "name": "经济发展与消费升级", "content": "适用主题：耐用消费品表格、生活水平、家用电器、消费方式变化", "vocab": ["the rapid development of the economy 经济的快速发展", "disposable income 可支配收入", "an improvement in living standards 生活水平提高", "material living conditions 物质生活条件", "a more comfortable life 更舒适的生活", "a more convenient lifestyle 更便利的生活方式", "consumption upgrading 消费升级", "household appliances 家用电器", "improve the quality of life 提高生活质量", "responsible consumption 理性消费", "a green and energy-efficient lifestyle 绿色、节能的生活方式", "balance consumption with environmental responsibility 兼顾消费与环境责任"], "plug": "To begin with, the growing ownership of household appliances enables people to enjoy a more convenient and comfortable life. / Moreover, rising disposable income has created more favorable conditions for consumption upgrading.", "notes": "", "prompt": "用中文给出「家用电器普及」的语境，用这组语料套进 P2 写两句"}, {"order": 15, "group": "B-语料", "key": "语料-环保", "name": "环境保护与可持续发展", "content": "适用主题：环保、低碳生活、资源浪费、绿色消费、可持续发展", "vocab": ["environmental protection 环境保护", "environmental pollution 环境污染", "conserve natural resources 节约自然资源", "reduce unnecessary waste 减少不必要的浪费", "take environmentally friendly measures 采取环保措施", "raise environmental awareness 提高环保意识", "sustainable development 可持续发展", "protect the interests of future generations 保护子孙后代的利益", "a green lifestyle 绿色生活方式", "joint efforts 共同努力"], "plug": "As individuals, we should raise our environmental awareness and translate it into concrete actions in our daily lives. / With the joint efforts of individuals and society, we can promote sustainable development and build a more promising future.", "notes": "环保题材优先观念变化、个人责任、社会措施。", "prompt": "用中文给出「减少一次性塑料」的语境，用这组语料套进 P3 写两句"}, {"order": 16, "group": "B-语料", "key": "语料-教育阅读", "name": "教育、阅读与知识积累", "content": "适用主题：阅读习惯、终身学习、教育价值、知识积累、个人发展", "vocab": ["develop a reading habit 培养阅读习惯", "accumulate knowledge 积累知识", "broaden one's horizons 拓宽视野", "develop independent thinking 培养独立思考能力", "stimulate creativity 激发创造力", "lifelong learning 终身学习", "acquire new knowledge 获取新知识", "improve overall abilities 提高综合能力", "prepare for future development 为未来发展做好准备", "develop a positive attitude toward learning 形成积极的学习态度"], "plug": "To begin with, reading can bring considerable benefits to individuals by enabling them to accumulate knowledge and broaden their horizons. / More importantly, a commitment to lifelong learning reflects a positive attitude toward personal growth.", "notes": "", "prompt": "用中文给出「终身阅读」的语境，用这组语料套进 P2 写两句"}, {"order": 17, "group": "B-语料", "key": "语料-通用原因", "name": "通用原因句（六类宏观分析）", "content": "语料是备用零件，不是每篇作文都要全部使用。", "vocab": ["经济因素：With the rapid development of the economy, people's disposable income has increased, creating more opportunities for [主题或行为].", "科技因素：Advances in technology have made it easier for people to [具体行为], thereby increasing its popularity.", "生活方式：As the pace of modern life continues to accelerate, people are paying greater attention to [需求或主题].", "观念变化：People have become increasingly aware of the importance of [主题], which has encouraged them to [具体行为].", "社会条件：The development of modern society has created more favorable conditions for [主题或趋势].", "个人收益：By enabling people to [具体作用], [主题或行为] can contribute to their personal growth and overall well-being."], "rule": "消费品拥有量上升：优先经济、科技因素｜阅读或学习：优先观念变化、个人收益｜传统文化：优先文化认同、社会条件｜数字生活：优先科技因素，负面题重点写过度依赖的影响｜环保：优先观念变化、个人责任、社会措施。不要把「经济发展」硬套进每一道题。", "notes": "", "prompt": "用中文给出「为何人们越来越重视健康生活」的语境，挑选合适的宏观原因句写一句"}];
+var EN_DATA = [{"id": 1,"order": 1, "group": "A-模板", "key": "P1-图画", "name": "图画类 P1 首段", "content": "Presented before us is a thought-provoking scene in which [画面主体及动作]. What makes the picture particularly striking is that [关键细节或对比]. Simple as the picture may seem, it conveys a meaningful message about [主题].", "memory": "记忆顺序：画面主体 → 关键细节 → 核心寓意", "notes": "主语是 Several villagers 时谓语用 are；是 A group of villagers 时写作建议用 is。主题不要只写宽泛名词，尽量明确到 the inheritance of traditional culture、the importance of perseverance 这类具体表达。", "prompt": "用中文描述一个「祖孙三代各自低头看手机」的画面，按 画面主体→关键细节→核心寓意 的顺序写三句英文"}, {"id": 2,"order": 2, "group": "A-模板", "key": "P1-动态图", "name": "动态图 / 表格类 P1 首段", "content": "The [table/line graph/bar chart] illustrates how [主题] changed from [起始年份] to [结束年份]. During this period, [A] experienced a noticeable [rise/fall], while [B] showed [a similar trend/an opposite trend]. Taken together, the figures reveal a clear change in [主题或社会意义].", "memory": "记忆顺序：材料类型与时间 → 主要变化 → 数据反映的意义", "notes": "材料类型必须准确：表格 table、折线图 line graph、柱状图 bar chart。数据较多时优先突出主要趋势，不要机械罗列所有数字。", "prompt": "用中文给出「2015—2025 某产品销量」的上升数据，写三句英文描述趋势"}, {"id": 3,"order": 3, "group": "A-模板", "key": "P1-静态图", "name": "静态图 P1 首段", "content": "The chart presents the distribution of [调查主题]. Specifically, [A] accounts for the largest proportion, at [数字]%. By contrast, [B] represents the smallest share, at only [数字]%. This striking difference reflects a broader change in our society.", "memory": "记忆顺序：调查主题 → 最大比例 → 最小比例 → 社会意义", "notes": "chart 是统称；具体是饼图可换成 pie chart。若题目并非比例分布而是人数或频率比较，要调整 proportion/share，不能强行套用。", "prompt": "用中文给出「各年龄段日均阅读时长」的比例，写三句英文描述"}, {"id": 4,"order": 4, "group": "A-模板", "key": "P1-混合", "name": "图画 + 图表混合类 P1 首段", "content": "The two forms of information jointly illustrate the current situation of [主题]. As shown in the picture, [画面内容]. Meanwhile, the chart indicates that [主要数据或趋势]. Although presented in different forms, they point to the same meaningful change in our society.", "memory": "记忆顺序：总主题 → 图片内容 → 图表信息 → 共同寓意", "notes": "", "prompt": "用中文给出「一张反映环保行为的图片 + 一张垃圾分类比例图」，写四句英文"}, {"id": 5,"order": 5, "group": "A-模板", "key": "P1-文字", "name": "文字类 P1 首段", "content": "The provided statement presents a thought-provoking view that [改写原文观点]. It highlights the importance of [主题] in our daily lives and social development. Personally, I strongly agree with this idea, as it is highly relevant to our present society.", "memory": "记忆顺序：改写观点 → 强调价值 → 表明立场", "notes": "若原文观点存在争议，或题目要求评价而非赞同，不要机械用 I strongly agree，应根据题目调整立场。", "prompt": "用中文给出一句待评价的观点，改写并表明立场，写三句英文"}, {"id": 6,"order": 6, "group": "A-模板", "key": "P2-正面", "name": "通用 P2 正面论证", "content": "There are several interconnected reasons why this phenomenon deserves our attention. To begin with, [主题] can bring considerable benefits to individuals by enabling them to [作用一]. Moreover, [第二个原因或社会条件] has created more favorable conditions for [主题或趋势]. More importantly, this phenomenon reflects not merely a change in behavior, but a broader transformation in people's attitudes toward [主题].", "table": "| 句子 | 功能 | 考场上需要填什么 |\n| There are several... | 总起 | 引出分析 |\n| To begin with... | 第一层 | 个人作用或直接影响 |\n| Moreover... | 第二层 | 社会条件、科技、经济、观念等 |\n| More importantly... | 深层意义 | 价值观、生活方式、社会变化 |", "notes": "四句功能必须记清楚：总起 / 第一层 / 第二层 / 深层意义。", "prompt": "用正面论证写一句「阅读让人成长」，套用 To begin with 和 Moreover 两层"}, {"id": 7,"order": 7, "group": "A-模板", "key": "P2-负面", "name": "通用 P2 负面论证（替换版）", "content": "There are several interconnected reasons why this phenomenon deserves our attention. To begin with, excessive [行为或现象] may prevent individuals from [负面影响一]. Moreover, [相关原因或社会条件] may further aggravate this problem. More importantly, this phenomenon reflects not merely a change in behavior, but a broader problem in people's attitudes toward [主题].", "notes": "正面题强调 benefits、opportunities、development；负面题强调 risks、problems、negative effects。第三句原因必须符合题意，不能为了套模板凭空认定某种社会条件加剧了问题。", "prompt": "用负面论证写「过度依赖网络」的危害，套用 To begin with 和 Moreover 两层"}, {"id": 8,"order": 8, "group": "A-模板", "key": "P3", "name": "通用 P3 第三段", "content": "In light of the above, [主题或现象] deserves our thoughtful attention. As individuals, we should enhance our awareness of [主题] and translate it into concrete actions in our daily lives. Meanwhile, relevant institutions should take effective measures to create a more favorable environment for [目标]. With the joint efforts of individuals and society, we can better [目标或解决的问题] and build a more promising future.", "rule": "总结：In light of the above...｜个人行动：As individuals...｜社会/机构：Meanwhile, relevant institutions...｜展望：With the joint efforts...", "notes": "不是每题都必须写政府。若侧重个人习惯、成长或日常选择，可把 relevant institutions 换成更贴切的社会主体，或写家庭、学校、社区。", "prompt": "围绕「环境保护」收尾，用 As individuals 和 With the joint efforts 两层收束"}, {"id": 9,"order": 9, "group": "A-模板", "key": "图表-趋势", "name": "图表专用：动态图趋势表达", "content": "严格背诵句：During this period, [A] experienced a noticeable rise from [数字] to [数字], while [B] showed a similar upward trend. / Taken together, the figures reveal a clear change in [主题].", "vocab": ["rise significantly 显著上升", "increase steadily 稳步增长", "decline sharply 大幅下降", "decrease slightly 略有下降", "remain stable 保持稳定", "fluctuate 出现波动", "reach a peak of 达到最高点", "rise from A to B 从A上升至B", "show an upward trend 呈现上升趋势", "show an opposite trend 呈现相反趋势"], "notes": "Taken together 句只在图表题用，不要塞进图画、文字类作文。", "prompt": "用中文给出两组数据的一升一降，写两句英文描述趋势"}, {"id": 10,"order": 10, "group": "A-模板", "key": "图表-比例", "name": "图表专用：静态图比例与对比", "content": "严格背诵句：Specifically, [A] accounts for the largest proportion, at [数字]%. By contrast, [B] represents the smallest share, at only [数字]%. This striking difference reflects a broader change in our society.", "vocab": ["account for the largest proportion 占最大比例", "represent the smallest share 占最小比例", "account for ... percent 占…百分比", "By contrast, 相比之下", "a striking difference 明显差异", "distribution 分布情况", "survey results 调查结果"], "notes": "数据单位是「每百户拥有量」时不能误写成百分比；只有真正表示比例时才能用 %、proportion 或 share。", "prompt": "用中文给出最大占比与最小占比两组数据，写三句英文描述"}, {"id": 11,"order": 11, "group": "B-语料", "key": "语料-个人成长", "name": "个人成长与优秀品质", "content": "适用主题：坚持、自律、勤奋、责任感、面对困难、青年成长", "vocab": ["develop self-discipline 培养自律", "strengthen one's sense of responsibility 增强责任感", "cope with difficulties in life 应对生活中的困难", "deal with pressure more effectively 更有效地应对压力", "improve one's problem-solving skills 提升解决问题的能力", "stand out in a competitive environment 在竞争激烈的环境中脱颖而出", "lay a solid foundation for the future 为未来打下坚实基础", "persistent effort 坚持不懈的努力", "personal growth 个人成长", "fulfill one's potential 实现个人潜能"], "plug": "To begin with, perseverance can bring considerable benefits to individuals by enabling them to cope with difficulties more effectively. / Moreover, developing self-discipline helps young people lay a solid foundation for the future.", "notes": "", "prompt": "用中文给出「坚持与自律」的语境，用这组语料套进 P2 写两句"}, {"id": 12,"order": 12, "group": "B-语料", "key": "语料-传统文化", "name": "传统文化与文化传承", "content": "适用主题：传统节日、龙舟赛、非物质文化遗产、文化认同、文化传播", "vocab": ["preserve traditional culture 传承传统文化", "promote traditional culture 弘扬传统文化", "protect cultural heritage 保护文化遗产", "deepen one's understanding of national history 加深对本国历史的了解", "strengthen cultural identity 增强文化认同", "connect different generations 连接不同世代", "give traditional culture new life 让传统文化焕发新的活力", "continue to thrive in modern society 在现代社会中延续", "cultural diversity 文化多样性", "pass down from generation to generation 代代相传"], "plug": "To begin with, traditional cultural activities enable people to deepen their understanding of national history and strengthen cultural identity. / More importantly, the preservation of traditional culture reflects a broader recognition of the value of our cultural heritage.", "notes": "", "prompt": "用中文给出「端午节龙舟赛」的语境，用这组语料套进 P2 写两句"}, {"id": 13,"order": 13, "group": "B-语料", "key": "语料-科技数字", "name": "科技与数字生活", "content": "适用主题：智能手机、互联网、人工智能、数字技术、科技便利与风险", "vocab": ["the rapid development of technology 科技的快速发展", "the widespread use of the Internet and smartphones 广泛使用互联网和智能手机", "provide greater convenience 提供更大的便利", "improve work efficiency 提高工作效率", "access information 获取信息", "broaden one's horizons 拓宽知识面", "excessive reliance on digital devices 过度依赖数字设备", "reduce face-to-face interaction 减少面对面交流", "protect personal privacy 保护个人隐私", "make responsible use of technology 合理使用科技"], "plug": "正面：To begin with, digital technology can bring considerable benefits to individuals by enabling them to access information more efficiently. / 负面：To begin with, excessive reliance on digital devices may reduce face-to-face interaction and weaken personal relationships.", "notes": "数字生活题材：优先科技因素；若是负面题，重点写过度依赖造成的影响。", "prompt": "用中文给出「智能手机」语境，分别写一句正面、一句负面的论证"}, {"id": 14,"order": 14, "group": "B-语料", "key": "语料-经济发展", "name": "经济发展与消费升级", "content": "适用主题：耐用消费品表格、生活水平、家用电器、消费方式变化", "vocab": ["the rapid development of the economy 经济的快速发展", "disposable income 可支配收入", "an improvement in living standards 生活水平提高", "material living conditions 物质生活条件", "a more comfortable life 更舒适的生活", "a more convenient lifestyle 更便利的生活方式", "consumption upgrading 消费升级", "household appliances 家用电器", "improve the quality of life 提高生活质量", "responsible consumption 理性消费", "a green and energy-efficient lifestyle 绿色、节能的生活方式", "balance consumption with environmental responsibility 兼顾消费与环境责任"], "plug": "To begin with, the growing ownership of household appliances enables people to enjoy a more convenient and comfortable life. / Moreover, rising disposable income has created more favorable conditions for consumption upgrading.", "notes": "", "prompt": "用中文给出「家用电器普及」的语境，用这组语料套进 P2 写两句"}, {"id": 15,"order": 15, "group": "B-语料", "key": "语料-环保", "name": "环境保护与可持续发展", "content": "适用主题：环保、低碳生活、资源浪费、绿色消费、可持续发展", "vocab": ["environmental protection 环境保护", "environmental pollution 环境污染", "conserve natural resources 节约自然资源", "reduce unnecessary waste 减少不必要的浪费", "take environmentally friendly measures 采取环保措施", "raise environmental awareness 提高环保意识", "sustainable development 可持续发展", "protect the interests of future generations 保护子孙后代的利益", "a green lifestyle 绿色生活方式", "joint efforts 共同努力"], "plug": "As individuals, we should raise our environmental awareness and translate it into concrete actions in our daily lives. / With the joint efforts of individuals and society, we can promote sustainable development and build a more promising future.", "notes": "环保题材优先观念变化、个人责任、社会措施。", "prompt": "用中文给出「减少一次性塑料」的语境，用这组语料套进 P3 写两句"}, {"id": 16,"order": 16, "group": "B-语料", "key": "语料-教育阅读", "name": "教育、阅读与知识积累", "content": "适用主题：阅读习惯、终身学习、教育价值、知识积累、个人发展", "vocab": ["develop a reading habit 培养阅读习惯", "accumulate knowledge 积累知识", "broaden one's horizons 拓宽视野", "develop independent thinking 培养独立思考能力", "stimulate creativity 激发创造力", "lifelong learning 终身学习", "acquire new knowledge 获取新知识", "improve overall abilities 提高综合能力", "prepare for future development 为未来发展做好准备", "develop a positive attitude toward learning 形成积极的学习态度"], "plug": "To begin with, reading can bring considerable benefits to individuals by enabling them to accumulate knowledge and broaden their horizons. / More importantly, a commitment to lifelong learning reflects a positive attitude toward personal growth.", "notes": "", "prompt": "用中文给出「终身阅读」的语境，用这组语料套进 P2 写两句"}, {"id": 17,"order": 17, "group": "B-语料", "key": "语料-通用原因", "name": "通用原因句（六类宏观分析）", "content": "语料是备用零件，不是每篇作文都要全部使用。", "vocab": ["经济因素：With the rapid development of the economy, people's disposable income has increased, creating more opportunities for [主题或行为].", "科技因素：Advances in technology have made it easier for people to [具体行为], thereby increasing its popularity.", "生活方式：As the pace of modern life continues to accelerate, people are paying greater attention to [需求或主题].", "观念变化：People have become increasingly aware of the importance of [主题], which has encouraged them to [具体行为].", "社会条件：The development of modern society has created more favorable conditions for [主题或趋势].", "个人收益：By enabling people to [具体作用], [主题或行为] can contribute to their personal growth and overall well-being."], "rule": "消费品拥有量上升：优先经济、科技因素｜阅读或学习：优先观念变化、个人收益｜传统文化：优先文化认同、社会条件｜数字生活：优先科技因素，负面题重点写过度依赖的影响｜环保：优先观念变化、个人责任、社会措施。不要把「经济发展」硬套进每一道题。", "notes": "", "prompt": "用中文给出「为何人们越来越重视健康生活」的语境，挑选合适的宏观原因句写一句"}];
 var enTpls=[], enReviews=[], enNotes=[], enMetas={};
 var enView='home'; // home | detail
 var enCur=null;
 var EN_LVL={1:'遗忘',2:'模糊',3:'有点印象',4:'能默写',5:'应用通过'};
+/* ========== 英语模块 · 本地持久化层 ========== */
+var EN_STORE_KEY='kb_english_store_v1';
+var enStoreData=null;
+function enStoreGet(){
+ if(enStoreData)return enStoreData;
+ try{var raw=localStorage.getItem(EN_STORE_KEY);enStoreData=raw?JSON.parse(raw):{reviews:{},notes:{},ids:{},first:{}};}
+ catch(e){enStoreData={reviews:{},notes:{},ids:{},first:{}};}
+ return enStoreData;
+}
+function enStoreSave(){try{localStorage.setItem(EN_STORE_KEY,JSON.stringify(enStoreGet()));}catch(e){}}
+function enStoreAddReview(tplId,date,level,stage){
+ var s=enStoreGet();
+ s.reviews[tplId+'_'+date]={template_id:tplId,review_date:date,level:level,stage:stage};
+ s.first[tplId]=s.first[tplId]||date;
+ enStoreSave();
+}
+function enStoreSetNote(tplId,date,content){
+ var s=enStoreGet();
+ if(!content){delete s.notes[tplId];}else{s.notes[tplId]={template_id:tplId,note_date:date,content:content};}
+ enStoreSave();
+}
+function enReviewsOf(id){
+ var s=enStoreGet(),out=[];
+ Object.keys(s.reviews).forEach(function(k){var r=s.reviews[k];if(r.template_id==id)out.push(r);});
+ out.sort(function(a,b){return a.review_date.localeCompare(b.review_date);});
+ if(out.length)return out;
+ return enReviews.filter(function(r){return r.template_id==id;}).sort(function(a,b){return a.review_date.localeCompare(b.review_date);});
+}
+function enNotesOf(id){
+ var s=enStoreGet(),n=s.notes[id];
+ if(n)return [n];
+ return enNotes.filter(function(x){return x.template_id==id;});
+}
+
 var EN_NODES=[1,2,4,7,15]; // 艾宾浩斯间隔
 
 function enToday(){return today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());}
@@ -920,7 +962,6 @@ function enDays(a,b){
 function enAddDays(s,n){var x=new Date(s);x.setDate(x.getDate()+n);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());}
 function enEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function enEn(id){return enTpls.filter(function(t){return t.id==id;})[0]||null;}
-function enReviewsOf(id){return enReviews.filter(function(r){return r.template_id==id;}).sort(function(a,b){return a.review_date.localeCompare(b.review_date);});}
 function enLastLevel(id){var rs=enReviewsOf(id);return rs.length?rs[rs.length-1].level:0;}
 function enLastDate(id){var rs=enReviewsOf(id);return rs.length?rs[rs.length-1].review_date:null;}
 function enFirstDate(id){var rs=enReviewsOf(id);return rs.length?rs[0].review_date:null;}
@@ -953,82 +994,37 @@ function enPickToday(){
  if(due.length)return due[0];
  return fresh[0]||cand[0];
 }
-// 数据源：优先用内联 EN_DATA（离线可用），数据库仅作备份同步
 function enSeed(){
- enInitFromLocal();
- // 本地优先：先读 localStorage 里的历史记录
- enLoadLocalStore();
- enRenderHomeCard();
-}
-
-function enInitFromLocal(){
- enTpls=EN_DATA.map(function(d,i){return {
-  id:'local_'+d.order,
-  group_key:d.group, group_order:d.order, item_key:d.key,
-  name:d.name, content:d.content, cn_prompt:d.prompt,
-  notes:(d.memory||'')+' | '+(d.notes||''), sort_order:d.order
- };});
- // 把生成的 id 回写到 EN_DATA，供 enMark/enOpen 等按 id 使用
- EN_DATA.forEach(function(d,i){d.id='local_'+d.order;});
-}
-
-// ===== localStorage 本地持久化（不依赖 Supabase） =====
-var EN_STORE_KEY='kb_english_store_v1';
-function enSaveLocalStore(){
- var store={reviews:enReviews,notes:enNotes};
- try{localStorage.setItem(EN_STORE_KEY,JSON.stringify(store));}catch(e){}
-}
-function enLoadLocalStore(){
- try{
-  var raw=localStorage.getItem(EN_STORE_KEY);
-  if(!raw)return;
-  var store=JSON.parse(raw);
-  if(store.reviews&&store.reviews.length)enReviews=store.reviews;
-  if(store.notes&&store.notes.length)enNotes=store.notes;
- }catch(e){}
-}
-
-function enSyncFromRemote(){
- rest('/kb_english_templates?select=*&order=group_order').then(function(t){
-  if(t&&t.length){
-   enTpls=t;
-   // 用远程 id 回写
-   EN_DATA.forEach(function(d){
-    var tm=t.filter(function(x){return x.item_key===d.key;})[0];
-    if(tm)d.id=tm.id;
+ setTimeout(function(){try{enRenderHomeCard();}catch(e){}},50);
+ rest('/kb_english_templates?select=id&limit=1').then(function(exist){
+  if(exist&&exist.length){enLoadAll();return;}
+  var chain=Promise.resolve();
+  EN_DATA.forEach(function(d){
+   chain=chain.then(function(){
+    return rest('/kb_english_templates?select=id','POST',{
+     group_key:d.group, group_order:d.order, item_key:d.key, name:d.name,
+     content:d.content, cn_prompt:d.prompt, notes:(d.memory||'')+' | '+(d.notes||''), sort_order:d.order
+    }).catch(function(){});
    });
-  }
-  return rest('/kb_english_reviews?select=*&order=review_date.desc');
- }).then(function(r){
-  if(r)enReviews=r;
-  return rest('/kb_english_notes?select=*&order=note_date.desc');
- }).then(function(n){
-  if(n)enNotes=n;
-  return rest('/kb_meta?select=*');
- }).then(function(m){
-  enMetas={};(m||[]).forEach(function(x){enMetas[x.point_id||x.template_id]=x;});
-  enRenderHomeCard();
- }).catch(function(){enRenderHomeCard();});
-}
-
-function enPushLocal(){
- var chain=Promise.resolve();
- EN_DATA.forEach(function(d){
-  chain=chain.then(function(){
-   return rest('/kb_english_templates?select=id','POST',{
-    group_key:d.group, group_order:d.order, item_key:d.key, name:d.name,
-    content:d.content, cn_prompt:d.prompt, notes:(d.memory||'')+' | '+(d.notes||''), sort_order:d.order
-   }).then(function(r){
-    if(r&&r[0])d.id=r[0].id;
-   }).catch(function(){});
   });
- });
- chain.then(function(){enRenderHomeCard();});
+  chain.then(function(){enLoadAll();});
+ }).catch(function(){enLoadAll();});
 }
 function enLoadAll(){
- // 本地内联数据兜底：远程不可用时保证页面正常
- if(!enTpls.length){enInitFromLocal();return;}
- enRenderHomeCard();
+ rest('/kb_english_templates?select=*&order=group_order').then(function(t){enTpls=t||[];return rest('/kb_english_reviews?select=*&order=review_date.desc');})
+ .then(function(r){enReviews=r||[];return rest('/kb_english_notes?select=*&order=note_date.desc');})
+ .then(function(n){enNotes=n||[];return rest('/kb_meta?select=*');})
+ .then(function(m){
+  enMetas={};(m||[]).forEach(function(x){enMetas[x.point_id||x.template_id]=x;});
+  // 把加载到的数据 id 回写 DATA（用于关联）
+  if(enTpls.length){
+   EN_DATA.forEach(function(d){
+    var t=enTpls.filter(function(t2){return t2.item_key===d.key;})[0];
+    if(t)d.id=t.id;
+   });
+  }
+  enRenderHomeCard();
+ }).catch(function(){enRenderHomeCard();});
 }
 function enRenderHomeCard(){
  var box=document.getElementById('enCard');if(!box)return;
@@ -1149,36 +1145,42 @@ var enNoteTimer=null;
 function enNote(id,val){
  clearTimeout(enNoteTimer);
  var v=val.trim();
+ var d=enToday();
  enNoteTimer=setTimeout(function(){
+  // 本地优先
+  enStoreSetNote(id,d,v);
   var ns=enNotes.filter(function(n){return n.template_id==id;}).sort(function(a,b){return b.note_date.localeCompare(a.note_date);});
-  if(ns.length){
-   if(!v){
-    enNotes=enNotes.filter(function(x){return x!==ns[0];});
-   }else{
-    ns[0].content=v;
-   }
+  if(ns[0]){
+   if(!v){rest('/kb_english_notes?id=eq.'+ns[0].id,'DELETE').then(function(){enNotes=enNotes.filter(function(x){return x.id!=ns[0].id;});});return;}
+   rest('/kb_english_notes?id=eq.'+ns[0].id,'PATCH',{content:v});
   }else if(v){
-   enNotes.unshift({id:'note_'+Date.now(),template_id:id,note_date:enToday(),content:v});
+   rest('/kb_english_notes?select=*','POST',{template_id:id,review_id:null,note_date:d,content:v}).then(function(r){if(r&&r[0])enNotes.unshift(r[0]);});
   }
-  enSaveLocalStore();
- },800);
+ },1200);
 }
 function enMark(order,level){
  var d=EN_DATA.filter(function(x){return x.order==order;})[0];if(!d||!d.id){toast('数据未加载完，请刷新');return;}
  var t=enToday();
- var exist=enReviews.filter(function(r){return r.template_id==d.id&&r.review_date===t;})[0];
  var after=function(){
   toast(EN_LVL[level]+' · '+(level>=4?'7 天后抽查':'已安排近期复习'));
-  enSaveLocalStore();
-  enRenderHomeCard();renderEnDetail(d.id);
+  try{enRenderHomeCard();renderEnDetail(d.id);}catch(e){}
  };
  var stage = level>=4 ? '应用验证' : '首背';
- if(exist){
-  exist.level=level;exist.stage=stage;after();
- }else{
-  enReviews.unshift({id:'rev_'+Date.now(),template_id:d.id,review_date:t,level:level,stage:stage});
-  after();
- }
+ // 本地存储优先（不依赖网络）
+ enStoreAddReview(d.id,t,level,stage);
+ // 云端同步（失败不影响本地记录）
+ rest('/kb_english_reviews?select=id&template_id=eq.'+d.id+'&review_date=eq.'+t,'GET').then(function(exist){
+  if(exist&&exist.length){
+   rest('/kb_english_reviews?id=eq.'+exist[0].id,'PATCH',{level:level,stage:stage}).then(function(){
+    var r=enReviews.filter(function(x){return x.id==exist[0].id;})[0];if(r){r.level=level;r.stage=stage;}
+   });
+  }else{
+   rest('/kb_english_reviews?select=*','POST',{template_id:d.id,review_date:t,level:level,stage:stage}).then(function(r){
+    if(r&&r[0])enReviews.unshift(r[0]);else enReviews.push({template_id:d.id,review_date:t,level:level,stage:stage});
+   });
+  }
+ }).catch(function(){});
+ after();
 }
 function enTodayMark(){
  var d=enPickToday();if(!d||!d.id){toast('今天没有待背的');return;}
