@@ -187,6 +187,35 @@ body.light .list-item:hover{background:rgba(0,0,0,.012)}
 footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter-spacing:.6px}
 @media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.hero{padding:26px 22px 24px}.hero-num{font-size:56px}.card{padding:20px 18px}.topbar input{min-width:120px}.cat-grid{grid-template-columns:1fr}.lvl-btns button{width:30px;height:30px;font-size:11px}.point{align-items:flex-start}.point .info{flex:1 1 auto;min-width:0}.point .info .nm{white-space:normal;word-break:break-word}.point .acts{flex:0 0 auto;flex-wrap:wrap;width:auto;margin-top:0;margin-left:auto;justify-content:flex-end;max-width:46%}.point .acts button{padding:5px 9px;font-size:11px}.point .prev{margin:8px 0 0;font-size:12.5px}.lvl-btns button{width:32px;height:32px;font-size:11.5px}.detail-content{max-height:calc(100vh - 220px);overflow-y:auto;-webkit-overflow-scrolling:touch}.detail-bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;padding:12px 14px;padding-bottom:calc(12px + env(safe-area-inset-bottom));background:rgba(24,24,27,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);z-index:50}.detail-bar button{flex:1;padding:11px 0;font-size:15px}.detail-bar .ghost{flex:0 0 auto;padding:11px 16px}}
 
+/* ========== 抽默写模块 ========== */
+.quiz-card{background:linear-gradient(135deg,rgba(224,168,46,.12),rgba(124,155,255,.06) 55%,rgba(192,132,252,.07)),var(--card);}
+.quiz-card .card-h .ic{background:linear-gradient(135deg,#e0a82e,#7c9bff);box-shadow:0 4px 12px rgba(224,168,46,.3)}
+.quiz-stat{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.quiz-stat b{font-size:22px;color:var(--brand);font-variant-numeric:tabular-nums}
+.quiz-stat span{font-size:12px;color:var(--sub)}
+.quiz-stat .done{color:var(--l4)}
+.quiz-q{font-size:18px;font-weight:700;line-height:1.5;padding:18px 0 6px;word-break:break-word}
+.quiz-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.quiz-answer{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:14px;line-height:1.85;margin-bottom:16px}
+.quiz-answer p{margin:0 0 10px}
+.quiz-answer p:last-child{margin-bottom:0}
+.quiz-hint{font-size:13px;color:var(--sub);margin:4px 0 14px;line-height:1.7}
+.quiz-input{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+.quiz-input label{font-size:13px;color:var(--sub);font-weight:600}
+.quiz-input input[type=number],.quiz-input textarea{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.05);color:var(--ink);font-family:inherit;font-size:15px}
+.quiz-input input[type=number]{max-width:180px}
+.quiz-input textarea{min-height:84px;resize:vertical;line-height:1.6}
+.quiz-input input:focus,.quiz-input textarea:focus{outline:none;border-color:var(--brand)}
+.quiz-warn{background:rgba(224,168,46,.10);border:1px solid rgba(224,168,46,.4);border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:13.5px;line-height:1.7;color:var(--ink)}
+.quiz-warn b{color:#e0a82e}
+.quiz-history{margin-top:4px}
+.quiz-history .hi{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:10px}
+.quiz-history .hi-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--sub);font-family:monospace;margin-bottom:6px}
+.quiz-history .hi-note{font-size:13.5px;line-height:1.6;word-break:break-word}
+.quiz-history .hi-note:empty{display:none}
+.quiz-history .hi-score{font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
+@media(max-width:680px){.quiz-stat b{font-size:20px}.quiz-q{font-size:17px}}
+
 /* ========== 每日英语模块 ========== */
 .en-card{background:linear-gradient(135deg,rgba(63,214,171,.10),rgba(124,155,255,.07) 55%,rgba(176,124,255,.07)),var(--card);}
 .en-card .card-h .ic{background:linear-gradient(135deg,#3fd6ab,#7c9bff);box-shadow:0 4px 12px rgba(63,214,171,.3)}
@@ -437,6 +466,13 @@ function router(){
   document.getElementById('page-chapter').classList.add('on');
   renderChapter(parts[1]);
  }else if(parts[0]==='detail'){
+	}else if(parts[0]==='quiz'){
+	 document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+	 document.getElementById('page-detail').classList.add('on');
+	 if(parts[1]==='pick')pickQuiz(true);
+	 else if(parts[1]==='answer')renderQuizAnswer();
+	 else if(parts[1]==='hist')renderQuizHistory();
+	 else renderQuizHome();
   document.getElementById('page-detail').classList.add('on');
   renderDetail(parts[1]);
  }else if(parts[0]==='day'){
@@ -488,6 +524,7 @@ function renderHome(){
  h+='</div>';
  h+='<div class="card en-card" id="swCard"><div class="card-h"><span class="ic">&#9998;</span>考研英语 · 小作文 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">背熟才解锁 · 3 天一档</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;english/w&quot;)">去背诵</button></div></div><div class="empty">正在准备今日小作文…</div></div>';
  h+='<div class="card en-card" id="enCard"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 片 · 应用验证</span></div><div class="empty">正在准备今日语料…</div></div>';
+ h+='<div class="card quiz-card"><div class="card-h"><span class="ic">&#128221;</span>抽默写 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 题 · 抽到即默 · 自己打分</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;quiz&quot;)">进入</button></div></div><div class="quiz-stat"><div><div>今日已默 <b id="quizDone">0</b> / 1 <span id="quizExtra" style="display:none;color:var(--brand)">+<span id="quizExtraN">0</span> 额外</span></div><div><span id="quizStreak">连续 0 天</span> · 共默 <span id="quizTotal">0</span> 次</div></div><button class="ghost" onclick="pickQuiz(false)">&#127919; 抽一题</button></div></div>';
  h+='<div class="card"><div class="card-h"><span class="ic">&#128204;</span>今日待复习 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+(duec?'共 '+duec+' 条':'今天没有')+'</span><div class="ch-act"><button class="ghost sm" onclick="dueBatch=!dueBatch;renderHome()">'+(dueBatch?'退出批量':'批量编辑')+'</button><button class="ghost sm" onclick="doneAll()">全部完成</button></div></div>'+(dueBatch?renderDueBatchBar():'')+renderDueList()+'</div>';
  var ng=[];
  chapters.forEach(function(c){
@@ -516,6 +553,7 @@ function renderHome(){
  setTimeout(function(){try{enRenderHomeCard();}catch(e){console.error('enCard',e);}},0);
  setTimeout(function(){try{swRenderHomeCard();}catch(e){console.error('swCard',e);}},0);
  if(homeView==='map')setTimeout(renderMapCells,0);else setTimeout(renderHeatCells,0);
+	setTimeout(function(){try{quizRefreshHome();}catch(e){console.error("quizHome",e);}},0);
 }
 function renderDueBatchBar(){
  var sch='<option value="">改章节 →</option>'+chapters.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');
@@ -877,6 +915,230 @@ function delPoint(id){
  }).catch(function(){toast('删除失败');});
 }
 var curPoint=null;
+var quizCache=null,quizBaseDone=false,quizExtraCount=0,quizCur=null;
+function quizTodayKey(){return ts();}
+function loadQuizCache(){
+ return new Promise(function(res){
+  if(quizCache){res(quizCache);return;}
+  rest('/kb_quizzes?select=*&order=created_at.desc').then(function(d){quizCache=d||[];res(quizCache);}).catch(function(){quizCache=[];res([]);});
+ });
+}
+function quizRefreshHome(){
+ loadQuizCache().then(function(all){
+  var t=quizTodayKey();
+  var today=all.filter(function(q){return String(q.created_at).slice(0,10)===t;});
+  var base=today.filter(function(q){return !q.extra;}).length;
+  var extra=today.filter(function(q){return q.extra;}).length;
+  var b=document.getElementById('quizDone');if(b)b.textContent=Math.min(base,1);
+  var e=document.getElementById('quizExtra'),en=document.getElementById('quizExtraN');
+  if(extra>0&&e&&en){e.style.display='inline';en.textContent=extra;}else if(e){e.style.display='none';}
+  var tot=document.getElementById('quizTotal');if(tot)tot.textContent=all.length;
+  // 连续天数：从昨天往回数，要求每天都有非 extra 记录
+  var days=0,cur=addDaysStr(t,-1);
+  var byDay={};all.forEach(function(q){if(!q.extra){var k=String(q.created_at).slice(0,10);byDay[k]=(byDay[k]||0)+1;}});
+  if(byDay[t]){days=1;cur=addDaysStr(t,-1);while(byDay[cur]){days++;cur=addDaysStr(cur,-1);}}
+  var st=document.getElementById('quizStreak');if(st)st.textContent='连续 '+days+' 天';
+ });
+}
+function quizPickPool(){
+ // 只抽专业课（有 chapter 的 kb_points），必须有内容，且已首背过
+ return points.filter(function(p){
+  if(!p.content||!String(p.content).trim())return false;
+  if(!p.chapter_id)return false;
+  if(!firstDate(p.id))return false; // 未首背的不抽
+  return true;
+ });
+}
+function quizLastQuizDateOf(pointId,all){
+ var my=all.filter(function(q){return q.item_id==pointId;});
+ if(!my.length)return null;
+ return String(my.sort(function(a,b){return b.created_at.localeCompare(a.created_at);})[0].created_at).slice(0,10);
+}
+function pickQuiz(extra){
+ loadQuizCache().then(function(all){
+  var pool=quizPickPool();
+  if(!pool.length){renderQuizEmpty('还没有已首背的专业课知识点<br>先去背几条再来默写');return;}
+  var t=quizTodayKey();
+  var todayAll=all.filter(function(q){return String(q.created_at).slice(0,10)===t;});
+  var todayBase=todayAll.filter(function(q){return !q.extra;}).length;
+  var cand=pool.slice();
+  if(!extra){
+   if(todayBase>=1){renderQuizHome();toast('今日基础题已完成 可点「再抽一题」继续');return;}
+   // 第一优先：今天该复习的
+   var dueIds=dueList().map(function(o){return o.point.id;});
+   var dueFirst=cand.filter(function(p){return dueIds.indexOf(p.id)>=0;});
+   // 第二优先：今天已默过但分数<60 的
+   var low=cand.filter(function(p){
+    var my=all.filter(function(q){return q.item_id==p.id;});
+    if(!my.length)return false;
+    var last=my.sort(function(a,b){return b.created_at.localeCompare(a.created_at);})[0];
+    return last.score!=null&&+last.score<60;
+   });
+   // 第三优先：最久没默写的
+   cand.sort(function(a,b){
+    var la=quizLastQuizDateOf(a.id,all)||'0000',lb=quizLastQuizDateOf(b.id,all)||'0000';
+    return la.localeCompare(lb);
+   });
+   var pick=dueFirst.length?dueFirst[0]:(low.length?low[0]:cand[0]);
+   quizCur=pick;quizExtraCount=extra?1:0;quizBaseDone=false;
+   nav('quiz/answer');
+  }else{
+   // 额外题：排除今天已默过的
+   var doneIds=todayAll.map(function(q){return q.item_id;});
+   var left=pool.filter(function(p){return doneIds.indexOf(p.id)<0;});
+   if(!left.length){toast('今天的知识点都默过一遍了 明天再来');return;}
+   left.sort(function(a,b){
+    var la=quizLastQuizDateOf(a.id,all)||'0000',lb=quizLastQuizDateOf(b.id,all)||'0000';
+    return la.localeCompare(lb);
+   });
+   quizCur=left[0];quizExtraCount=1;quizBaseDone=false;
+   nav('quiz/answer');
+  }
+ });
+}
+function renderQuizHome(){
+ loadQuizCache().then(function(all){
+  var t=quizTodayKey();
+  var today=all.filter(function(q){return String(q.created_at).slice(0,10)===t;});
+  var base=today.filter(function(q){return !q.extra;}).length;
+  var extra=today.filter(function(q){return q.extra;}).length;
+  var h='<div class="back" onclick="nav(\'\')">&#8592; 返回首页</div>';
+  h+='<div class="card quiz-card"><div class="card-h"><span class="ic">&#128221;</span>抽默写</div>';
+  h+='<div class="quiz-stat"><div><div>今日已默 <b>'+(Math.min(base,1))+'</b> / 1 基础题'+(extra>0?' <span style="color:var(--brand)">+ '+extra+' 额外</span>':'')+'</div><div id="quizHomeInfo">共默 '+all.length+' 次 · 可默知识点 '+quizPickPool().length+' 个</div></div><button class="ghost" onclick="pickQuiz(false)">&#127919; '+(base>=1?'再抽一题（额外）':'抽今日基础题')+'</button></div>';
+  h+='<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><button class="ghost sm" onclick="nav(\'quiz/hist\')">&#128203; 默写历史</button><button class="ghost sm" onclick="renderQuizTips()">&#128161; 我的薄弱点</button></div>';
+  h+='</div>';
+  h+='<div id="quizTipsWrap"></div>';
+  document.getElementById('page-detail').innerHTML=h;
+  quizRefreshHome();
+  if(base>=1){var btn=document.querySelector('#page-detail .quiz-stat .ghost');if(btn)btn.setAttribute('onclick','pickQuiz(true)');}
+ });
+}
+function renderQuizAnswer(){
+ var p=quizCur;
+ if(!p){renderQuizHome();return;}
+ var h='<div class="back" onclick="nav(\'quiz\')">&#8592; 返回</div>';
+ h+='<div class="card"><div class="card-h"><span class="ic">&#128221;</span>默写题目</div>';
+ h+='<div class="quiz-q">'+esc(p.name)+'</div>';
+ h+='<div class="quiz-meta">'+tagOf(p.category)+'<span class="tag">'+esc(chName(p.chapter_id))+'</span></div>';
+ h+='<div class="quiz-hint">先自己默写（纸上或心里都行），写不出就直接点「看答案」。<br>看完答案自己打分，再填需要改进的点。</div>';
+ h+='<div id="quizAns" style="display:none">';
+ h+='<div class="quiz-answer">'+String(p.content).split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;}).map(function(l){return '<p>'+esc(l)+'</p>';}).join('')+'</div>';
+ h+='<div class="quiz-input"><label>你的分数（按自己考试的标准打）</label><input type="number" id="quizScore" placeholder="比如 85" inputmode="numeric"></div>';
+ h+='<div class="quiz-input"><label>需要改进的点（可留空）</label><textarea id="quizNote" placeholder="比如：忘了区位优势、把劣势写成优势了"></textarea></div>';
+ h+='<div id="quizWarn"></div>';
+ h+='<button style="width:100%;padding:13px 0;font-size:15px;font-weight:700;border:none;border-radius:12px;background:var(--brand);color:#0b0d12;cursor:pointer" onclick="submitQuiz()">提交打分</button>';
+ h+='</div>';
+ h+='<button id="quizReveal" style="width:100%;padding:13px 0;font-size:15px;font-weight:700;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.05);color:var(--ink);cursor:pointer" onclick="quizReveal()">&#128065; 看答案</button>';
+ h+='</div>';
+ document.getElementById('page-detail').innerHTML=h;
+ window.scrollTo(0,0);
+}
+function quizReveal(){
+ var a=document.getElementById('quizAns'),b=document.getElementById('quizReveal');
+ if(a)a.style.display='block';if(b)b.style.display='none';
+ window.scrollTo(0,document.body.scrollHeight);
+}
+function renderQuizEmpty(msg){
+ document.getElementById('page-detail').innerHTML='<div class="back" onclick="nav(\'\')">&#8592; 返回首页</div><div class="card"><div class="empty">'+msg+'</div></div>';
+}
+function checkQuizWarning(itemId){
+ var all=quizCache||[];
+ var my=all.filter(function(q){return q.item_id==itemId;}).sort(function(a,b){return b.created_at.localeCompare(a.created_at);});
+ if(my.length<3)return '';
+ // 取最近 3 次，逐次抽关键词
+ var keys=my.slice(0,3).map(function(q){return extractKeys(q.note||'');});
+ var counts={};
+ keys.forEach(function(kl){kl.forEach(function(k){counts[k]=(counts[k]||0)+1;});});
+ var repeat=null;
+ Object.keys(counts).forEach(function(k){if(counts[k]>=3)repeat=k;});
+ var lowCnt=my.slice(0,3).filter(function(q){return q.score!=null&&+q.score<60;}).length;
+ var warn='';
+ if(repeat){warn+='<div class="quiz-warn">&#9888;&#65039; 这个知识点你最近 3 次默写都提到「<b>'+esc(repeat)+'</b>」，属于反复卡住的点，建议今晚重点重背一遍。</div>';}
+ else if(lowCnt>=2){warn+='<div class="quiz-warn">&#9888;&#65039; 这个知识点近 3 次默写有 <b>'+lowCnt+' 次低于 60 分</b>，已进重点队列，明天会优先再抽你。</div>';}
+ return warn;
+}
+function extractKeys(note){
+ var s=String(note||'');
+ if(!s.trim())return [];
+ // 按标点分句，每句取 2~6 字的连续片段作为关键词候选
+ var segs=s.split(/[，。、；：！？,\.!\?;:；\n\r]+/).filter(function(x){return x.trim().length>=2;});
+ var out=[];
+ segs.forEach(function(seg){
+  var seg2=seg.trim();
+  // 去掉"忘了/写错/把X写成"这类引导词
+  var core=seg2.replace(/^(忘了|记错|把|写成|混淆|搞混|漏了|没写|想不起|忘)/,'');
+  if(core.length>=2&&core.length<=8)out.push(core);
+ });
+ return out.slice(0,6);
+}
+function submitQuiz(){
+ var sc=document.getElementById('quizScore'),nt=document.getElementById('quizNote');
+ var score=sc?sc.value.trim():'',note=nt?nt.value.trim():'';
+ if(score===''||isNaN(+score)){toast('请填一个分数');if(sc)sc.focus();return;}
+ var t=quizTodayKey();
+ var isExtra=!!quizExtraCount;
+ var payload={item_id:quizCur.id,chapter_id:quizCur.chapter_id||null,score:+score,note:note,extra:isExtra,created_at:new Date().toISOString()};
+ rest('/kb_quizzes?select=*','POST',payload).then(function(r){
+  var saved=(r&&r[0])?r[0]:payload;
+  quizCache=(quizCache||[]);quizCache.unshift(saved);
+  var w=checkQuizWarning(quizCur.id);
+  var wrap=document.getElementById('quizWarn');
+  if(wrap){wrap.innerHTML=w;}
+  if(w){window.scrollTo(0,document.body.scrollHeight);}
+  toast('已记录 '+score+' 分');
+  quizRefreshHome();
+  if(!isExtra){
+   // 基础题提交后，回到首页刷新计数
+   setTimeout(function(){nav('quiz');},900);
+  }else{
+   setTimeout(function(){nav('quiz');},900);
+  }
+ }).catch(function(){toast('提交失败，请重试');});
+}
+function renderQuizHistory(){
+ var t=quizTodayKey();
+ loadQuizCache().then(function(all){
+  var h='<div class="back" onclick="nav(\'quiz\')">&#8592; 返回</div>';
+  h+='<div class="card"><div class="card-h"><span class="ic">&#128203;</span>默写历史 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">共 '+all.length+' 次</span></div>';
+  if(!all.length){h+='<div class="empty">还没有默写记录 先去抽一题</div></div>';document.getElementById('page-detail').innerHTML=h;return;}
+  h+='<div class="quiz-history">';
+  all.slice(0,120).forEach(function(q){
+   var p=points.filter(function(x){return x.id==q.item_id;})[0];
+   h+='<div class="hi"><div class="hi-top"><span>'+String(q.created_at).slice(0,10)+(q.extra?' <span style="color:var(--brand)">额外</span>':'')+'</span><span class="hi-score">'+(q.score==null?'—':q.score)+' 分</span></div>'+(p?'<div style="font-size:14px;font-weight:600;margin-bottom:4px">'+esc(p.name)+'</div>':'')+(q.note?'<div class="hi-note">'+esc(q.note)+'</div>':'')+'</div>';
+  });
+  h+='</div></div>';
+  document.getElementById('page-detail').innerHTML=h;
+ });
+}
+function renderQuizTips(){
+ loadQuizCache().then(function(all){
+  var byId={};
+  all.forEach(function(q){
+   if(!byId[q.item_id])byId[q.item_id]=[];
+   byId[q.item_id].push(q);
+  });
+  var list=Object.keys(byId).map(function(id){return {id:+id,rows:byId[id]};}).filter(function(o){return o.rows.length>=2;});
+  var h='<div class="back" onclick="nav(\'quiz\')">&#8592; 返回</div>';
+  h+='<div class="card"><div class="card-h"><span class="ic">&#128161;</span>薄弱点汇总 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">基于你的改进点自动归纳</span></div>';
+  if(!list.length){h+='<div class="empty">默写 2 次以上才有归纳 继续默</div></div>';document.getElementById('page-detail').innerHTML=h;return;}
+  // 按平均分离散度排序：平均分低的、且多次都提到同一点的，排前面
+  list.forEach(function(o){
+   var sc=o.rows.map(function(q){return q.score==null?null:+q.score;}).filter(function(v){return v!=null;});
+   o.avg=sc.length?Math.round(sc.reduce(function(a,b){return a+b;},0)/sc.length):null;
+   var kc={};o.rows.forEach(function(q){extractKeys(q.note||'').forEach(function(k){kc[k]=(kc[k]||0)+1;});});
+   var top=Object.keys(kc).sort(function(a,b){return kc[b]-kc[a];})[0];
+   o.key=top;o.kc=kc;
+  });
+  list.sort(function(a,b){return (a.avg==null?999:a.avg)-(b.avg==null?999:b.avg);});
+  h+='<div class="quiz-history">';
+  list.slice(0,30).forEach(function(o){
+   var p=points.filter(function(x){return x.id==o.id;})[0];
+   h+='<div class="hi"><div class="hi-top"><span>'+(p?esc(p.name):'#'+o.id)+'</span><span class="hi-score">'+(o.avg==null?'—':o.avg)+' 分均</span></div>'+(o.key?'<div class="hi-note">高频卡点：<b>'+esc(o.key)+'</b>'+(o.kc[o.key]>1?'（提到 '+o.kc[o.key]+' 次）':'')+'</div>':'<div class="hi-note">暂无明确卡点，分数偏低</div>')+'</div>';
+  });
+  h+='</div></div>';
+  document.getElementById('page-detail').innerHTML=h;
+ });
+}
 function openPointModal(pointId){
  var p=pointId?points.filter(function(x){return x.id==pointId;})[0]:null;
  curPoint=p||null;
