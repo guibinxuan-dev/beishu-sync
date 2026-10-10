@@ -100,7 +100,7 @@ body.light .cat-card .bar{background:rgba(0,0,0,.06)}
 .cat-card .cnt{font-size:12.5px;color:var(--sub)}
 .cat-card .arrow{position:absolute;right:22px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:20px;transition:.2s}
 .cat-card:hover .arrow{color:var(--brand);transform:translateY(-50%) translateX(4px)}
-.point{display:flex;align-items:flex-start;gap:12px;padding:14px 6px;border-bottom:1px dashed var(--line);transition:.18s;border-radius:10px}
+.point{display:flex;align-items:flex-start;gap:12px;padding:14px 6px;border-bottom:1px dashed var(--line);transition:.18s;border-radius:10px}.point.focus{background:rgba(124,155,255,.07);box-shadow:inset 3px 0 0 var(--brand)}
 .point:hover{background:rgba(255,255,255,.025);padding-left:12px}
 body.light .point:hover{background:rgba(0,0,0,.012)}
 .point:last-child{border-bottom:none}
@@ -111,13 +111,13 @@ body.light .point .lvl{background:rgba(0,0,0,.09)}
 .point .lvl[data-l="3"]{background:#e0a82e;box-shadow:0 0 10px rgba(224,168,46,.4)}
 .point .lvl[data-l="4"]{background:#22c55e;box-shadow:0 0 10px rgba(34,197,94,.45)}
 .point .lvl[data-l="5"]{background:#e0a82e;box-shadow:0 0 10px rgba(224,168,46,.4)}
-.point .info{flex:1;min-width:0;cursor:pointer}
+.point .info{flex:1 1 auto;min-width:0;cursor:pointer}.point .info .nm{white-space:normal;word-break:break-word}
 .point .nm{font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .point .prev{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.7;display:none;padding:12px 14px;background:rgba(255,255,255,.03);border-radius:11px;border:1px solid var(--line)}
 body.light .point .prev{background:rgba(0,0,0,.015)}
 .point.expanded .prev{display:block;animation:fade .25s ease}
 @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-.point .acts{display:flex;gap:6px;flex-shrink:0;min-width:max-content}
+.point .acts{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
 .point.sel{background:rgba(124,155,255,.09);padding-left:12px;border-radius:10px}
 .tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;letter-spacing:.4px}
 .tm{background:rgba(34,197,94,.16);color:#4ade80}.ts{background:rgba(59,130,246,.18);color:#7aa7ff}.td{background:rgba(224,168,46,.18);color:#f0c068}.to{background:rgba(192,132,252,.18);color:#d4adff}
@@ -185,7 +185,7 @@ body.light .list-item:hover{background:rgba(0,0,0,.012)}
 .list-item:last-child{border-bottom:none}
 .list-item .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
 footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter-spacing:.6px}
-@media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.hero{padding:26px 22px 24px}.hero-num{font-size:56px}.card{padding:20px 18px}.topbar input{min-width:120px}.cat-grid{grid-template-columns:1fr}.lvl-btns button{width:30px;height:30px;font-size:11px}.point .acts{flex-wrap:wrap;width:100%;margin-top:6px;justify-content:flex-end}}
+@media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.hero{padding:26px 22px 24px}.hero-num{font-size:56px}.card{padding:20px 18px}.topbar input{min-width:120px}.cat-grid{grid-template-columns:1fr}.lvl-btns button{width:30px;height:30px;font-size:11px}.point{align-items:flex-start}.point .info{flex:1 1 auto;min-width:0}.point .info .nm{white-space:normal;word-break:break-word}.point .acts{flex:0 0 auto;flex-wrap:wrap;width:auto;margin-top:0;margin-left:auto;justify-content:flex-end;max-width:46%}.point .acts button{padding:5px 9px;font-size:11px}.point .prev{margin:8px 0 0;font-size:12.5px}.lvl-btns button{width:32px;height:32px;font-size:11.5px}}
 
 /* ========== 每日英语模块 ========== */
 .en-card{background:linear-gradient(135deg,rgba(63,214,171,.10),rgba(124,155,255,.07) 55%,rgba(176,124,255,.07)),var(--card);}
@@ -418,7 +418,7 @@ function dueList(){
  return out;
 }
 function nav(h){location.hash=h;}
-function back(){history.back();}
+function back(){if(location.hash&&location.hash.length>1){history.back();}else{location.hash='';}}
 window.addEventListener('hashchange',router);
 function router(){
  var h=location.hash.replace(/^#/,'');
@@ -687,7 +687,7 @@ function pointRow(p,cid){
   chk='<div class="chk-wrap" style="display:flex"><input type="checkbox"'+(chSel[p.id]?' checked':'')+' onclick="if(this.checked){chSel[this.dataset.id]=1;}else{delete chSel[this.dataset.id];}document.getElementById(\'chBatchCnt\')&&(document.getElementById(\'chBatchCnt\').textContent=\'已选 \'+Object.keys(chSel).filter(function(k){return chSel[k];}).length+\' 条\');" data-id="'+p.id+'"></div>';
  }
  var acts=chBatch==cid?'<button class="soft sm" onclick="delPoint('+p.id+')">删</button>':'<button class="ghost sm" onclick="openPointModal('+p.id+')">编辑</button><button class="ghost sm" onclick="nav(\'detail/'+p.id+'\')">注</button><span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span>';
- return '<div class="point" id="pt_'+p.id+'">'+chk+'<span class="lvl"'+(l?' data-l="'+l+'"':'')+'></span><div class="info" onclick="togglePoint('+p.id+')"><div class="nm">'+esc(p.name)+' '+tagOf(p.category)+(n?' <span class="tag td">有卡点</span>':'')+'</div><div class="prev">'+(clean(p.content)||'暂无内容 点编辑添加具体内容')+'</div></div><div class="acts" onclick="event.stopPropagation()">'+acts+'</div></div>';
+ return '<div class="point" id="pt_'+p.id+'">'+chk+'<span class="lvl"'+(l?' data-l="'+l+'"':'')+'></span><div class="info" onclick="togglePoint('+p.id+')"><div class="nm">'+esc(p.name)+' '+tagOf(p.category)+(n?' <span class="tag td">有卡点</span>':'')+(p.content&&String(p.content).trim()?' <span class="tag tm">点击看内容</span>':' <span class="tag ts">暂无内容</span>')+'</div>'+(p.content&&String(p.content).trim()?'<div class="prev">'+clean(p.content)+'</div>':'')+'</div><div class="acts" onclick="event.stopPropagation()">'+acts+'</div></div>';
 }
 function chMove(cid,field,val){
  var ks=Object.keys(chSel).filter(function(k){return chSel[k];});
@@ -729,7 +729,16 @@ function batchNew(cid){
  });
  chain.then(function(){toast('已标记 '+cps.length+' 条');renderChapter(cid);});
 }
-function togglePoint(id){var el=document.getElementById('pt_'+id);if(el)el.classList.toggle('expanded');}
+function togglePoint(id){
+ var p=points.filter(function(x){return x.id==id;})[0];
+ if(!p)return;
+ if(p.content&&String(p.content).trim()){
+  var el=document.getElementById('pt_'+id);
+  if(el){el.classList.toggle('expanded');if(el.classList.contains('expanded'))el.classList.add('focus');else el.classList.remove('focus');}
+ }else{
+  location.hash='detail/'+id;
+ }
+}
 function renderDetail(id){
  var p=points.filter(function(x){return x.id==id;})[0];if(!p){nav('');return;}
  var l=lastLevel(p.id);var d=firstDate(id);var days=fadeDays(p.id);var ns=pointNotes(id);
@@ -738,7 +747,12 @@ function renderDetail(id){
  h+='<div class="card"><div class="card-h" style="margin-bottom:14px"><span class="ic">&#128214;</span>'+esc(p.name)+'<span style="font-size:12px;color:var(--sub);font-weight:400;margin-left:6px">'+esc(chName(p.chapter_id))+'</span></div>';
  if(days>=0)h+='<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px"><span style="width:28px;height:28px;border-radius:8px;background:'+c+';flex:0 0 auto;box-shadow:0 0 12px '+c+'66"></span><div style="font-size:13px;color:var(--sub)">上次背熟：'+lastMasterDate(p.id)+' · <b style="color:'+c+'">'+(days===0?'今天':'已 '+days+' 天 正在褪色')+'</b></div></div>';
  h+='<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px"><span class="tag '+(p.category==='名词解释'?'tm':p.category==='论述'?'td':'ts')+'">'+p.category+'</span><span style="font-size:13px;color:var(--sub)">当前等级：<b style="color:'+colorOf(l)+';font-size:17px">L'+l+'</b> '+(l?LVL[l]:'未首背')+'</span>'+(d?'<span style="font-size:13px;color:var(--sub)">首背 '+d+'</span>':'')+(isDue(p.id)?'<span style="font-size:13px;color:var(--l3)">· 今日待复习</span>':'')+'</div>';
- if(p.content)h+='<div style="font-size:13.5px;line-height:1.8;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:16px">'+p.content+'</div>';
+ if(p.content){
+  var lines=String(p.content).split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
+  h+='<div style="font-size:14px;line-height:1.85;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px">'+lines.map(function(l){return '<p style="margin:0 0 10px">'+esc(l)+'</p>';}).join('')+'</div>';
+ }else{
+  h+='<div class="empty">这个知识点还没有填写内容，点下方「编辑」添加具体内容</div>';
+ }
  h+='<div style="font-size:14px;font-weight:600;margin:0 0 10px;padding-left:10px;border-left:3px solid var(--l3)">卡点备注 <span style="font-weight:400;font-size:12px;color:var(--sub)">按日期倒序</span></div>';
  if(!ns.length){h+='<div class="empty">还没有卡点备注 在今日待复习页面对着知识点写</div>';}
  else{ns.forEach(function(n){h+='<div style="border-top:1px dashed var(--line);padding:12px 0"><div style="font-family:monospace;font-size:12px;color:var(--sub)">'+n.note_date+'</div><div style="font-size:13.5px;line-height:1.7;margin-top:6px">'+esc(n.content)+'</div></div>';});}
