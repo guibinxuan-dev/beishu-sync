@@ -956,15 +956,9 @@ function enPickToday(){
 // 数据源：优先用内联 EN_DATA（离线可用），数据库仅作备份同步
 function enSeed(){
  enInitFromLocal();
- // 尝试同步到数据库（失败不影响本地使用）
- rest('/kb_english_templates?select=id&limit=1').then(function(exist){
-  if(exist&&exist.length){
-   enSyncFromRemote();
-  }else{
-   // 远程为空，把本地数据推上去（仅当确实为空时）
-   enPushLocal();
-  }
- }).catch(function(){enRenderHomeCard();});
+ // 本地优先：先读 localStorage 里的历史记录
+ enLoadLocalStore();
+ enRenderHomeCard();
 }
 
 function enInitFromLocal(){
@@ -976,7 +970,22 @@ function enInitFromLocal(){
  };});
  // 把生成的 id 回写到 EN_DATA，供 enMark/enOpen 等按 id 使用
  EN_DATA.forEach(function(d,i){d.id='local_'+d.order;});
- enRenderHomeCard();
+}
+
+// ===== localStorage 本地持久化（不依赖 Supabase） =====
+var EN_STORE_KEY='kb_english_store_v1';
+function enSaveLocalStore(){
+ var store={reviews:enReviews,notes:enNotes};
+ try{localStorage.setItem(EN_STORE_KEY,JSON.stringify(store));}catch(e){}
+}
+function enLoadLocalStore(){
+ try{
+  var raw=localStorage.getItem(EN_STORE_KEY);
+  if(!raw)return;
+  var store=JSON.parse(raw);
+  if(store.reviews&&store.reviews.length)enReviews=store.reviews;
+  if(store.notes&&store.notes.length)enNotes=store.notes;
+ }catch(e){}
 }
 
 function enSyncFromRemote(){
@@ -1142,13 +1151,17 @@ function enNote(id,val){
  var v=val.trim();
  enNoteTimer=setTimeout(function(){
   var ns=enNotes.filter(function(n){return n.template_id==id;}).sort(function(a,b){return b.note_date.localeCompare(a.note_date);});
-  if(ns[0]){
-   if(!v){rest('/kb_english_notes?id=eq.'+ns[0].id,'DELETE').then(function(){enNotes=enNotes.filter(function(x){return x.id!=ns[0].id;});});return;}
-   rest('/kb_english_notes?id=eq.'+ns[0].id,'PATCH',{content:v});
+  if(ns.length){
+   if(!v){
+    enNotes=enNotes.filter(function(x){return x!==ns[0];});
+   }else{
+    ns[0].content=v;
+   }
   }else if(v){
-   rest('/kb_english_notes?select=*','POST',{template_id:id,review_id:null,note_date:enToday(),content:v}).then(function(r){if(r&&r[0])enNotes.unshift(r[0]);});
+   enNotes.unshift({id:'note_'+Date.now(),template_id:id,note_date:enToday(),content:v});
   }
- },1200);
+  enSaveLocalStore();
+ },800);
 }
 function enMark(order,level){
  var d=EN_DATA.filter(function(x){return x.order==order;})[0];if(!d||!d.id){toast('数据未加载完，请刷新');return;}
@@ -1156,16 +1169,15 @@ function enMark(order,level){
  var exist=enReviews.filter(function(r){return r.template_id==d.id&&r.review_date===t;})[0];
  var after=function(){
   toast(EN_LVL[level]+' · '+(level>=4?'7 天后抽查':'已安排近期复习'));
+  enSaveLocalStore();
   enRenderHomeCard();renderEnDetail(d.id);
  };
  var stage = level>=4 ? '应用验证' : '首背';
  if(exist){
-  rest('/kb_english_reviews?id=eq.'+exist.id,'PATCH',{level:level,stage:stage}).then(function(){exist.level=level;exist.stage=stage;after();});
+  exist.level=level;exist.stage=stage;after();
  }else{
-  rest('/kb_english_reviews?select=*','POST',{template_id:d.id,review_date:t,level:level,stage:stage}).then(function(r){
-   if(r&&r[0])enReviews.unshift(r[0]);else enReviews.push({template_id:d.id,review_date:t,level:level,stage:stage});
-   after();
-  }).catch(function(){toast('记录失败');});
+  enReviews.unshift({id:'rev_'+Date.now(),template_id:d.id,review_date:t,level:level,stage:stage});
+  after();
  }
 }
 function enTodayMark(){
