@@ -958,13 +958,21 @@ function quizRefreshHome(){
  });
 }
 function quizPickPool(){
- // 只抽专业课（有 chapter 的 kb_points），必须有内容，且已首背过
+ // 只抽有正文的知识点。允许未首背的也进入候选池：
+ // firstDate() 依赖复习记录，而首次导入的知识点往往还没有复习记录，
+ // 若强制要求已首背，池子会恒空（抽默写点抽一题无反应）。
  return points.filter(function(p){
   if(!p.content||!String(p.content).trim())return false;
   if(!p.chapter_id)return false;
-  if(!firstDate(p.id))return false; // 未首背的不抽
   return true;
  });
+}
+function quizFirstDue(pool){
+ // 把「已首背 / 今日该复习」的排前面，未首背的排后面兜底
+ var due=dueList().map(function(o){return o.point.id;});
+ var a=[],b=[];
+ pool.forEach(function(p){ (due.indexOf(p.id)>=0||firstDate(p.id))?a.push(p):b.push(p); });
+ return a.concat(b);
 }
 function quizLastQuizDateOf(pointId,all){
  var my=all.filter(function(q){return q.item_id==pointId;});
@@ -978,12 +986,14 @@ function pickQuiz(extra){
   var t=quizTodayKey();
   var todayAll=all.filter(function(q){return String(q.created_at).slice(0,10)===t;});
   var todayBase=todayAll.filter(function(q){return !q.extra;}).length;
-  var cand=pool.slice();
+  var cand=quizFirstDue(pool);
   if(!extra){
    if(todayBase>=1){renderQuizHome();toast('今日基础题已完成 可点「再抽一题」继续');return;}
-   // 第一优先：今天该复习的
-   var dueIds=dueList().map(function(o){return o.point.id;});
-   var dueFirst=cand.filter(function(p){return dueIds.indexOf(p.id)>=0;});
+   // 第一优先：今天该复习的（已在 cand 前部）
+   var dueFirst=cand.filter(function(p){
+    var due=dueList().map(function(o){return o.point.id;});
+    return due.indexOf(p.id)>=0;
+   });
    // 第二优先：今天已默过但分数<60 的
    var low=cand.filter(function(p){
     var my=all.filter(function(q){return q.item_id==p.id;});
@@ -1040,7 +1050,7 @@ function renderDuePage(){
 function renderQuizHome(){
  // 兜底：先立即渲染骨架，避免 Supabase 拉数据时页面空白（看起来像点了没反应）
  var pool=quizPickPool();
- var skeleton='<div class="back" onclick="nav(\')">&#8592; 返回首页</div>'
+ var skeleton='<div class="back" onclick="nav(&quot;&quot;)">&#8592; 返回首页</div>'
   +'<div class="card quiz-card"><div class="card-h"><span class="ic">&#128221;</span>抽默写</div>'
   +'<div class="quiz-stat"><div><div id="quizBaseTxt">加载中…</div><div id="quizHomeInfo">可默知识点 '+pool.length+' 个</div></div>'
   +'<button class="ghost" id="quizMainBtn" onclick="pickQuiz(false)">&#127919; 抽今日基础题</button></div>'
@@ -1053,7 +1063,7 @@ function renderQuizHome(){
   var today=all.filter(function(q){return String(q.created_at).slice(0,10)===t;});
   var base=today.filter(function(q){return !q.extra;}).length;
   var extra=today.filter(function(q){return q.extra;}).length;
-  var h='<div class="back" onclick="nav(\')">&#8592; 返回首页</div>';
+  var h='<div class="back" onclick="nav(&quot;&quot;)">&#8592; 返回首页</div>';
   h+='<div class="card quiz-card"><div class="card-h"><span class="ic">&#128221;</span>抽默写</div>';
   h+='<div class="quiz-stat"><div><div>今日已默 <b>'+(Math.min(base,1))+'</b> / 1 基础题'+(extra>0?' <span style="color:var(--brand)">+ '+extra+' 额外</span>':'')+'</div><div id="quizHomeInfo">共默 '+all.length+' 次 · 可默知识点 '+quizPickPool().length+' 个</div></div><button class="ghost" id="quizMainBtn" onclick="pickQuiz(false)">&#127919; '+(base>=1?'再抽一题（额外）':'抽今日基础题')+'</button></div>';
   h+='<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><button class="ghost sm" onclick="nav(\'quiz/hist\')">&#128203; 默写历史</button><button class="ghost sm" onclick="renderQuizTips()">&#128161; 我的薄弱点</button></div>';
@@ -1077,7 +1087,7 @@ function renderQuizAnswer(){
  h+='<div class="quiz-meta">'+tagOf(p.category)+'<span class="tag">'+esc(chName(p.chapter_id))+'</span></div>';
  h+='<div class="quiz-hint">先自己默写（纸上或心里都行），写不出就直接点「看答案」。<br>看完答案自己打分，再填需要改进的点。</div>';
  h+='<div id="quizAns" style="display:none">';
- h+='<div class="quiz-answer">'+String(p.content).split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;}).map(function(l){return '<p>'+esc(l)+'</p>';}).join('')+'</div>';
+ h+='<div class="quiz-answer" id="quizAnswerBody"></div>';
  h+='<div class="quiz-input"><label>你的分数（按自己考试的标准打）</label><input type="number" id="quizScore" placeholder="比如 85" inputmode="numeric"></div>';
  h+='<div class="quiz-input"><label>需要改进的点（可留空）</label><textarea id="quizNote" placeholder="比如：忘了区位优势、把劣势写成优势了"></textarea></div>';
  h+='<div id="quizWarn"></div>';
@@ -1089,7 +1099,8 @@ function renderQuizAnswer(){
  window.scrollTo(0,0);
 }
 function quizReveal(){
- var a=document.getElementById('quizAns'),b=document.getElementById('quizReveal');
+ var a=document.getElementById('quizAns'),b=document.getElementById('quizReveal'),body=document.getElementById('quizAnswerBody');
+ if(body&&quizCur&&quizCur.content)body.innerHTML=quizCur.content;
  if(a)a.style.display='block';if(b)b.style.display='none';
  window.scrollTo(0,document.body.scrollHeight);
 }
