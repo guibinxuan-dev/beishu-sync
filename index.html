@@ -958,21 +958,13 @@ function quizRefreshHome(){
  });
 }
 function quizPickPool(){
- // 只抽有正文的知识点。允许未首背的也进入候选池：
- // firstDate() 依赖复习记录，而首次导入的知识点往往还没有复习记录，
- // 若强制要求已首背，池子会恒空（抽默写点抽一题无反应）。
+ // 只抽专业课（有 chapter 的 kb_points），必须有内容，且已首背过
  return points.filter(function(p){
   if(!p.content||!String(p.content).trim())return false;
   if(!p.chapter_id)return false;
+  if(!firstDate(p.id))return false; // 未首背的不抽
   return true;
  });
-}
-function quizFirstDue(pool){
- // 把「已首背 / 今日该复习」的排前面，未首背的排后面兜底
- var due=dueList().map(function(o){return o.point.id;});
- var a=[],b=[];
- pool.forEach(function(p){ (due.indexOf(p.id)>=0||firstDate(p.id))?a.push(p):b.push(p); });
- return a.concat(b);
 }
 function quizLastQuizDateOf(pointId,all){
  var my=all.filter(function(q){return q.item_id==pointId;});
@@ -986,14 +978,12 @@ function pickQuiz(extra){
   var t=quizTodayKey();
   var todayAll=all.filter(function(q){return String(q.created_at).slice(0,10)===t;});
   var todayBase=todayAll.filter(function(q){return !q.extra;}).length;
-  var cand=quizFirstDue(pool);
+  var cand=pool.slice();
   if(!extra){
    if(todayBase>=1){renderQuizHome();toast('今日基础题已完成 可点「再抽一题」继续');return;}
-   // 第一优先：今天该复习的（已在 cand 前部）
-   var dueFirst=cand.filter(function(p){
-    var due=dueList().map(function(o){return o.point.id;});
-    return due.indexOf(p.id)>=0;
-   });
+   // 第一优先：今天该复习的
+   var dueIds=dueList().map(function(o){return o.point.id;});
+   var dueFirst=cand.filter(function(p){return dueIds.indexOf(p.id)>=0;});
    // 第二优先：今天已默过但分数<60 的
    var low=cand.filter(function(p){
     var my=all.filter(function(q){return q.item_id==p.id;});
@@ -1050,7 +1040,7 @@ function renderDuePage(){
 function renderQuizHome(){
  // 兜底：先立即渲染骨架，避免 Supabase 拉数据时页面空白（看起来像点了没反应）
  var pool=quizPickPool();
- var skeleton='<div class="back" onclick="nav(&quot;&quot;)">&#8592; 返回首页</div>'
+ var skeleton='<div class="back" onclick="nav(\')">&#8592; 返回首页</div>'
   +'<div class="card quiz-card"><div class="card-h"><span class="ic">&#128221;</span>抽默写</div>'
   +'<div class="quiz-stat"><div><div id="quizBaseTxt">加载中…</div><div id="quizHomeInfo">可默知识点 '+pool.length+' 个</div></div>'
   +'<button class="ghost" id="quizMainBtn" onclick="pickQuiz(false)">&#127919; 抽今日基础题</button></div>'
@@ -1063,7 +1053,7 @@ function renderQuizHome(){
   var today=all.filter(function(q){return String(q.created_at).slice(0,10)===t;});
   var base=today.filter(function(q){return !q.extra;}).length;
   var extra=today.filter(function(q){return q.extra;}).length;
-  var h='<div class="back" onclick="nav(&quot;&quot;)">&#8592; 返回首页</div>';
+  var h='<div class="back" onclick="nav(\')">&#8592; 返回首页</div>';
   h+='<div class="card quiz-card"><div class="card-h"><span class="ic">&#128221;</span>抽默写</div>';
   h+='<div class="quiz-stat"><div><div>今日已默 <b>'+(Math.min(base,1))+'</b> / 1 基础题'+(extra>0?' <span style="color:var(--brand)">+ '+extra+' 额外</span>':'')+'</div><div id="quizHomeInfo">共默 '+all.length+' 次 · 可默知识点 '+quizPickPool().length+' 个</div></div><button class="ghost" id="quizMainBtn" onclick="pickQuiz(false)">&#127919; '+(base>=1?'再抽一题（额外）':'抽今日基础题')+'</button></div>';
   h+='<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><button class="ghost sm" onclick="nav(\'quiz/hist\')">&#128203; 默写历史</button><button class="ghost sm" onclick="renderQuizTips()">&#128161; 我的薄弱点</button></div>';
@@ -1087,8 +1077,10 @@ function renderQuizAnswer(){
  h+='<div class="quiz-meta">'+tagOf(p.category)+'<span class="tag">'+esc(chName(p.chapter_id))+'</span></div>';
  h+='<div class="quiz-hint">先自己默写（纸上或心里都行），写不出就直接点「看答案」。<br>看完答案自己打分，再填需要改进的点。</div>';
  h+='<div id="quizAns" style="display:none">';
- h+='<div class="quiz-answer" id="quizAnswerBody"></div>';
- h+='<div class="quiz-input"><label>你的分数（按自己考试的标准打）</label><input type="number" id="quizScore" placeholder="比如 85" inputmode="numeric"></div>';
+ h+='<div class="quiz-answer">'+String(p.content).split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;}).map(function(l){return '<p>'+esc(l)+'</p>';}).join('')+'</div>';
+ h+='<div class="quiz-input"><label>本次满分</label><input type="number" id="quizTotal" value="100" min="1" step="1" inputmode="numeric" oninput="quizRatePreview()"></div>';
+ h+='<div class="quiz-input"><label>你的分数（按自己考试的标准打）</label><input type="number" id="quizScore" placeholder="比如 85" inputmode="numeric" oninput="quizRatePreview()"></div>';
+ h+='<div id="quizRate" style="margin:8px 0 14px;font-size:14px;color:var(--sub);min-height:22px"></div>';
  h+='<div class="quiz-input"><label>需要改进的点（可留空）</label><textarea id="quizNote" placeholder="比如：忘了区位优势、把劣势写成优势了"></textarea></div>';
  h+='<div id="quizWarn"></div>';
  h+='<button style="width:100%;padding:13px 0;font-size:15px;font-weight:700;border:none;border-radius:12px;background:var(--brand);color:#0b0d12;cursor:pointer" onclick="submitQuiz()">提交打分</button>';
@@ -1099,10 +1091,24 @@ function renderQuizAnswer(){
  window.scrollTo(0,0);
 }
 function quizReveal(){
- var a=document.getElementById('quizAns'),b=document.getElementById('quizReveal'),body=document.getElementById('quizAnswerBody');
- if(body&&quizCur&&quizCur.content)body.innerHTML=quizCur.content;
+ var a=document.getElementById('quizAns'),b=document.getElementById('quizReveal');
  if(a)a.style.display='block';if(b)b.style.display='none';
  window.scrollTo(0,document.body.scrollHeight);
+}
+// 得分率实时预览（分数/满分），并把程度档位算出来
+function quizRatePreview(){
+ var sc=document.getElementById('quizScore'),tt=document.getElementById('quizTotal'),box=document.getElementById('quizRate');
+ if(!box)return;
+ var s=sc?+sc.value:NaN,t=tt?+tt.value:NaN;
+ if(!isNaN(s)&&!isNaN(t)&&t>0){
+  var rate=s/t, pct=Math.round(rate*100);
+  var lv=rate>=0.9?'精通':rate>=0.75?'掌握':rate>=0.6?'基本过关':'待加强';
+  var col=rate>=0.9?'#4ade80':rate>=0.75?'#60a5fa':rate>=0.6?'#fbbf24':'#f87171';
+  box.innerHTML='得分率 <b style="color:'+col+'">'+pct+'%</b> · 程度：<b style="color:'+col+'">'+lv+'</b>'
+   +'<span style="color:var(--sub);font-size:12px;margin-left:6px">（≥90 精通 / ≥75 掌握 / ≥60 过关 / 以下待加强）</span>';
+ }else{
+  box.innerHTML='<span style="color:var(--sub)">填完分数会自动算得分率和程度</span>';
+ }
 }
 function renderQuizEmpty(msg){
  document.getElementById('page-detail').innerHTML='<div class="back" onclick="nav(\'\')">&#8592; 返回首页</div><div class="card"><div class="empty">'+msg+'</div></div>';
@@ -1117,10 +1123,10 @@ function checkQuizWarning(itemId){
  keys.forEach(function(kl){kl.forEach(function(k){counts[k]=(counts[k]||0)+1;});});
  var repeat=null;
  Object.keys(counts).forEach(function(k){if(counts[k]>=3)repeat=k;});
- var lowCnt=my.slice(0,3).filter(function(q){return q.score!=null&&+q.score<60;}).length;
+ var lowCnt=my.slice(0,3).filter(function(q){return q.rate!=null&&+q.rate<60;}).length;
  var warn='';
  if(repeat){warn+='<div class="quiz-warn">&#9888;&#65039; 这个知识点你最近 3 次默写都提到「<b>'+esc(repeat)+'</b>」，属于反复卡住的点，建议今晚重点重背一遍。</div>';}
- else if(lowCnt>=2){warn+='<div class="quiz-warn">&#9888;&#65039; 这个知识点近 3 次默写有 <b>'+lowCnt+' 次低于 60 分</b>，已进重点队列，明天会优先再抽你。</div>';}
+ else if(lowCnt>=2){warn+='<div class="quiz-warn">&#9888;&#65039; 这个知识点近 3 次默写有 <b>'+lowCnt+' 次得分率低于 60%</b>，已进重点队列，明天会优先再抽你。</div>';}
  return warn;
 }
 function extractKeys(note){
@@ -1138,12 +1144,18 @@ function extractKeys(note){
  return out.slice(0,6);
 }
 function submitQuiz(){
- var sc=document.getElementById('quizScore'),nt=document.getElementById('quizNote');
- var score=sc?sc.value.trim():'',note=nt?nt.value.trim():'';
- if(score===''||isNaN(+score)){toast('请填一个分数');if(sc)sc.focus();return;}
+ var sc=document.getElementById('quizScore'),tt=document.getElementById('quizTotal'),nt=document.getElementById('quizNote');
+ var sVal=sc?sc.value.trim():'',tVal=tt?tt.value.trim():'',note=nt?nt.value.trim():'';
+ var score=sVal===''||isNaN(+sVal)?NaN:+sVal, total=tVal===''||isNaN(+tVal)||+tVal<=0?NaN:+tVal;
+ if(isNaN(score)){toast('请填本次默写得分');if(sc)sc.focus();return;}
+ if(isNaN(total)){toast('请填本次满分');if(tt)tt.focus();return;}
+ if(score<0){toast('得分不能是负数');if(sc)sc.focus();return;}
+ if(score>total){toast('得分不能超过满分 '+total);if(sc)sc.focus();return;}
+ var rate=Math.round((score/total)*100);
+ var level=rate>=90?'精通':rate>=75?'掌握':rate>=60?'基本过关':'待加强';
  var t=quizTodayKey();
  var isExtra=!!quizExtraCount;
- var payload={item_id:quizCur.id,chapter_id:quizCur.chapter_id||null,score:+score,note:note,extra:isExtra,created_at:new Date().toISOString()};
+ var payload={item_id:quizCur.id,chapter_id:quizCur.chapter_id||null,score:score,total:total,rate:rate,level:level,note:note,extra:isExtra,created_at: new Date().toISOString()};
  rest('/kb_quizzes?select=*','POST',payload).then(function(r){
   var saved=(r&&r[0])?r[0]:payload;
   quizCache=(quizCache||[]);quizCache.unshift(saved);
@@ -1151,7 +1163,7 @@ function submitQuiz(){
   var wrap=document.getElementById('quizWarn');
   if(wrap){wrap.innerHTML=w;}
   if(w){window.scrollTo(0,document.body.scrollHeight);}
-  toast('已记录 '+score+' 分');
+  toast('已记录 '+score+'/'+total+' 分（'+rate+'%，'+level+'）');
   quizRefreshHome();
   if(!isExtra){
    // 基础题提交后，回到首页刷新计数
@@ -1170,7 +1182,7 @@ function renderQuizHistory(){
   h+='<div class="quiz-history">';
   all.slice(0,120).forEach(function(q){
    var p=points.filter(function(x){return x.id==q.item_id;})[0];
-   h+='<div class="hi"><div class="hi-top"><span>'+String(q.created_at).slice(0,10)+(q.extra?' <span style="color:var(--brand)">额外</span>':'')+'</span><span class="hi-score">'+(q.score==null?'—':q.score)+' 分</span></div>'+(p?'<div style="font-size:14px;font-weight:600;margin-bottom:4px">'+esc(p.name)+'</div>':'')+(q.note?'<div class="hi-note">'+esc(q.note)+'</div>':'')+'</div>';
+   h+='<div class="hi"><div class="hi-top"><span>'+String(q.created_at).slice(0,10)+(q.extra?' <span style="color:var(--brand)">额外</span>':'')+'</span><span class="hi-score">'+(q.score==null?'—':q.score)+'/'+(q.total||100)+' 分'+(q.rate!=null?'（'+q.rate+'%）':'')+'</span></div>'+(p?'<div style="font-size:14px;font-weight:600;margin-bottom:4px">'+esc(p.name)+'</div>':'')+(q.level?'<div style="font-size:12px;color:var(--sub);margin-bottom:4px">程度：'+esc(q.level)+'</div>':'')+(q.note?'<div class="hi-note">'+esc(q.note)+'</div>':'')+'</div>';
   });
   h+='</div></div>';
   document.getElementById('page-detail').innerHTML=h;
