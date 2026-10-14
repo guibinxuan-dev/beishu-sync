@@ -977,7 +977,7 @@ function quizRateLevel(rate){
 function quizRatePreview(){
  var box=document.getElementById('quizRatePreview');
  if(!box)return;
- var tEl=document.getElementById('quizTotal'),sEl=document.getElementById('quizScore');
+ var tEl=document.getElementById('quizMax'),sEl=document.getElementById('quizScore');
  var total=parseFloat(tEl.value),score=parseFloat(sEl.value);
  if(isNaN(total)||total<=0||isNaN(score)||score<0){box.textContent='';box.style.color='';return;}
  if(score>total){box.textContent='得分不能超过满分 '+total;box.style.color='#f87171';return;}
@@ -1096,7 +1096,7 @@ function renderQuizAnswer(){
  h+='<div class="quiz-hint">先自己默写（纸上或心里都行），写不出就直接点「看答案」。<br>看完答案自己打分，再填需要改进的点。</div>';
  h+='<div id="quizAns" style="display:none">';
  h+='<div class="quiz-answer" id="quizAnswerBody"></div>';
- h+='<div class="quiz-input"><label>满分（可设置，不同题目满分可不一样）</label><input type="number" id="quizTotal" value="100" min="1" step="1" placeholder="100" inputmode="numeric"></div>';
+ h+='<div class="quiz-input"><label>满分（可设置，不同题目满分可不一样）</label><input type="number" id="quizMax" value="100" min="1" step="1" placeholder="100" inputmode="numeric" oninput="quizRatePreview()"></div>';
  h+='<div class="quiz-input"><label>本次默写得分</label><input type="number" id="quizScore" placeholder="比如 85" inputmode="numeric" oninput="quizRatePreview()"></div>';
  h+='<div id="quizRatePreview" style="font-size:13.5px;font-weight:600;margin-top:-4px"></div>';
  h+='<div class="quiz-input"><label>需要改进的点（可留空）</label><textarea id="quizNote" placeholder="比如：忘了区位优势、把劣势写成优势了"></textarea></div>';
@@ -1153,12 +1153,15 @@ function extractKeys(note){
 }
 async function submitQuiz(){
  if(!quizCur||!quizCur.id){toast('当前题目已失效，请重新抽一题');setTimeout(function(){nav('quiz');},1200);return;}
- var tEl=document.getElementById('quizTotal'),sc=document.getElementById('quizScore'),nt=document.getElementById('quizNote');
- var total=tEl&&tEl.value.trim()!==''?parseFloat(tEl.value.trim()):100;
- if(isNaN(total)||total<=0){toast('满分必须是大于 0 的数');if(tEl)tEl.focus();return;}
- var score=(sc&&sc.value!=null)?String(sc.value).trim():'',note='';
+ var tEl=document.getElementById('quizMax'),sc=document.getElementById('quizScore'),nt=document.getElementById('quizNote');
+ var tRaw=(tEl&&tEl.value!=null)?String(tEl.value).trim():'';
+ var total=tRaw!==''?parseFloat(tRaw):100;
+ if(isNaN(total)||total<=0){total=100;}
+ var sRaw=(sc&&sc.value!=null)?String(sc.value).trim():'';
+ var score=(sRaw===''||isNaN(parseFloat(sRaw)))?NaN:parseFloat(sRaw);
+ var note='';
  try{note=(nt&&nt.value!=null)?String(nt.value).trim():'';}catch(e){note='';}
- if(score===''||isNaN(+score)){toast('请填一个分数');if(sc)sc.focus();return;}
+ if(isNaN(score)){toast('请填一个分数');if(sc)sc.focus();return;}
  score=parseFloat(score);
  if(score<0){toast('分数不能为负');if(sc)sc.focus();return;}
  if(score>total){toast('得分不能超过满分 '+total);if(sc)sc.focus();return;}
