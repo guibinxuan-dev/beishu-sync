@@ -1095,7 +1095,7 @@ function renderQuizAnswer(){
  h+='<div class="quiz-meta">'+tagOf(p.category)+'<span class="tag">'+esc(chName(p.chapter_id))+'</span></div>';
  h+='<div class="quiz-hint">先自己默写（纸上或心里都行），写不出就直接点「看答案」。<br>看完答案自己打分，再填需要改进的点。</div>';
  h+='<div id="quizAns" style="display:none">';
- h+='<div class="quiz-answer">'+String(p.content).split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;}).map(function(l){return '<p>'+esc(l)+'</p>';}).join('')+'</div>';
+ h+='<div class="quiz-answer" id="quizAnswerBody"></div>';
  h+='<div class="quiz-input"><label>满分（可设置，不同题目满分可不一样）</label><input type="number" id="quizTotal" value="100" min="1" step="1" placeholder="100" inputmode="numeric"></div>';
  h+='<div class="quiz-input"><label>本次默写得分</label><input type="number" id="quizScore" placeholder="比如 85" inputmode="numeric" oninput="quizRatePreview()"></div>';
  h+='<div id="quizRatePreview" style="font-size:13.5px;font-weight:600;margin-top:-4px"></div>';
@@ -1110,7 +1110,12 @@ function renderQuizAnswer(){
 }
 function quizReveal(){
  var a=document.getElementById('quizAns'),b=document.getElementById('quizReveal');
+ var body=document.getElementById('quizAnswerBody');
+ if(body&&quizCur&&quizCur.content!==undefined&&quizCur.content!==null){
+  body.innerHTML=quizCur.content;
+ }
  if(a)a.style.display='block';if(b)b.style.display='none';
+ quizRatePreview();
  window.scrollTo(0,document.body.scrollHeight);
 }
 function renderQuizEmpty(msg){
@@ -1118,7 +1123,7 @@ function renderQuizEmpty(msg){
 }
 function checkQuizWarning(itemId){
  var all=quizCache||[];
- var my=all.filter(function(q){return q.item_id==itemId;}).sort(function(a,b){return b.created_at.localeCompare(a.created_at);});
+ var my=all.filter(function(q){(q.point_id!==undefined&&q.point_id!==null?q.point_id:q.item_id)==itemId;}).sort(function(a,b){return b.created_at.localeCompare(a.created_at);});
  if(my.length<3)return '';
  // 取最近 3 次，逐次抽关键词
  var keys=my.slice(0,3).map(function(q){return extractKeys(q.note||'');});
@@ -1158,7 +1163,7 @@ function submitQuiz(){
  var t=quizTodayKey();
  var isExtra=!!quizExtraCount;
  var rate=Math.round(score/total*100),lv=quizRateLevel(rate);
- var payload={point_id:quizCur.id,item_id:null,chapter_id:quizCur.chapter_id||null,score:score,total:total,rate:rate,level:lv.key,note:note,extra:isExtra,created_at:new Date().toISOString()};
+ var payload={point_id:quizCur.id,chapter_id:quizCur.chapter_id||null,score:score,total:total,rate:rate,level:lv.key,note:note,extra:isExtra,created_at:new Date().toISOString()};
  rest('/kb_quizzes?select=*','POST',payload).then(function(r){
   var saved=(r&&r[0])?r[0]:payload;
   quizCache=(quizCache||[]);quizCache.unshift(saved);
@@ -1184,8 +1189,8 @@ function renderQuizHistory(){
   if(!all.length){h+='<div class="empty">还没有默写记录 先去抽一题</div></div>';document.getElementById('page-detail').innerHTML=h;return;}
   h+='<div class="quiz-history">';
   all.slice(0,120).forEach(function(q){
-   var p=points.filter(function(x){return x.id==q.item_id;})[0];
-   h+='<div class="hi"><div class="hi-top"><span>'+String(q.created_at).slice(0,10)+(q.extra?' <span style="color:var(--brand)">额外</span>':'')+'</span><span class="hi-score">'+(q.score==null?'—':q.score)+' 分</span></div>'+(p?'<div style="font-size:14px;font-weight:600;margin-bottom:4px">'+esc(p.name)+'</div>':'')+(q.note?'<div class="hi-note">'+esc(q.note)+'</div>':'')+'</div>';
+   var p=points.filter(function(x){return x.id==(q.point_id!==undefined&&q.point_id!==null?q.point_id:q.item_id);})[0];
+   h+='<div class="hi"><div class="hi-top"><span>'+String(q.created_at).slice(0,10)+(q.extra?' <span style="color:var(--brand)">额外</span>':'')+'</span><span class="hi-score">'+(q.score==null?'—':q.score)+'/'+(q.total||100)+' 分'+(q.rate!==undefined&&q.rate!==null?'（'+q.rate+'%，'+(q.level||'')+'）':'')+'</span></div>'+(p?'<div style="font-size:14px;font-weight:600;margin-bottom:4px">'+esc(p.name)+'</div>':'')+(q.note?'<div class="hi-note">'+esc(q.note)+'</div>':'')+'</div>';
   });
   h+='</div></div>';
   document.getElementById('page-detail').innerHTML=h;
@@ -1195,8 +1200,10 @@ function renderQuizTips(){
  loadQuizCache().then(function(all){
   var byId={};
   all.forEach(function(q){
-   if(!byId[q.item_id])byId[q.item_id]=[];
-   byId[q.item_id].push(q);
+   var _id=(q.point_id!==undefined&&q.point_id!==null)?q.point_id:q.item_id;
+   if(_id===undefined||_id===null)return;
+   if(!byId[_id])byId[_id]=[];
+   byId[_id].push(q);
   });
   var list=Object.keys(byId).map(function(id){return {id:+id,rows:byId[id]};}).filter(function(o){return o.rows.length>=2;});
   var h='<div class="back" onclick="nav(\'quiz\')">&#8592; 返回</div>';
