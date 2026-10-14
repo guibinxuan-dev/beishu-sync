@@ -1151,11 +1151,13 @@ function extractKeys(note){
  });
  return out.slice(0,6);
 }
-function submitQuiz(){
+async function submitQuiz(){
+ if(!quizCur||!quizCur.id){toast('当前题目已失效，请重新抽一题');setTimeout(function(){nav('quiz');},1200);return;}
  var tEl=document.getElementById('quizTotal'),sc=document.getElementById('quizScore'),nt=document.getElementById('quizNote');
  var total=tEl&&tEl.value.trim()!==''?parseFloat(tEl.value.trim()):100;
  if(isNaN(total)||total<=0){toast('满分必须是大于 0 的数');if(tEl)tEl.focus();return;}
- var score=sc?sc.value.trim():'',note=nt?nt.value.trim():'';
+ var score=(sc&&sc.value!=null)?String(sc.value).trim():'',note='';
+ try{note=(nt&&nt.value!=null)?String(nt.value).trim():'';}catch(e){note='';}
  if(score===''||isNaN(+score)){toast('请填一个分数');if(sc)sc.focus();return;}
  score=parseFloat(score);
  if(score<0){toast('分数不能为负');if(sc)sc.focus();return;}
@@ -1163,8 +1165,9 @@ function submitQuiz(){
  var t=quizTodayKey();
  var isExtra=!!quizExtraCount;
  var rate=Math.round(score/total*100),lv=quizRateLevel(rate);
- var payload={point_id:quizCur.id,chapter_id:quizCur.chapter_id||null,score:score,total:total,rate:rate,level:lv.key,note:note,extra:isExtra,created_at:new Date().toISOString()};
- rest('/kb_quizzes?select=*','POST',payload).then(function(r){
+ var payload={point_id:quizCur.id,chapter_id:quizCur.chapter_id||null,score:Math.round(score),total:Math.round(total),rate:rate,level:lv.key,note:note||null,extra:isExtra,created_at:new Date().toISOString()};
+ try{
+  var r=await rest('/kb_quizzes?select=*','POST',payload);
   var saved=(r&&r[0])?r[0]:payload;
   quizCache=(quizCache||[]);quizCache.unshift(saved);
   var w=checkQuizWarning(quizCur.id);
@@ -1173,13 +1176,8 @@ function submitQuiz(){
   if(w){window.scrollTo(0,document.body.scrollHeight);}
   toast('已记录 '+score+'/'+total+' 分（'+rate+'%，'+lv.key+'）');
   quizRefreshHome();
-  if(!isExtra){
-   // 基础题提交后，回到首页刷新计数
-   setTimeout(function(){nav('quiz');},900);
-  }else{
-   setTimeout(function(){nav('quiz');},900);
-  }
- }).catch(function(err){console.error('submitQuiz insert 失败',err);var msg=err&&err.message?err.message:(err&&err.error?err.error:'');toast('提交失败'+(msg?('：'+msg):'，请重试'));});
+  setTimeout(function(){nav('quiz');},900);
+ }catch(err){console.error('submitQuiz insert 失败',err);var msg=err&&err.message?err.message:(err&&err.error?err.error:(typeof err==='string'?err:'未知错误'));toast('提交失败'+(msg?('：'+msg):'，请重试'));}
 }
 function renderQuizHistory(){
  var t=quizTodayKey();
