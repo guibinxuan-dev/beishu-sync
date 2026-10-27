@@ -944,15 +944,15 @@ function quizRefreshHome(){
  loadQuizCache().then(function(all){
   var t=quizTodayKey();
   var today=all.filter(function(q){return String(q.created_at).slice(0,10)===t;});
-  var base=today.filter(function(q){return !q.extra;}).length;
-  var extra=today.filter(function(q){return q.extra;}).length;
+  var base=today.filter(function(q){return q.point_id!=null && !q.extra;}).length;
+  var extra=today.filter(function(q){return q.point_id!=null && q.extra;}).length;
   var b=document.getElementById('quizDone');if(b)b.textContent=Math.min(base,1);
   var e=document.getElementById('quizExtra'),en=document.getElementById('quizExtraN');
   if(extra>0&&e&&en){e.style.display='inline';en.textContent=extra;}else if(e){e.style.display='none';}
   var tot=document.getElementById('quizTotal');if(tot)tot.textContent=all.length;
   // 连续天数：从昨天往回数，要求每天都有非 extra 记录
   var days=0,cur=addDaysStr(t,-1);
-  var byDay={};all.forEach(function(q){if(!q.extra){var k=String(q.created_at).slice(0,10);byDay[k]=(byDay[k]||0)+1;}});
+  var byDay={};all.forEach(function(q){if(!q.extra && q.point_id!=null){var k=String(q.created_at).slice(0,10);byDay[k]=(byDay[k]||0)+1;}});
   if(byDay[t]){days=1;cur=addDaysStr(t,-1);while(byDay[cur]){days++;cur=addDaysStr(cur,-1);}}
   var st=document.getElementById('quizStreak');if(st)st.textContent='连续 '+days+' 天';
  });
@@ -960,11 +960,23 @@ function quizRefreshHome(){
 function quizPickPool(){
  // 只抽专业课（有 chapter 的 kb_points），必须有内容。
  // 不要求已首背：首背记录为空时仍能抽题默写。
- return points.filter(function(p){
+ // 今日去重：排除今天已经默过这道题的 point_id
+ var pool=points.filter(function(p){
   if(!p.content||!String(p.content).trim())return false;
   if(!p.chapter_id)return false;
   return true;
  });
+ try{
+  var key=quizTodayKey();
+  var done={};
+  (quizCache||[]).forEach(function(q){
+   if(String(q.created_at).slice(0,10)===key && q.point_id!=null){ done[q.point_id]=1; }
+  });
+  console.log('[quiz] 今日已默ID集合',Object.keys(done),'全部可默',pool.length);
+  var left=pool.filter(function(p){return !done[p.id];});
+  console.log('[quiz] 候选池',left.length,'题');
+  return left;
+ }catch(e){ console.error('quizPickPool 失败',e); return pool; }
 }
 
 function quizRateLevel(rate){
@@ -985,7 +997,7 @@ function quizRatePreview(){
  box.textContent='得分率 '+rate+'% — '+lv.key;box.style.color=lv.color;
 }
 function quizLastQuizDateOf(pointId,all){
- var my=all.filter(function(q){return q.item_id==pointId;});
+ var my=all.filter(function(q){return (q.point_id||q.item_id)==pointId;});
  if(!my.length)return null;
  return String(my.sort(function(a,b){return b.created_at.localeCompare(a.created_at);})[0].created_at).slice(0,10);
 }
@@ -1069,8 +1081,8 @@ function renderQuizHome(){
  loadQuizCache().then(function(all){
   var t=quizTodayKey();
   var today=all.filter(function(q){return String(q.created_at).slice(0,10)===t;});
-  var base=today.filter(function(q){return !q.extra;}).length;
-  var extra=today.filter(function(q){return q.extra;}).length;
+  var base=today.filter(function(q){return q.point_id!=null && !q.extra;}).length;
+  var extra=today.filter(function(q){return q.point_id!=null && q.extra;}).length;
   var h='<div class="back" onclick="nav(\')">&#8592; 返回首页</div>';
   h+='<div class="card quiz-card"><div class="card-h"><span class="ic">&#128221;</span>抽默写</div>';
   h+='<div class="quiz-stat"><div><div>今日已默 <b>'+(Math.min(base,1))+'</b> / 1 基础题'+(extra>0?' <span style="color:var(--brand)">+ '+extra+' 额外</span>':'')+'</div><div id="quizHomeInfo">共默 '+all.length+' 次 · 可默知识点 '+quizPickPool().length+' 个</div></div><button class="ghost" id="quizMainBtn" onclick="pickQuiz(false)">&#127919; '+(base>=1?'再抽一题（额外）':'抽今日基础题')+'</button></div>';
