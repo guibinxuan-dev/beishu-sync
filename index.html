@@ -320,6 +320,11 @@ body.light .sw-bar .track{background:rgba(0,0,0,.07)}
 .sw-pulse{animation:swp 1.4s ease-in-out infinite}
 @keyframes swp{0%,100%{opacity:1}50%{opacity:.45}}
 .sw-soft{font-size:12.5px;color:var(--sub);line-height:1.7;margin:8px 0}
+
+.eb-dot{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 4px;border-radius:8px;font-size:11px;font-weight:700;background:#f1f5f9;color:#94a3b8;border:1.5px solid #e2e8f0}
+.eb-dot.done{background:#dcfce7;color:#16a34a;border-color:#86efac}
+.eb-dot.today{background:#7c4dff;color:#fff;border-color:#7c4dff;box-shadow:0 0 0 3px rgba(124,77,255,.18)}
+.eb-dot.overdue{background:#fee2e2;color:#dc2626;border-color:#fca5a5}
 </style>
 </head>
 <body>
@@ -341,6 +346,7 @@ body.light .sw-bar .track{background:rgba(0,0,0,.07)}
 <div class="heat-tip" id="tip"></div>
 <script>
 var SUPABASE_URL='https://jnnsmjjhjhwrcxnklonf.supabase.co';
+
 var APIKEY='sb_publishable_2w2iM-cklg-Aof9dP7xB_Q_OfWQmj8V';
 var PASSWORD='beishu2024';
 var EXAM_Y=2026, EXAM_M=11, EXAM_D=19;
@@ -458,6 +464,131 @@ function dueList(){
  out.sort(function(a,b){return (a.first||'').localeCompare(b.first||'');});
  return out;
 }
+
+// ===== 艾宾浩斯复习曲线（1/2/4/7/15/30 天 6 个节点）=====
+var EB_NODES=[1,2,4,7,15,30];
+function ebNodeDate(firstDateStr, nodeIndex){
+  var n=EB_NODES[Math.max(0,Math.min(5,nodeIndex))];
+  return addDaysStr(firstDateStr, n);
+}
+function ebPlanOf(pointId){
+  var rs=(pointReviews(pointId)||[]).slice().sort(function(a,b){return (a.review_date||'').localeCompare(b.review_date||'');});
+  var first=rs.length?rs[0].review_date:null;
+  if(!first)return null;
+  var today=ts();
+  var nodes=EB_NODES.map(function(day,i){
+    var due=addDaysStr(first,day);
+    var done=false;
+    rs.forEach(function(r){ if(r.review_date===due) done=true; });
+    var status='pending';
+    if(done)status='done';
+    else if(today>due)status='overdue';
+    else if(today===due)status='today';
+    return {node:i+1,day:day,due:due,status:status};
+  });
+  var currentNode=0;
+  nodes.forEach(function(nd,i){ if(nd.status==='done')currentNode=i+1; });
+  var nextDue=null,nextNode=null;
+  for(var i=0;i<nodes.length;i++){
+    if(nodes[i].status!=='done'){nextDue=nodes[i].due;nextNode=nodes[i].node;break;}
+  }
+  var todayDue=nodes.filter(function(nd){return nd.status==='today';}).length;
+  var overDue=nodes.filter(function(nd){return nd.status==='overdue';}).length;
+  return {first:first,nodes:nodes,currentNode:currentNode,totalNodes:6,nextDue:nextDue,nextNode:nextNode,todayDue:todayDue,overDue:overDue,finished:currentNode>=6};
+}
+function ebTodayList(){
+  var out=[];
+  points.forEach(function(p){
+    if(!firstDate(p.id))return;
+    var plan=ebPlanOf(p.id);
+    if(!plan)return;
+    var todayNode=plan.nodes.filter(function(nd){return nd.status==='today';})[0];
+    if(todayNode)out.push({point:p,plan:plan,node:todayNode.node,day:todayNode.day});
+  });
+  out.sort(function(a,b){return b.node-a.node;});
+  return out;
+}
+function ebOverdueList(){
+  var out=[];
+  points.forEach(function(p){
+    if(!firstDate(p.id))return;
+    var plan=ebPlanOf(p.id);
+    if(!plan)return;
+    var overdue=plan.nodes.filter(function(nd){return nd.status==='overdue';});
+    if(overdue.length)out.push({point:p,plan:plan,count:overdue.length});
+  });
+  return out;
+}
+function ebCurveSvg(){
+  var W=320,H=150,pl=28,pr=12,pt=16,pb=22;
+  var iw=W-pl-pr,ih=H-pt-pb;
+  var pts=[];
+  for(var i=0;i<=60;i++){
+    var x=i;
+    var y=100*Math.pow(0.6,x/10);
+    pts.push([pl+iw*(i/60), pt+ih*(1-Math.min(100,y)/100)]);
+  }
+  var d=pts.map(function(p,i){return (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' ');
+  var nodePos=EB_NODES.map(function(day){
+    var y=100*Math.pow(0.6,day/10);
+    return {x:pl+iw*(day/60), y:pt+ih*(1-Math.min(100,y)/100), day:day};
+  });
+  var grid='';
+  for(var g=0;g<=4;g++){var gy=pt+ih*g/4;grid+='<line x1="'+pl+'" y1="'+gy.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+gy.toFixed(1)+'" stroke="#e5e7eb" stroke-width="1"/>';}
+  var dots='';
+  nodePos.forEach(function(n){
+    dots+='<line x1="'+n.x.toFixed(1)+'" y1="'+(pt+ih)+'" x2="'+n.x.toFixed(1)+'" y2="'+n.y.toFixed(1)+'" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2 2"/>';
+    dots+='<circle cx="'+n.x.toFixed(1)+'" cy="'+n.y.toFixed(1)+'" r="4" fill="#7c4dff" stroke="#fff" stroke-width="2"/><text x="'+n.x.toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="9" fill="#64748b">'+n.day+'</text>';
+  });
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="150" style="display:block;max-width:'+W+'px;margin:6px auto 0">'+grid+'<path d="'+d+'" fill="none" stroke="#7c4dff" stroke-width="2.5" stroke-linecap="round"/>'+dots+'</svg>';
+}
+function renderEbCurveCard(){
+  var today=ebTodayList().length;
+  var over=ebOverdueList().length;
+  var h='<div class="card" style="cursor:pointer" onclick="nav(&quot;eb&quot;)"><div class="card-h"><span class="ic">&#129514;</span>艾宾浩斯曲线总览 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">按 1/2/4/7/15/30 天节点一路一路排</span><div class="ch-act"><span class="arrow">&#8594;</span></div></div>';
+  h+=ebCurveSvg();
+  h+='<div style="display:flex;gap:10px;margin-top:8px;font-size:12.5px;color:var(--sub)"><span>今天到期 <b style="color:#7c4dff">'+today+'</b> 个</span><span>逾期 <b style="color:#ef4444">'+over+'</b> 个</span><span>节点 1→2→4→7→15→30 天</span></div>';
+  h+='<div style="font-size:12.5px;color:var(--sub);line-height:1.7;margin-top:6px">记忆在 1 天内遗忘最快，及时复习是关键。点曲线看每个知识点的节点进度。</div></div>';
+  return h;
+}
+function renderEbPage(){
+  var el=document.getElementById('page-detail');
+  if(!el)return;
+  var items=[];
+  points.forEach(function(p){
+    if(!firstDate(p.id))return;
+    var plan=ebPlanOf(p.id);
+    if(!plan)return;
+    items.push({p:p,plan:plan});
+  });
+  items.sort(function(a,b){return (b.plan.nextDue||'').localeCompare(a.plan.nextDue||'')||(a.plan.first||'').localeCompare(b.plan.first||'');});
+  var h='<div class="detail-h"><button class="ghost sm" onclick="back()">&#8592; 返回</button><h2>&#129514; 艾宾浩斯曲线 · 复习计划</h2></div>';
+  h+='<div style="padding:14px">';
+  h+=ebCurveSvg();
+  h+='<div style="font-size:12.5px;color:var(--sub);margin:8px 0 14px;line-height:1.7">每个知识点首背后，按 1 / 2 / 4 / 7 / 15 / 30 天 6 个节点推进。节点越往后，记忆越牢。</div>';
+  h+='<div class="card" style="padding:0;overflow:hidden"><div class="card-h"><span class="ic">&#128203;</span>各知识点节点进度 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+items.length+' 个已首背</span></div>';
+  if(!items.length){h+='<div class="empty">还没有首背过知识点，先去「首背」几题</div>';}
+  else{
+    items.forEach(function(it){
+      var plan=it.plan;
+      var dots=plan.nodes.map(function(nd){
+        var cls=nd.status==='done'?'eb-dot done':nd.status==='today'?'eb-dot today':nd.status==='overdue'?'eb-dot overdue':'eb-dot';
+        return '<span class="'+cls+'" title="第'+nd.node+'节点 · '+nd.day+'天 · '+nd.due+'">'+nd.day+'</span>';
+      }).join('');
+      var tail=plan.finished?'<span class="tag td" style="color:#16a34a">已巩固</span>':(plan.nextDue?'<span style="font-size:12px;color:var(--sub)">下次 '+plan.nextDue+' · 第 '+plan.nextNode+' 节点</span>':'<span style="font-size:12px;color:var(--sub)">等待排期</span>');
+      h+='<div style="padding:12px 16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px" onclick="nav(&quot;detail/'+it.p.id+'&quot;)">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><b style="font-size:14.5px">'+esc(it.p.name)+'</b>'+tail+'</div>';
+      h+='<div style="display:flex;gap:6px;flex-wrap:wrap">'+dots+'</div>';
+      h+='</div>';
+    });
+  }
+  h+='</div>';
+  h+='</div>';
+  el.innerHTML=h;
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.getElementById('page-detail').classList.add('on');
+  window.scrollTo(0,0);
+}
 function nav(h){location.hash=h;}
 function back(){if(location.hash&&location.hash.length>1){history.back();}else{location.hash='';}}
 window.addEventListener('hashchange',router);
@@ -541,14 +672,17 @@ function renderHome(){
  h+='</div>';
  h+='<div class="card en-card" id="swCard"><div class="card-h"><span class="ic">&#9998;</span>考研英语 · 小作文 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">背熟才解锁 · 3 天一档</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;english/w&quot;)">去背诵</button></div></div><div class="empty">正在准备今日小作文…</div></div>';
  h+='<div class="card en-card" id="enCard"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 片 · 应用验证</span></div><div class="empty">正在准备今日语料…</div></div>';
- h+='<div class="card quiz-card"><div class="card-h"><span class="ic">&#128221;</span>抽默写 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 题 · 抽到即默 · 自己打分</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;quiz&quot;)">进入</button></div></div><div class="quiz-stat"><div><div>今日已默 <b id="quizDone">0</b> / 1 <span id="quizExtra" style="display:none;color:var(--brand)">+<span id="quizExtraN">0</span> 额外</span></div><div><span id="quizStreak">连续 0 天</span> · 共默 <span id="quizTotal">0</span> 次</div></div><button class="ghost" onclick="pickQuiz(false)">&#127919; 抽一题</button></div></div>';
+  var ebToday=ebTodayList().length,ebOver=ebOverdueList().length;
+  h+='<div class="card due-card" style="border-color:#7c4dff33"><div class="card-h"><span class="ic">&#128204;</span>今日艾宾浩斯到期 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+ebToday+' 个知识点按节点排队</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;due&quot;)">去复习</button></div></div><div class="due-summary" onclick="nav(&quot;eb&quot;)"><div class="due-num"><b id="dueNum" style="color:#7c4dff">'+ebToday+'</b><span>条今日到期 · '+ebOver+' 条逾期</span></div><div class="due-line"><div class="due-bar" style="--brand:#7c4dff"><i id="dueBar" style="width:'+(ebToday?100:0)+'%;background:#7c4dff"></i></div><span id="dueRate">按 1/2/4/7/15/30 天节奏推进</span></div></div></div>';
+  h+=renderEbCurveCard();
+  h+='<div class="card quiz-card"><div class="card-h"><span class="ic">&#128221;</span>抽默写 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 题 · 抽到即默 · 自己打分</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;quiz&quot;)">进入</button></div></div><div class="quiz-stat"><div><div>今日已默 <b id="quizDone">0</b> / 1 <span id="quizExtra" style="display:none;color:var(--brand)">+<span id="quizExtraN">0</span> 额外</span></div><div><span id="quizStreak">连续 0 天</span> · 共默 <span id="quizTotal">0</span> 次</div></div><button class="ghost" onclick="pickQuiz(false)">&#127919; 抽一题</button></div></div>';
  h+='<div class="card due-card"><div class="card-h"><span class="ic">&#128204;</span>今日待复习 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">点击进入清单</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;due&quot;)">进入复习</button></div></div><div class="due-summary" onclick="nav(&quot;due&quot;)"><div class="due-num"><b id="dueNum">'+duec+'</b><span>条待复习</span></div><div class="due-line"><div class="due-bar"><i id="dueBar" style="width:0%"></i></div><span id="dueRate">0/0 已完成</span></div></div></div>';
  var ng=[];
  chapters.forEach(function(c){
   var cps=points.filter(function(p){return p.chapter_id==c.id&&!firstDate(p.id);});
   if(cps.length)ng.push({c:c,cps:cps});
  });
- h+='<div class="card"><div class="card-h"><span class="ic">&#128214;</span>待首背 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+(ng.length?'有 '+ng.length+' 章未首背':'已全部首背过')+'</span></div>'+(ng.length?ng.map(function(g){return '<div class="cat-grid" style="grid-template-columns:1fr"><div class="cat-card" onclick="nav(\'chapter/'+g.c.id+'\')"><h3 style="font-size:15px">'+esc(g.c.name)+'</h3><div class="cnt" style="margin-top:6px">'+g.cps.length+' 条待首背</div><span class="arrow">&#8594;</span></div></div>';}).join(''):'<div class="empty">全部知识点都首背过了 可以去复习了</div>')+'</div>';
+ h+='<div class="card"><div class="card-h"><span class="ic">&#128214;</span>待首背 <div class="ch-act"><button class="ghost sm" onclick="promptNewChapter()">+ 加新章节</button></div> <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+(ng.length?'有 '+ng.length+' 章未首背':'已全部首背过')+'</span></div>'+(ng.length?ng.map(function(g){return '<div class="cat-grid" style="grid-template-columns:1fr"><div class="cat-card" onclick="nav(\'chapter/'+g.c.id+'\')"><h3 style="font-size:15px">'+esc(g.c.name)+'</h3><div class="cnt" style="margin-top:6px">'+g.cps.length+' 条待首背</div><span class="arrow">&#8594;</span></div></div>';}).join(''):'<div class="empty">全部知识点都首背过了 可以去复习了</div>')+'</div>';
 h+='<div class="card"><div class="card-h"><span class="ic">&#128214;</span>章节</div><div class=\"cat-grid\">' + chapters.map(function(c){
   var cps=points.filter(function(p){return p.chapter_id==c.id;});
   var done=cps.filter(function(p){return firstDate(p.id);}).length;
@@ -906,9 +1040,22 @@ function quickReview(pointId,level){
   toast('已记录 '+LVL[level]);
   var hash=location.hash.replace(/^#/,'');
   var parts=hash.split('/');
+
+function promptNewChapter(){
+  var name=prompt('输入新章节名（如：第9章 企业国际化经营）');
+  if(!name||!name.trim())return;
+  name=name.trim();
+  if(chapters.some(function(c){return c.name===name;})){toast('该章节已存在');return;}
+  supabase.from('kb_chapters').insert([{name:name}]).select('*').then(function(r){
+    if(r.error){console.error(r.error);toast('新建失败：'+r.error.message);return;}
+    toast('已新建章节：'+name);
+    loadAll().then(function(){renderHome();});
+  }).catch(function(err){console.error(err);toast('新建失败');});
+}
   if(parts[0]==='chapter')renderChapter(parts[1]);
   else if(parts[0]==='detail')renderDetail(parts[1]);
   else if(parts[0]==='day')renderDay(parts[1]);
+  else if(parts[0]==='eb')renderEbPage();
   else if(parts[0]==='stat')renderStat(parts[1]);
   else renderHome();
  };
