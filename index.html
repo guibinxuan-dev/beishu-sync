@@ -619,6 +619,10 @@ function router(){
   else if(parts[1]==='answer')renderQuizAnswer();
   else if(parts[1]==='hist')renderQuizHistory();
   else renderQuizHome();
+ }else if(parts[0]==='eb'){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.getElementById('page-detail').classList.add('on');
+  renderEbPage();
  }else if(parts[0]==='due'){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
   document.getElementById('page-detail').classList.add('on');
@@ -1121,6 +1125,7 @@ function quizPickPool(){
   });
   console.log('[quiz] 今日已默ID集合',Object.keys(done),'全部可默',pool.length);
   var left=pool.filter(function(p){return !done[p.id];});
+  if(!left.length){left=pool.slice();}
   console.log('[quiz] 候选池',left.length,'题');
   return left;
  }catch(e){ console.error('quizPickPool 失败',e); return pool; }
@@ -1163,7 +1168,7 @@ function pickQuiz(extra){
    var dueFirst=cand.filter(function(p){return dueIds.indexOf(p.id)>=0;});
    // 第二优先：今天已默过但分数<60 的
    var low=cand.filter(function(p){
-    var my=all.filter(function(q){return q.item_id==p.id;});
+    var my=all.filter(function(q){(q.point_id!=null?q.point_id:q.item_id)==p.id;});
     if(!my.length)return false;
     var last=my.sort(function(a,b){return b.created_at.localeCompare(a.created_at);})[0];
     return last.score!=null&&+last.score<60;
@@ -1178,7 +1183,7 @@ function pickQuiz(extra){
    nav('quiz/answer');
   }else{
    // 额外题：排除今天已默过的
-   var doneIds=todayAll.map(function(q){return q.item_id;});
+   var doneIds=todayAll.map(function(q){return q.point_id!=null?q.point_id:(q.item_id!=null?q.item_id:null);}).filter(function(x){return x!=null;});
    var left=pool.filter(function(p){return doneIds.indexOf(p.id)<0;});
    if(!left.length){toast('今天的知识点都默过一遍了 明天再来');return;}
    left.sort(function(a,b){
@@ -1327,7 +1332,7 @@ async function submitQuiz(){
  var t=quizTodayKey();
  var isExtra=!!quizExtraCount;
  var rate=Math.round(score/total*100),lv=quizRateLevel(rate);
- var payload={point_id:quizCur.id,chapter_id:quizCur.chapter_id||null,score:Math.round(score),total:Math.round(total),rate:rate,level:lv.key,note:note||null,extra:isExtra,created_at:new Date().toISOString()};
+ var payload={point_id:(quizCur.point_id!=null?quizCur.point_id:quizCur.id),chapter_id:quizCur.chapter_id||null,score:Math.round(score),total:Math.round(total),rate:rate,level:lv.key,note:note||null,extra:isExtra,created_at:new Date().toISOString()};
  try{
   var r=await rest('/kb_quizzes?select=*','POST',payload);
   var saved=(r&&r[0])?r[0]:payload;
