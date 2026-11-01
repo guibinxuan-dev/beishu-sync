@@ -419,7 +419,7 @@ function pointNotes(id){return notes.filter(function(n){return n.point_id==id;})
 function lastLevel(id){var rs=pointReviews(id);return rs.length?rs[rs.length-1].level:0;}
 function firstDate(id){var rs=pointReviews(id);return rs.length?rs[0].review_date:null;}
 function metaOf(id){return metas[id]||null;}
-function lastMasterDate(id){var m=metaOf(id);if(m&&m.last_mastered)return m.last_mastered;return firstDate(id);}
+function lastMasterDate(id){var m=metaOf(id);var rs=pointReviews(id);var fr=null;for(var i=rs.length-1;i>=0;i--){if(rs[i].level>=4){fr=rs[i].review_date;break;}}if(!fr&&rs.length)fr=rs[rs.length-1].review_date;if(m&&m.last_mastered){if(!fr)return m.last_mastered;return m.last_mastered>fr?m.last_mastered:fr;}return fr||firstDate(id);}
 function fadeDays(id){var d=lastMasterDate(id);if(!d)return -1;return daysBetween(d,ts());}
 function fadeColor(id){
  var l=lastLevel(id);
@@ -427,9 +427,9 @@ function fadeColor(id){
  if(!d)return null;
  var days=daysBetween(d,ts());
  var fresh=l>=4?1:0.45;
- var t=Math.max(0,Math.min(1,fresh-days/15));
+ var t=Math.max(0,Math.min(1,fresh-days/8));
  var stops=[[34,197,94],[163,211,74],[224,168,46],[245,158,77],[248,113,113]];
- var seg=t*4;var i=Math.min(3,Math.floor(seg));var f=seg-i;
+ var seg=(1-t)*4;var i=Math.min(3,Math.floor(seg));var f=seg-i;
  var c=stops[i],n=stops[i+1];
  var r=Math.round(c[0]+(n[0]-c[0])*f),g=Math.round(c[1]+(n[1]-c[1])*f),b=Math.round(c[2]+(n[2]-c[2])*f);
  return 'rgb('+r+','+g+','+b+')';
@@ -472,8 +472,10 @@ function ebNodeDate(firstDateStr, nodeIndex){
   return addDaysStr(firstDateStr, n);
 }
 function ebPlanOf(pointId){
+  var _pp=points.filter(function(x){return x.id==pointId;})[0];
   var rs=(pointReviews(pointId)||[]).slice().sort(function(a,b){return (a.review_date||'').localeCompare(b.review_date||'');});
-  var first=rs.length?rs[0].review_date:null;
+  if(_pp&&_pp.eb_start)rs=rs.filter(function(r){return (r.review_date||'')>=_pp.eb_start;});
+  var first=(_pp&&_pp.eb_start)?_pp.eb_start:(rs.length?rs[0].review_date:null);
   if(!first)return null;
   var today=ts();
   var nodes=EB_NODES.map(function(day,i){
@@ -778,7 +780,7 @@ function dueBatchDel(){
 var noteTimers={};
 function onNote(id,val){
  clearTimeout(noteTimers[id]);
- var v=val.trim();
+ var v=String(val==null?'':val).trim();
  noteTimers[id]=setTimeout(function(){
   var nd=pointNotes(id)[0];
   if(nd){
@@ -1028,7 +1030,7 @@ function chName(id){var c=chOf(id);return c?c.name:'';}
 function upsertMeta(pointId,date,level){
  var m=metaOf(pointId);
  if(m){
-  if(m.last_mastered>=date)return;
+  if(m.last_mastered>date)return;
   rest('/kb_meta?id=eq.'+m.id,'PATCH',{last_mastered:date,master_level:level}).then(function(){m.last_mastered=date;m.master_level=level;});
  }else{
   rest('/kb_meta?select=*','POST',{point_id:pointId,last_mastered:date,master_level:level}).then(function(r){
@@ -1038,10 +1040,19 @@ function upsertMeta(pointId,date,level){
 }
 function quickReview(pointId,level){
  var t=ts();
+ var _p=points.filter(function(x){return x.id==pointId;})[0];
+ var overDue=false;
+ if(_p){var _fd=fadeDays(pointId);if(_fd>=8)overDue=true;if(!overDue&&_p.eb_next&&t>_p.eb_next)overDue=true;}
  var exist=reviews.filter(function(r){return r.point_id==pointId&&r.review_date===t;})[0];
  var after=function(){
-  if(level>=4)upsertMeta(pointId,t,level);
-  toast('已记录 '+LVL[level]);
+  if(level>=4){
+   upsertMeta(pointId,t,level);
+   if(overDue&&_p){
+    _p.eb_start=t;_p.eb_stage=1;_p.eb_next=addDaysStr(t,EB_NODES[0]);
+    rest('/kb_points?id=eq.'+pointId,'PATCH',{eb_start:t}).catch(function(){});
+   }
+  }
+  toast((overDue&&level>=4?'逾期，已重新开始 · ':'已记录 ')+LVL[level]);
   var hash=location.hash.replace(/^#/,'');
   var parts=hash.split('/');
 
@@ -1769,7 +1780,7 @@ function renderEnDetail(id){
 var enNoteTimer=null;
 function enNote(id,val){
  clearTimeout(enNoteTimer);
- var v=val.trim();
+ var v=String(val==null?'':val).trim();
  var d=enToday();
  enNoteTimer=setTimeout(function(){
   // 本地优先
@@ -2052,7 +2063,7 @@ function renderSwDetail(id){
 var swNoteTimer=null;
 function swNote(id,val){
  clearTimeout(swNoteTimer);
- var v=val.trim();var d=swToday();
+ var v=String(val==null?'':val).trim();var d=swToday();
  var key='note_'+id;
  swNoteTimer=setTimeout(function(){
   var ns=swNotes.filter(function(n){return (n.template_id||n.sw_id)==id;}).sort(function(a,b){return String(b.note_date||b.date||'').localeCompare(String(a.note_date||a.date||''));});
