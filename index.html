@@ -351,6 +351,24 @@ body.light .sw-bar .track{background:rgba(0,0,0,.07)}
 .es-prev{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:15px 16px;
   font-size:14px;line-height:2;white-space:pre-wrap;word-break:break-word;max-height:340px;overflow-y:auto}
 .es-ph{background:rgba(224,168,46,.18);color:#e0a82e;border-radius:5px;padding:1px 5px;font-size:13px}
+.es-tplbox{margin-bottom:4px}
+.es-tpl{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:17px 19px}
+.es-tpl p{margin:0 0 16px;line-height:2.2;font-size:14.5px;color:#dfe5ee;word-break:break-word}
+.es-tpl p:last-child{margin-bottom:0}
+.es-in{display:inline-block;background:#10141c;border:1px dashed #6b7a99;border-radius:6px;color:#7dd3a8;
+  padding:3px 9px;font-size:14px;font-family:inherit;vertical-align:middle;margin:0 2px;min-width:80px}
+.es-in::placeholder{color:#5a6478;font-size:12px}
+.es-in:focus{outline:none;border-color:var(--acc);background:#151b26;box-shadow:0 0 0 2px rgba(124,155,255,.18)}
+.es-in.ok{border-style:solid;border-color:#34d39988;background:#132019}
+.es-in-m{display:block;width:100%;margin:8px 0;background:#10141c;border:1px dashed #6b7a99;border-radius:8px;
+  color:#7dd3a8;padding:8px 11px;font-size:14px;font-family:inherit;line-height:1.75;resize:vertical;min-height:54px}
+.es-in-m::placeholder{color:#5a6478;font-size:12px}
+.es-in-m:focus{outline:none;border-color:var(--acc);background:#151b26}
+.es-in-m.ok{border-style:solid;border-color:#34d39988;background:#132019}
+.es-prog{display:flex;align-items:center;gap:11px;font-size:12.5px;color:var(--sub);margin-bottom:11px;flex-wrap:wrap}
+.es-pbar{flex:0 1 220px;height:6px;background:#232833;border-radius:4px;overflow:hidden}
+.es-pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#34d399,#7c9cff);transition:width .25s}
+@media(max-width:680px){.es-tpl{padding:14px}.es-tpl p{font-size:13.5px;line-height:2}}
 .es-bar{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
 .es-bar button{flex:0 0 auto;padding:9px 18px;border-radius:10px;border:none;background:var(--acc);
   color:#fff;font-size:13.5px;font-weight:600;cursor:pointer}
@@ -2264,40 +2282,68 @@ function esTpl(){
   return ['open','body','end'].map(function(k){var o=esOne(k);return o?o.content:'';})
     .filter(function(s){return s&&s.trim();}).join('\n\n');
 }
-/* 提取模板里所有 [占位符]（去重、保序） */
+/* 提取模板里所有 [占位符]，带出现顺序索引（同名空各自独立填，才是真记忆） */
 function esSlots(){
-  var t=esTpl(),out=[],seen={};
-  (t.match(/\[[^\]]+\]/g)||[]).forEach(function(s){ if(!seen[s]){seen[s]=1;out.push(s);} });
+  var t=esTpl(),out=[];
+  (t.match(/\[[^\]]+\]/g)||[]).forEach(function(s,i){ out.push({i:i,ph:s,raw:s.slice(1,-1)}); });
   return out;
 }
-/* 把填写值放回模板，生成预览 HTML（未填的标黄） */
-function esPreview(){
-  var t=esTpl();
-  esSlots().forEach(function(s){
-    var v=String(ES_FILL[s]||'').trim();
-    var rep=v?esEsc(v):'<span class="es-ph">'+esEsc(s)+'</span>';
-    t=t.split(s).join(rep);
+function esAttr(v){return esEsc(v).replace(/"/g,'&quot;');}
+/* 按顺序逐个替换：同名空不联动，各填各的 */
+function esRenderFilled(t,forText){
+  var idx=0;
+  return String(t||'').replace(/\[[^\]]+\]/g,function(m){
+    var v=String(ES_FILL[idx]||'').trim(); idx++;
+    if(forText) return v||'';
+    return v?esEsc(v):'<span class="es-ph">'+esEsc(m)+'</span>';
   });
-  return t;
 }
-/* 纯文本版（保存用） */
-function esFilledText(){
-  var t=esTpl();
-  esSlots().forEach(function(s){
-    var v=String(ES_FILL[s]||'').trim();
-    t=t.split(s).join(v||'');
+function esPreview(){return esRenderFilled(esTpl(),false);}
+function esFilledText(){return esRenderFilled(esTpl(),true);}
+function esDoneCount(){var n=0;esSlots().forEach(function(s){if(String(ES_FILL[s.i]||'').trim())n++;});return n;}
+/* 内联填空：把 [占位符] 就地换成输入框，保留整句上下文 */
+function esInlineTpl(){
+  var t=esTpl(), idx=0;
+  var html=String(t||'').replace(/\[[^\]]+\]/g,function(m){
+    var i=idx++, raw=m.slice(1,-1), v=String(ES_FILL[i]==null?'':ES_FILL[i]);
+    var ok=v.trim()?' ok':'';
+    if(/[，,。;；]/.test(raw)||raw.length>22){
+      return '<textarea id="esf'+i+'" class="es-in-m'+ok+'" rows="2" placeholder="'+esAttr(raw)+'"'
+        +' oninput="esFill('+i+',this.value)">'+esEsc(v)+'</textarea>';
+    }
+    var w=Math.max(96,Math.min(300,raw.length*15+76));
+    return '<input id="esf'+i+'" class="es-in'+ok+'" style="width:'+w+'px" value="'+esAttr(v)+'"'
+      +' placeholder="'+esAttr(raw)+'" oninput="esFill('+i+',this.value)">';
   });
-  return t;
+  return '<div class="es-tpl"><p>'+html.replace(/\n\n/g,'</p><p>')+'</p></div>';
 }
 function esPick(kind,id){
   ES_SEL[kind]=(ES_SEL[kind]===id)?0:id;   // 再点一次取消
+  ES_FILL={};                              // 换模板后原填写失效
   renderEssay();
 }
 function esReset(){ES_SEL={open:0,body:0,end:0};ES_FILL={};renderEssay();}
-function esFill(slot,val){
-  ES_FILL[slot]=val;
-  var p=document.getElementById('esPrev');
-  if(p)p.innerHTML=esPreview();
+function esFill(i,val){
+  ES_FILL[i]=val;
+  var el=document.getElementById('esf'+i);
+  if(el){ if(String(val||'').trim())el.classList.add('ok'); else el.classList.remove('ok'); }
+  var pv=document.getElementById('esPrev'); if(pv)pv.innerHTML=esPreview();
+  var n=esSlots().length, d=esDoneCount();
+  var pg=document.getElementById('esProgN'); if(pg)pg.textContent=d+'/'+n;
+  var pb=document.getElementById('esProgI'); if(pb)pb.style.width=(n?(d/n*100):0)+'%';
+}
+/* 跳到下一个还没填的空 */
+function esNext(){
+  var s=esSlots();
+  for(var k=0;k<s.length;k++){
+    if(!String(ES_FILL[s[k].i]||'').trim()){
+      var el=document.getElementById('esf'+s[k].i);
+      if(el){ el.focus(); try{el.scrollIntoView({block:'center',behavior:'smooth'});}catch(e){}
+              toast('第 '+(k+1)+' 个空 · '+s[k].raw); }
+      return;
+    }
+  }
+  toast('全部填完啦');
 }
 function esTitle(){
   var o=esOne('open'),b=esOne('body'),e=esOne('end');
@@ -2329,7 +2375,7 @@ function esSave(){
   rest('/kb_essay_practice?select=*','POST',row)
     .then(function(r){
       if(r&&r[0])ES_LIST.unshift(r[0]); else ES_LIST.unshift(row);
-      toast('练笔已保存（'+esSlots().length+' 空 · 已填 '+Object.keys(ES_FILL).filter(function(k){return String(ES_FILL[k]||'').trim();}).length+' 空）');
+      toast('练笔已保存 · 已填 '+esDoneCount()+'/'+esSlots().length);
     })
     .catch(function(){
       row.id=Date.now(); ES_LIST.unshift(row);
@@ -2350,7 +2396,18 @@ function esLoadOne(id){
   var r=ES_LIST.filter(function(x){return x.id==id;})[0];
   if(!r)return;
   ES_SEL={open:r.open_id||0,body:r.body_id||0,end:r.end_id||0};
-  try{ES_FILL=JSON.parse(r.fills||'{}');}catch(e){ES_FILL={};}
+  ES_FILL={};
+  try{
+    var f=JSON.parse(r.fills||'{}'), now=[];
+    try{now=esSlots();}catch(e){}
+    Object.keys(f).forEach(function(k){
+      if(/^\d+$/.test(k)){ ES_FILL[k]=f[k]; }
+      else if(String(k).charAt(0)==='['){          // 兼容旧版：按占位符文本匹配填充
+        var raw=String(k).slice(1,-1);
+        now.forEach(function(s){ if(s.raw===raw) ES_FILL[s.i]=f[k]; });
+      }
+    });
+  }catch(e){ES_FILL={};}
   renderEssay();
   toast('已载入该练笔，可继续修改');
 }
@@ -2382,32 +2439,27 @@ function renderEssay(){
     h+='</div></div>';
   });
 
-  /* --- 填空区 --- */
-  var slots=esSlots();
+  /* --- 内联填空区 --- */
+  var slots=esSlots(), done=esDoneCount();
   if(ES_SEL.open||ES_SEL.body||ES_SEL.end){
-    h+='<div class="es-sec"><div class="es-sec-t"><span class="n">&#9998;</span>填空 '
-      +'<span style="font-size:11.5px;color:var(--sub);font-weight:400">共 '+slots.length+' 个空 · 边填边看下方成文</span></div>';
+    h+='<div class="es-sec"><div class="es-sec-t"><span class="n">&#9998;</span>在模板上填空 '
+      +'<span style="font-size:11.5px;color:var(--sub);font-weight:400">整篇模板 · 空已嵌进原句里 · 边看上下文边填</span></div>';
     if(!slots.length){
       h+='<div class="empty">所选段落没有可填的空（纯固定句模板），可直接背诵或换一段</div>';
     }else{
-      slots.forEach(function(s,i){
-        var raw=s.slice(1,-1);
-        var long=/[，,。;；]/.test(raw)||raw.length>22;
-        var v=ES_FILL[s]||'';
-        h+='<div class="es-blank"><div class="lb">'+esEsc(raw)+'</div>';
-        if(long)h+='<textarea oninput="esFill('+JSON.stringify(s).replace(/"/g,'&quot;')+',this.value)">'+esEsc(v)+'</textarea>';
-        else h+='<input value="'+esEsc(v)+'" oninput="esFill('+JSON.stringify(s).replace(/"/g,'&quot;')+',this.value)">';
-        h+='</div>';
-      });
+      h+='<div class="es-prog"><span>已填 <b id="esProgN" style="color:var(--acc)">'+done+'/'+slots.length+'</b></span>'
+        +'<span class="es-pbar"><i id="esProgI" style="width:'+(slots.length?(done/slots.length*100):0)+'%"></i></span>'
+        +'<button class="ghost sm" onclick="esNext()">跳到下一个未填</button></div>';
+      h+=esInlineTpl();
     }
-    /* --- 预览 --- */
-    h+='<div class="es-sec-t" style="margin-top:16px"><span class="n">&#128065;</span>成文预览</div>';
+    /* --- 成文 --- */
+    h+='<div class="es-sec-t" style="margin-top:18px"><span class="n">&#128065;</span>成文（干净版 · 未填处标黄）</div>';
     h+='<div class="es-prev" id="esPrev">'+esPreview()+'</div>';
     h+='<div class="es-bar"><button onclick="esSave()">保存这篇练笔</button>'
       +'<button class="ghost" onclick="esReset()">清空重搭</button>'
       +'<button class="ghost" onclick="esCopy()">复制全文</button></div>';
   }else{
-    h+='<div class="empty" style="padding:26px 0">在上面各选一段（可只选其中一段），这里就会出现要填的空</div>';
+    h+='<div class="empty" style="padding:26px 0">在上面各选一段（可只选其中一段），这里就会出现整篇模板和要填的空</div>';
   }
 
   /* --- 历史 --- */
