@@ -327,6 +327,45 @@ body.light .sw-bar .track{background:rgba(0,0,0,.07)}
 .eb-dot.done{background:#dcfce7;color:#16a34a;border-color:#86efac}
 .eb-dot.today{background:#7c4dff;color:#fff;border-color:#7c4dff;box-shadow:0 0 0 3px rgba(124,77,255,.18)}
 .eb-dot.overdue{background:#fee2e2;color:#dc2626;border-color:#fca5a5}
+
+/* ========== 作文练笔模块（ESSAY）========== */
+.es-wrap{max-width:100%}
+.es-sec{margin-bottom:18px}
+.es-sec-t{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.es-sec-t .n{display:inline-flex;width:20px;height:20px;border-radius:6px;background:var(--acc);color:#fff;
+  font-size:11px;align-items:center;justify-content:center;font-weight:700}
+.es-opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.es-opt{border:1px solid var(--line);border-radius:12px;padding:11px 13px;cursor:pointer;background:var(--card2);
+  transition:.15s;position:relative}
+.es-opt:hover{border-color:var(--acc)}
+.es-opt.on{border-color:var(--acc);background:rgba(124,155,255,.12);box-shadow:0 0 0 2px rgba(124,155,255,.18)}
+.es-opt h4{font-size:13px;font-weight:700;margin-bottom:5px;line-height:1.45}
+.es-opt p{font-size:11.5px;color:var(--sub);line-height:1.6;max-height:52px;overflow:hidden}
+.es-opt .ck{position:absolute;top:8px;right:9px;color:var(--acc);font-size:13px;font-weight:800}
+.es-blank{display:grid;grid-template-columns:180px 1fr;gap:10px 12px;align-items:start;margin-bottom:10px}
+.es-blank .lb{font-size:12.5px;color:var(--sub);padding-top:8px;line-height:1.5;word-break:break-all}
+.es-blank input,.es-blank textarea{width:100%;background:var(--card2);border:1px solid var(--line);
+  border-radius:10px;color:var(--txt);padding:8px 11px;font-size:13.5px;font-family:inherit}
+.es-blank textarea{min-height:56px;resize:vertical}
+.es-blank input:focus,.es-blank textarea:focus{outline:none;border-color:var(--acc)}
+.es-prev{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:15px 16px;
+  font-size:14px;line-height:2;white-space:pre-wrap;word-break:break-word;max-height:340px;overflow-y:auto}
+.es-ph{background:rgba(224,168,46,.18);color:#e0a82e;border-radius:5px;padding:1px 5px;font-size:13px}
+.es-bar{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.es-bar button{flex:0 0 auto;padding:9px 18px;border-radius:10px;border:none;background:var(--acc);
+  color:#fff;font-size:13.5px;font-weight:600;cursor:pointer}
+.es-bar button.ghost{background:transparent;border:1px solid var(--line);color:var(--sub)}
+.es-hist{margin-top:8px;border-top:1px solid var(--line);padding-top:14px}
+.es-hi{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.es-hi:last-child{border-bottom:none}
+.es-hi .t{flex:1;font-size:13px;min-width:0}
+.es-hi .t b{display:block;font-size:13.5px;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.es-hi .t span{font-size:11.5px;color:var(--sub)}
+.es-hi button{padding:5px 11px;font-size:12px;border-radius:8px;border:1px solid var(--line);
+  background:transparent;color:var(--sub);cursor:pointer}
+.es-hi button.del:hover{color:#ef4444;border-color:#ef444455}
+@media(max-width:680px){.es-blank{grid-template-columns:1fr;gap:5px}.es-blank .lb{padding-top:0}}
+
 </style>
 </head>
 <body>
@@ -342,6 +381,7 @@ body.light .sw-bar .track{background:rgba(0,0,0,.07)}
  <button class="ghost" id="darkBtn" onclick="toggleTheme()">切换主题</button>
  <button class="ghost" onclick="nav('english/w')">✍️ 小作文</button>
  <button class="ghost" onclick="nav('english')">🇬🇧 大作文</button>
+ <button class="ghost" onclick="nav('essay')">📝 作文练笔</button>
 </div>
 <div class="mask" id="mask"><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"></div>
@@ -742,7 +782,7 @@ function renderHome(){
  h+='<div class="stat" onclick="nav(\'stat/total\')"><b>'+reviews.length+'</b><span>累计背诵</span></div>';
  h+='</div>';
  h+='<div class="card en-card" id="swCard"><div class="card-h"><span class="ic">&#9998;</span>考研英语 · 小作文 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">背熟才解锁 · 3 天一档</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;english/w&quot;)">去背诵</button></div></div><div class="empty">正在准备今日小作文…</div></div>';
- h+='<div class="card en-card" id="enCard"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 片 · 应用验证</span></div><div class="empty">正在准备今日语料…</div></div>';
+ h+='<div class="card en-card" style="border-color:#7c9bff33"><div class="card-h"><span class="ic">&#128221;</span>作文练笔 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">开头 + 主体 + 结尾 自由搭配 · 填空成文</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;essay&quot;)">去练笔</button></div></div><div class="empty" style="cursor:pointer" onclick="nav(&quot;essay&quot;)">选一段开头、一段主体、一段结尾，拼成完整模板后逐空填写 →</div></div><div class="card en-card" id="enCard"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 片 · 应用验证</span></div><div class="empty">正在准备今日语料…</div></div>';
   var ebToday=ebTodayList().length,ebOver=ebOverdueList().length;
   h+='<div class="card due-card" style="border-color:#7c4dff33"><div class="card-h"><span class="ic">&#128204;</span>今日艾宾浩斯到期 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+ebToday+' 个知识点按节点排队</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;due&quot;)">去复习</button></div></div><div class="due-summary" onclick="nav(&quot;eb&quot;)"><div class="due-num"><b id="dueNum" style="color:#7c4dff">'+ebToday+'</b><span>条今日到期 · '+ebOver+' 条逾期</span></div><div class="due-line"><div class="due-bar" style="--brand:#7c4dff"><i id="dueBar" style="width:'+(ebToday?100:0)+'%;background:#7c4dff"></i></div><span id="dueRate">按 1/2/4/7/15/30 天节奏推进</span></div></div></div>';
   h+=renderEbCurveCard();
@@ -1539,6 +1579,11 @@ function doSearch(q){
 	  else{enView='home';renderEnglish();}
 	  window.scrollTo(0,0);return;
 	 }
+	 if(parts[0]==='essay'){
+	  document.getElementById('page-detail').classList.add('on');
+	  renderEssay();
+	  window.scrollTo(0,0);return;
+	 }
  window.scrollTo(0,0);
 }
 function toggleTheme(){
@@ -1557,7 +1602,7 @@ function loadAll(){
  .then(function(p){points=p||[];return rest('/kb_reviews?select=*&order=review_date.desc');})
  .then(function(r){reviews=r||[];return rest('/kb_notes?select=*&order=note_date.desc,created_at.desc');})
  .then(function(n){notes=n||[];return rest('/kb_meta?select=*');})
- .then(function(m){metas={};(m||[]).forEach(function(x){metas[x.point_id]=x;});swLoadReviews();enSeed();router();})
+ .then(function(m){metas={};(m||[]).forEach(function(x){metas[x.point_id]=x;});swLoadReviews();enSeed();esLoad();router();})
  .catch(function(e){console.error(e);toast('加载失败');});
 }
 (function(){
@@ -2189,6 +2234,206 @@ function swMark(id,level){
  }
  try{renderWriting();if(swView==='detail')renderSwDetail(id);}catch(e){}
 }
+
+/* =================== 作文练笔模块（ESSAY）===================
+   开头 / 主体 / 结尾 三段自由搭配 → 提取 [占位符] 逐空填写 → 合成完整作文
+   纯练习本：不判分 · 不进艾宾浩斯 · 只记录练笔历史
+=========================================================== */
+var ES_SEL={open:0,body:0,end:0};   // 当前选中的段落 id（0 = 未选）
+var ES_FILL={};                     // 占位符 -> 填写内容
+var ES_LIST=[];                     // 历史练笔
+var ES_LSKEY='kb_essay_practice';   // 降级本地存储键
+
+function esEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function esToday(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+
+/* 按 key 前缀把 A-模板 分成 开头(P1) / 主体(P2) / 结尾(P3) */
+function esParts(kind){
+  var reg={open:/^P1/,body:/^P2/,end:/^P3/}[kind];
+  return EN_DATA.filter(function(x){return x.group==='A-模板'&&reg.test(x.key);});
+}
+function esOne(kind){return EN_DATA.filter(function(x){return x.id==ES_SEL[kind];})[0]||null;}
+/* 三段拼起来的原始模板 */
+function esTpl(){
+  return ['open','body','end'].map(function(k){var o=esOne(k);return o?o.content:'';})
+    .filter(function(s){return s&&s.trim();}).join('\n\n');
+}
+/* 提取模板里所有 [占位符]（去重、保序） */
+function esSlots(){
+  var t=esTpl(),out=[],seen={};
+  (t.match(/\[[^\]]+\]/g)||[]).forEach(function(s){ if(!seen[s]){seen[s]=1;out.push(s);} });
+  return out;
+}
+/* 把填写值放回模板，生成预览 HTML（未填的标黄） */
+function esPreview(){
+  var t=esTpl();
+  esSlots().forEach(function(s){
+    var v=String(ES_FILL[s]||'').trim();
+    var rep=v?esEsc(v):'<span class="es-ph">'+esEsc(s)+'</span>';
+    t=t.split(s).join(rep);
+  });
+  return t;
+}
+/* 纯文本版（保存用） */
+function esFilledText(){
+  var t=esTpl();
+  esSlots().forEach(function(s){
+    var v=String(ES_FILL[s]||'').trim();
+    t=t.split(s).join(v||'');
+  });
+  return t;
+}
+function esPick(kind,id){
+  ES_SEL[kind]=(ES_SEL[kind]===id)?0:id;   // 再点一次取消
+  renderEssay();
+}
+function esReset(){ES_SEL={open:0,body:0,end:0};ES_FILL={};renderEssay();}
+function esFill(slot,val){
+  ES_FILL[slot]=val;
+  var p=document.getElementById('esPrev');
+  if(p)p.innerHTML=esPreview();
+}
+function esTitle(){
+  var o=esOne('open'),b=esOne('body'),e=esOne('end');
+  var ts=[]; if(o)ts.push(o.name.replace(/^.*?P1[-·]?/,'')); 
+  if(b)ts.push(b.name.replace(/^.*?P2[-·]?/,''));
+  if(e)ts.push('通用结尾');
+  return ts.filter(Boolean).join(' + ')||'未命名练笔';
+}
+
+/* ---------- 存 / 取 ---------- */
+function esLoad(){
+  rest('/kb_essay_practice?select=*&order=id.desc&limit=60')
+    .then(function(r){ ES_LIST=r||[]; })
+    .catch(function(){
+      try{ES_LIST=JSON.parse(localStorage.getItem(ES_LSKEY)||'[]');}catch(e){ES_LIST=[];}
+    });
+}
+function esSave(){
+  var t=esTpl();
+  if(!t.trim()){toast('先选一段开头、主体或结尾');return;}
+  var row={
+    title:esTitle(),
+    open_id:ES_SEL.open||null, body_id:ES_SEL.body||null, end_id:ES_SEL.end||null,
+    template_text:t,
+    fills:JSON.stringify(ES_FILL),
+    filled_text:esFilledText(),
+    practice_date:esToday()
+  };
+  rest('/kb_essay_practice?select=*','POST',row)
+    .then(function(r){
+      if(r&&r[0])ES_LIST.unshift(r[0]); else ES_LIST.unshift(row);
+      toast('练笔已保存（'+esSlots().length+' 空 · 已填 '+Object.keys(ES_FILL).filter(function(k){return String(ES_FILL[k]||'').trim();}).length+' 空）');
+    })
+    .catch(function(){
+      row.id=Date.now(); ES_LIST.unshift(row);
+      try{localStorage.setItem(ES_LSKEY,JSON.stringify(ES_LIST.slice(0,60)));}catch(e){}
+      toast('已保存到本地（云端表未建）');
+    });
+}
+function esDel(id){
+  rest('/kb_essay_practice?id=eq.'+id,'DELETE')
+    .then(function(){ES_LIST=ES_LIST.filter(function(x){return x.id!=id;});renderEssay();})
+    .catch(function(){
+      ES_LIST=ES_LIST.filter(function(x){return x.id!=id;});
+      try{localStorage.setItem(ES_LSKEY,JSON.stringify(ES_LIST));}catch(e){}
+      renderEssay();
+    });
+}
+function esLoadOne(id){
+  var r=ES_LIST.filter(function(x){return x.id==id;})[0];
+  if(!r)return;
+  ES_SEL={open:r.open_id||0,body:r.body_id||0,end:r.end_id||0};
+  try{ES_FILL=JSON.parse(r.fills||'{}');}catch(e){ES_FILL={};}
+  renderEssay();
+  toast('已载入该练笔，可继续修改');
+}
+
+/* ---------- 渲染 ---------- */
+function renderEssay(){
+  if(!EN_DATA||!EN_DATA.length){enSeed();}
+  var h='<div class="back" onclick="nav(\'\')">&#8592; 返回首页</div>';
+  h+='<div class="card es-wrap"><div class="card-h"><span class="ic">&#128221;</span>作文练笔 '
+    +'<span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'
+    +'开头 + 主体 + 结尾 自由搭配 · 填完即成文 · 纯练习本</span></div>';
+
+  /* --- 三段选择 --- */
+  var SEC=[['open','开头段 P1','引出材料 / 描述现象'],
+           ['body','主体段 P2','原因分析 / 论证展开'],
+           ['end','结尾段 P3','总结建议 / 展望收束']];
+  SEC.forEach(function(s){
+    var kind=s[0], ps=esParts(kind), cur=ES_SEL[kind];
+    h+='<div class="es-sec"><div class="es-sec-t"><span class="n">'+s[1].slice(-2)+'</span>'+s[1]
+      +'<span style="font-size:11.5px;color:var(--sub);font-weight:400">'+s[2]+'</span></div>';
+    h+='<div class="es-opts">';
+    ps.forEach(function(p){
+      var on=(cur===p.id);
+      h+='<div class="es-opt'+(on?' on':'')+'" onclick="esPick(\''+kind+'\','+p.id+')">'
+        +(on?'<span class="ck">&#10003;</span>':'')
+        +'<h4>'+esEsc(p.name)+'</h4><p>'+esEsc(String(p.content||'').slice(0,80))+'…</p></div>';
+    });
+    if(!ps.length)h+='<div class="empty">该段暂无可用模板</div>';
+    h+='</div></div>';
+  });
+
+  /* --- 填空区 --- */
+  var slots=esSlots();
+  if(ES_SEL.open||ES_SEL.body||ES_SEL.end){
+    h+='<div class="es-sec"><div class="es-sec-t"><span class="n">&#9998;</span>填空 '
+      +'<span style="font-size:11.5px;color:var(--sub);font-weight:400">共 '+slots.length+' 个空 · 边填边看下方成文</span></div>';
+    if(!slots.length){
+      h+='<div class="empty">所选段落没有可填的空（纯固定句模板），可直接背诵或换一段</div>';
+    }else{
+      slots.forEach(function(s,i){
+        var raw=s.slice(1,-1);
+        var long=/[，,。;；]/.test(raw)||raw.length>22;
+        var v=ES_FILL[s]||'';
+        h+='<div class="es-blank"><div class="lb">'+esEsc(raw)+'</div>';
+        if(long)h+='<textarea oninput="esFill('+JSON.stringify(s).replace(/"/g,'&quot;')+',this.value)">'+esEsc(v)+'</textarea>';
+        else h+='<input value="'+esEsc(v)+'" oninput="esFill('+JSON.stringify(s).replace(/"/g,'&quot;')+',this.value)">';
+        h+='</div>';
+      });
+    }
+    /* --- 预览 --- */
+    h+='<div class="es-sec-t" style="margin-top:16px"><span class="n">&#128065;</span>成文预览</div>';
+    h+='<div class="es-prev" id="esPrev">'+esPreview()+'</div>';
+    h+='<div class="es-bar"><button onclick="esSave()">保存这篇练笔</button>'
+      +'<button class="ghost" onclick="esReset()">清空重搭</button>'
+      +'<button class="ghost" onclick="esCopy()">复制全文</button></div>';
+  }else{
+    h+='<div class="empty" style="padding:26px 0">在上面各选一段（可只选其中一段），这里就会出现要填的空</div>';
+  }
+
+  /* --- 历史 --- */
+  h+='<div class="es-hist"><div class="es-sec-t"><span class="n">&#128203;</span>我的练笔 '
+    +'<span style="font-size:11.5px;color:var(--sub);font-weight:400">'+(ES_LIST?ES_LIST.length:0)+' 篇</span></div>';
+  if(!ES_LIST||!ES_LIST.length){
+    h+='<div class="empty">还没有保存过练笔</div>';
+  }else{
+    ES_LIST.slice(0,30).forEach(function(r){
+      var d=String(r.practice_date||'').slice(0,10)||'-';
+      h+='<div class="es-hi"><div class="t"><b>'+esEsc(r.title||'未命名练笔')+'</b>'
+        +'<span>'+esEsc(d)+' · '+String(r.filled_text||'').length+' 字符</span></div>'
+        +'<button onclick="esLoadOne('+r.id+')">载入</button>'
+        +'<button class="del" onclick="esDel('+r.id+')">删除</button></div>';
+    });
+  }
+  h+='</div>';
+  h+='<footer>作文练笔 · 模板来自「大作文 A-模板」· 纯练习本，不判分不排期</footer>';
+  h+='</div>';
+  document.getElementById('page-detail').innerHTML=h;
+}
+function esCopy(){
+  var t=esFilledText();
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(function(){toast('已复制到剪贴板');},function(){toast('复制失败，请手动选中');});
+  }else{
+    var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');toast('已复制');}catch(e){toast('复制失败');}
+    document.body.removeChild(ta);
+  }
+}
+
 </script>
 </body>
 </html>
