@@ -712,6 +712,12 @@ function router(){
   else{enView='home';renderEnglish();}
   window.scrollTo(0,0);return;
  }
+ if(parts[0]==='essay'){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.getElementById('page-detail').classList.add('on');
+  renderEssay();
+  window.scrollTo(0,0);return;
+ }
  if(parts[0]==='chapter'){
   document.getElementById('page-chapter').classList.add('on');
   renderChapter(parts[1]);
