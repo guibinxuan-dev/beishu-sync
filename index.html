@@ -806,7 +806,7 @@ function renderHome(){
  h+='<div class="stat" onclick="nav(\'stat/total\')"><b>'+reviews.length+'</b><span>累计背诵</span></div>';
  h+='</div>';
  h+='<div class="card en-card" id="swCard"><div class="card-h"><span class="ic">&#9998;</span>考研英语 · 小作文 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">背熟才解锁 · 3 天一档</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;english/w&quot;)">去背诵</button></div></div><div class="empty">正在准备今日小作文…</div></div>';
- h+='<div class="card en-card" style="border-color:#7c9bff33"><div class="card-h"><span class="ic">&#128221;</span>作文练笔 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">开头 + 主体 + 结尾 自由搭配 · 填空成文</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;essay&quot;)">去练笔</button></div></div><div class="empty" style="cursor:pointer" onclick="nav(&quot;essay&quot;)">选一段开头、一段主体、一段结尾，拼成完整模板后逐空填写 →</div></div><div class="card en-card" id="enCard"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 片 · 应用验证</span></div><div class="empty">正在准备今日语料…</div></div>';
+ h+='<div class="card en-card" style="border-color:#7c9bff33"><div class="card-h"><span class="ic">&#128221;</span>作文练笔 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">大作文三段搭配 + 小作文整篇模板 · 填空成文</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;essay&quot;)">去练笔</button></div></div><div class="empty" style="cursor:pointer" onclick="nav(&quot;essay&quot;)">大作文选三段搭配 / 小作文选整篇模板，在模板上直接填空 →</div></div><div class="card en-card" id="enCard"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 片 · 应用验证</span></div><div class="empty">正在准备今日语料…</div></div>';
   var ebToday=ebTodayList().length,ebOver=ebOverdueList().length;
   h+='<div class="card due-card" style="border-color:#7c4dff33"><div class="card-h"><span class="ic">&#128204;</span>今日艾宾浩斯到期 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+ebToday+' 个知识点按节点排队</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;due&quot;)">去复习</button></div></div><div class="due-summary" onclick="nav(&quot;eb&quot;)"><div class="due-num"><b id="dueNum" style="color:#7c4dff">'+ebToday+'</b><span>条今日到期 · '+ebOver+' 条逾期</span></div><div class="due-line"><div class="due-bar" style="--brand:#7c4dff"><i id="dueBar" style="width:'+(ebToday?100:0)+'%;background:#7c4dff"></i></div><span id="dueRate">按 1/2/4/7/15/30 天节奏推进</span></div></div></div>';
   h+=renderEbCurveCard();
@@ -2267,6 +2267,8 @@ var ES_SEL={open:0,body:0,end:0};   // 当前选中的段落 id（0 = 未选）
 var ES_FILL={};                     // 占位符 -> 填写内容
 var ES_LIST=[];                     // 历史练笔
 var ES_LSKEY='kb_essay_practice';   // 降级本地存储键
+var ES_MODE='big';                  // big=大作文(三段搭配) / sw=小作文(整篇模板)
+var ES_SW_ID=0;                     // 小作文当前选中的模板 id
 
 function esEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function esToday(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
@@ -2277,8 +2279,18 @@ function esParts(kind){
   return EN_DATA.filter(function(x){return x.group==='A-模板'&&reg.test(x.key);});
 }
 function esOne(kind){return EN_DATA.filter(function(x){return x.id==ES_SEL[kind];})[0]||null;}
-/* 三段拼起来的原始模板 */
+/* 小作文：可选模板 = 有占位符的 L1 骨架 + L2 体裁（L3 语料无空，不选） */
+function esSwParts(){
+  if(typeof SW_DATA==='undefined'||!SW_DATA)return [];
+  return SW_DATA.filter(function(x){return x.layer!==3 && /\[/.test(String(x.fixed||''));});
+}
+function esSwOne(){
+  if(typeof SW_DATA==='undefined'||!SW_DATA)return null;
+  return SW_DATA.filter(function(x){return x.id==ES_SW_ID;})[0]||null;
+}
+/* 当前模板：大作文=三段拼接；小作文=整篇 fixed */
 function esTpl(){
+  if(ES_MODE==='sw'){var d=esSwOne();return d?String(d.fixed||''):'';}
   return ['open','body','end'].map(function(k){var o=esOne(k);return o?o.content:'';})
     .filter(function(s){return s&&s.trim();}).join('\n\n');
 }
@@ -2298,7 +2310,10 @@ function esRenderFilled(t,forText){
     return v?esEsc(v):'<span class="es-ph">'+esEsc(m)+'</span>';
   });
 }
-function esPreview(){return esRenderFilled(esTpl(),false);}
+function esPreview(){
+  var t=esRenderFilled(esTpl(),false);
+  return t.split(/\n\n/).map(function(x){return x.replace(/\n/g,'<br>');}).join('<br><br>');
+}
 function esFilledText(){return esRenderFilled(esTpl(),true);}
 function esDoneCount(){var n=0;esSlots().forEach(function(s){if(String(ES_FILL[s.i]||'').trim())n++;});return n;}
 /* 内联填空：把 [占位符] 就地换成输入框，保留整句上下文 */
@@ -2315,14 +2330,20 @@ function esInlineTpl(){
     return '<input id="esf'+i+'" class="es-in'+ok+'" style="width:'+w+'px" value="'+esAttr(v)+'"'
       +' placeholder="'+esAttr(raw)+'" oninput="esFill('+i+',this.value)">';
   });
-  return '<div class="es-tpl"><p>'+html.replace(/\n\n/g,'</p><p>')+'</p></div>';
+  var paras=html.split(/\n\n/).map(function(x){return x.replace(/\n/g,'<br>');});
+  return '<div class="es-tpl"><p>'+paras.join('</p><p>')+'</p></div>';
 }
 function esPick(kind,id){
+  if(kind==='sw'){                         // 小作文：选一篇整篇模板
+    ES_SW_ID=(ES_SW_ID===id)?0:id;
+    ES_FILL={}; renderEssay(); return;
+  }
   ES_SEL[kind]=(ES_SEL[kind]===id)?0:id;   // 再点一次取消
   ES_FILL={};                              // 换模板后原填写失效
   renderEssay();
 }
-function esReset(){ES_SEL={open:0,body:0,end:0};ES_FILL={};renderEssay();}
+function esMode(m){ if(ES_MODE===m)return; ES_MODE=m; ES_FILL={}; renderEssay(); }
+function esReset(){ES_SEL={open:0,body:0,end:0};ES_SW_ID=0;ES_FILL={};renderEssay();}
 function esFill(i,val){
   ES_FILL[i]=val;
   var el=document.getElementById('esf'+i);
@@ -2346,6 +2367,7 @@ function esNext(){
   toast('全部填完啦');
 }
 function esTitle(){
+  if(ES_MODE==='sw'){var d=esSwOne();return d?('小作文 · '+d.name):'未命名小作文';}
   var o=esOne('open'),b=esOne('body'),e=esOne('end');
   var ts=[]; if(o)ts.push(o.name.replace(/^.*?P1[-·]?/,'')); 
   if(b)ts.push(b.name.replace(/^.*?P2[-·]?/,''));
@@ -2361,26 +2383,42 @@ function esLoad(){
       try{ES_LIST=JSON.parse(localStorage.getItem(ES_LSKEY)||'[]');}catch(e){ES_LIST=[];}
     });
 }
+function esLocalSave(row){
+  row.id=row.id||Date.now(); ES_LIST.unshift(row);
+  try{localStorage.setItem(ES_LSKEY,JSON.stringify(ES_LIST.slice(0,60)));}catch(e){}
+  toast('已保存到本地（云端表未建/不可用）');
+}
 function esSave(){
   var t=esTpl();
-  if(!t.trim()){toast('先选一段开头、主体或结尾');return;}
+  if(!t.trim()){toast(ES_MODE==='sw'?'先选一篇小作文模板':'先选一段开头、主体或结尾');return;}
   var row={
     title:esTitle(),
+    mode:ES_MODE, sw_id:(ES_MODE==='sw'?(ES_SW_ID||null):null),
     open_id:ES_SEL.open||null, body_id:ES_SEL.body||null, end_id:ES_SEL.end||null,
     template_text:t,
     fills:JSON.stringify(ES_FILL),
     filled_text:esFilledText(),
     practice_date:esToday()
   };
+  var okMsg='练笔已保存 · 已填 '+esDoneCount()+'/'+esSlots().length;
   rest('/kb_essay_practice?select=*','POST',row)
     .then(function(r){
       if(r&&r[0])ES_LIST.unshift(r[0]); else ES_LIST.unshift(row);
-      toast('练笔已保存 · 已填 '+esDoneCount()+'/'+esSlots().length);
+      toast(okMsg);
     })
     .catch(function(){
-      row.id=Date.now(); ES_LIST.unshift(row);
-      try{localStorage.setItem(ES_LSKEY,JSON.stringify(ES_LIST.slice(0,60)));}catch(e){}
-      toast('已保存到本地（云端表未建）');
+      // 可能是 kb_essay_practice 没有 mode/sw_id 列，去掉这两列再试一次
+      var r2={title:row.title,open_id:row.open_id,body_id:row.body_id,end_id:row.end_id,
+              template_text:row.template_text,fills:row.fills,filled_text:row.filled_text,
+              practice_date:row.practice_date};
+      r2.mode=ES_MODE; r2.sw_id=row.sw_id;
+      rest('/kb_essay_practice?select=*','POST',r2)
+        .then(function(r){
+          if(r&&r[0]){r[0].mode=ES_MODE;r[0].sw_id=row.sw_id;ES_LIST.unshift(r[0]);}
+          else ES_LIST.unshift(r2);
+          toast(okMsg);
+        })
+        .catch(function(){ esLocalSave(r2); });
     });
 }
 function esDel(id){
@@ -2395,6 +2433,8 @@ function esDel(id){
 function esLoadOne(id){
   var r=ES_LIST.filter(function(x){return x.id==id;})[0];
   if(!r)return;
+  ES_MODE=(r.mode==='sw')?'sw':'big';
+  ES_SW_ID=(r.mode==='sw')?(+(r.sw_id||0)):0;
   ES_SEL={open:r.open_id||0,body:r.body_id||0,end:r.end_id||0};
   ES_FILL={};
   try{
@@ -2420,6 +2460,37 @@ function renderEssay(){
     +'<span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'
     +'开头 + 主体 + 结尾 自由搭配 · 填完即成文 · 纯练习本</span></div>';
 
+  /* --- 大作文 / 小作文 切换 --- */
+  h+='<div class="sw-tabs">'
+    +'<div class="sw-tab'+(ES_MODE==='big'?' on':'')+'" onclick="esMode(&apos;big&apos;)">&#127757; 大作文 · 三段搭配</div>'
+    +'<div class="sw-tab'+(ES_MODE==='sw'?' on':'')+'" onclick="esMode(&apos;sw&apos;)">&#9998; 小作文 · 整篇模板</div>'
+    +'</div>';
+
+  if(ES_MODE==='sw'){
+    /* --- 小作文：选一篇完整模板，在其上直接填空 --- */
+    var swps=esSwParts(),
+        g1=swps.filter(function(x){return x.layer===1;}),
+        g2=swps.filter(function(x){return x.layer===2;});
+    h+='<div class="es-sec"><div class="es-sec-t"><span class="n">&#9998;</span>选一篇小作文模板 '
+      +'<span style="font-size:11.5px;color:var(--sub);font-weight:400">整篇书信 / 通知 / 纪要 · 空已嵌在原句里</span></div>';
+    [['结构骨架（书信通用 · 通知招募 · 会议纪要）',g1],
+     ['书信体裁（建议 / 邀请 / 推荐 / 咨询 / 道歉 …）',g2]].forEach(function(gp){
+      if(!gp[1].length)return;
+      h+='<div style="font-size:12.5px;color:var(--sub);margin:12px 0 7px;font-weight:600">'+gp[0]+'</div>';
+      h+='<div class="es-opts">';
+      gp[1].forEach(function(p){
+        var on=(ES_SW_ID===p.id);
+        var nb=(String(p.fixed||'').match(/\[[^\]]+\]/g)||[]).length;
+        h+='<div class="es-opt'+(on?' on':'')+'" onclick="esPick(&apos;sw&apos;,'+p.id+')">'
+          +(on?'<span class="ck">&#10003;</span>':'')
+          +'<h4>'+esEsc(p.name)+'</h4><p>'+nb+' 个空 · '
+          +esEsc(String(p.fixed||'').replace(/\n/g,' ').slice(0,58))+'…</p></div>';
+      });
+      h+='</div>';
+    });
+    if(!swps.length)h+='<div class="empty">小作文数据未加载</div>';
+    h+='</div>';
+  }else{
   /* --- 三段选择 --- */
   var SEC=[['open','开头段 P1','引出材料 / 描述现象'],
            ['body','主体段 P2','原因分析 / 论证展开'],
@@ -2438,10 +2509,12 @@ function renderEssay(){
     if(!ps.length)h+='<div class="empty">该段暂无可用模板</div>';
     h+='</div></div>';
   });
+  }
 
   /* --- 内联填空区 --- */
   var slots=esSlots(), done=esDoneCount();
-  if(ES_SEL.open||ES_SEL.body||ES_SEL.end){
+  var hasTpl=(ES_MODE==='sw')?!!ES_SW_ID:(ES_SEL.open||ES_SEL.body||ES_SEL.end);
+  if(hasTpl){
     h+='<div class="es-sec"><div class="es-sec-t"><span class="n">&#9998;</span>在模板上填空 '
       +'<span style="font-size:11.5px;color:var(--sub);font-weight:400">整篇模板 · 空已嵌进原句里 · 边看上下文边填</span></div>';
     if(!slots.length){
@@ -2459,7 +2532,9 @@ function renderEssay(){
       +'<button class="ghost" onclick="esReset()">清空重搭</button>'
       +'<button class="ghost" onclick="esCopy()">复制全文</button></div>';
   }else{
-    h+='<div class="empty" style="padding:26px 0">在上面各选一段（可只选其中一段），这里就会出现整篇模板和要填的空</div>';
+    h+='<div class="empty" style="padding:26px 0">'
+      +(ES_MODE==='sw'?'在上面选一篇小作文模板':'在上面各选一段（可只选其中一段）')
+      +'，这里就会出现整篇模板和要填的空</div>';
   }
 
   /* --- 历史 --- */
@@ -2471,13 +2546,13 @@ function renderEssay(){
     ES_LIST.slice(0,30).forEach(function(r){
       var d=String(r.practice_date||'').slice(0,10)||'-';
       h+='<div class="es-hi"><div class="t"><b>'+esEsc(r.title||'未命名练笔')+'</b>'
-        +'<span>'+esEsc(d)+' · '+String(r.filled_text||'').length+' 字符</span></div>'
+        +'<span>'+esEsc(d)+' · '+(r.mode==='sw'?'小作文':'大作文')+' · '+String(r.filled_text||'').length+' 字符</span></div>'
         +'<button onclick="esLoadOne('+r.id+')">载入</button>'
         +'<button class="del" onclick="esDel('+r.id+')">删除</button></div>';
     });
   }
   h+='</div>';
-  h+='<footer>作文练笔 · 模板来自「大作文 A-模板」· 纯练习本，不判分不排期</footer>';
+  h+='<footer>作文练笔 · 模板来自「'+(ES_MODE==='sw'?'小作文 SW 模板':'大作文 A-模板')+'」· 纯练习本，不判分不排期</footer>';
   h+='</div>';
   document.getElementById('page-detail').innerHTML=h;
 }
