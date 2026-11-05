@@ -63,6 +63,26 @@ body.light .note-box{background:rgba(0,0,0,.012)}
 .note-box:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(124,155,255,.14)}
 .note-box::placeholder{color:var(--sub);font-size:12.5px}
 .note-tag{display:inline-block;font-size:10.5px;color:var(--l3);margin-top:8px;font-weight:600}
+
+.nw-wrap{margin-top:10px}
+.nw-widget{margin-top:0}
+.nw-head{font-size:12.5px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.nw-count{font-weight:400;font-size:11.5px;color:var(--brand)}
+.nw-hint{font-weight:400;font-size:11px;color:var(--sub)}
+.nw-widget .note-box{margin-top:0}
+.nw-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.nw-toggle{margin-top:10px;font-size:12px;color:var(--brand);cursor:pointer;user-select:none;padding:6px 0}
+.nw-list{margin-top:6px;max-height:300px;overflow-y:auto;-webkit-overflow-scrolling:touch;border-top:1px dashed var(--line);padding-right:4px}
+.nw-item{padding:10px 0;border-bottom:1px dashed rgba(255,255,255,.06)}
+.nw-item:last-child{border-bottom:none}
+.nw-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.nw-date{font-family:monospace;font-size:11.5px;color:var(--sub)}
+.nw-ops{display:flex;gap:6px}
+.nw-ops span{font-size:11px;padding:2px 9px;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--sub)}
+.nw-ops span.del{color:var(--l2);border-color:rgba(248,113,113,.3)}
+.nw-text{font-size:13px;line-height:1.7;margin-top:6px;white-space:pre-wrap;word-break:break-word;color:var(--ink)}
+.nw-empty{font-size:12px;color:var(--sub);margin-top:8px}
+
 .progress-row{display:flex;align-items:center;gap:12px;margin-top:16px;padding-top:16px;border-top:1px dashed var(--line)}
 .progress-bar{flex:1;height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden}
 body.light .progress-bar{background:rgba(0,0,0,.06)}
@@ -464,8 +484,9 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 function clean(s){var d=document.createElement('div');d.innerHTML=s;return d.textContent||'';}
 function daysBetween(a,b){var x=new Date(a);x.setHours(0,0,0,0);return Math.round((new Date(b)-x)/86400000);}
 function addDaysStr(s,n){var x=new Date(s);x.setDate(x.getDate()+n);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());}
-function rest(path,method,body){
+function rest(path,method,body,extra){
  var hd={'Content-Type':'application/json','apikey':APIKEY,'Authorization':'Bearer '+APIKEY};
+ if(extra)Object.keys(extra).forEach(function(k){hd[k]=extra[k];});
  var init={method:method||'GET',headers:hd};
  if(body!==undefined)init.body=JSON.stringify(body);
  return fetch(SUPABASE_URL+'/rest/v1'+path,init).then(function(r){
@@ -862,7 +883,7 @@ function renderDueList(){
   }
   h+='<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="nm" style="font-weight:600;font-size:14.5px;flex:1;min-width:120px">'+esc(p.name)+'</span>'+tagOf(p.category)+'</div>';
   h+='<div class="meta '+(lastLevel(p.id)===0||overdue?'over':'soon')+'">'+esc(chName(p.chapter_id))+' 首背 '+o.first+(overdue?' · 已逾期':'')+(n?' · '+pointNotes(p.id).length+' 条卡点备注':'')+'</div>';
-  h+='<textarea class="note-box" placeholder="这里写容易卡壳、需要特别注意的地方，输入后自动保存…" oninput="onNote('+p.id+',this.value)">'+(n?n.content:'')+'</textarea>'+(n?'<div class="note-tag has">最近一次：'+n.note_date+'</div>':'')+'</div>';
+  h+='<div class="nw-wrap" id="nw_p1_'+p.id+'" onclick="event.stopPropagation()">'+noteWidgetHTML('p1',p.id)+'</div></div>';
   h+='<div class="acts" onclick="event.stopPropagation()">'+(dueBatch?'':('<button class="ghost sm" onclick="nav(\'detail/'+p.id+'\')" title="详情与卡点">注</button><span class="lvl-btns"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button></span>'))+'</div></div>';
  });
  var donec=list.filter(function(o){return doneToday[o.point.id];}).length;
@@ -906,20 +927,127 @@ function dueBatchDel(){
   });
  });
 }
-var noteTimers={};
-function onNote(id,val){
- clearTimeout(noteTimers[id]);
- var v=String(val==null?'':val).trim();
- noteTimers[id]=setTimeout(function(){
-  var nd=pointNotes(id)[0];
-  if(nd){
-   if(!v){rest('/kb_notes?id=eq.'+nd.id,'DELETE').then(function(){notes=notes.filter(function(x){return x.id!=nd.id;});});return;}
-   rest('/kb_notes?id=eq.'+nd.id,'PATCH',{content:v}).then(function(){nd.content=v;});
-  }else if(v){
-   rest('/kb_notes?select=*','POST',{point_id:id,review_id:null,note_date:ts(),content:v}).then(function(r){if(r&&r[0])notes.unshift(r[0]);});
-  }
- },1200);
+/* ============ v27 卡点备注：手动保存 / 可翻阅 / 可修改 / 可删除 ============ */
+var noteEdit={}, noteOpen={}, noteBusy={};
+function nwEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function nwSort(a,b){
+ var da=String(a.note_date||a.date||''),db=String(b.note_date||b.date||'');
+ if(da!==db)return db.localeCompare(da);
+ return (Number(b.id)||0)-(Number(a.id)||0);
 }
+function nwCfg(scope){
+ if(scope==='en')return {
+  table:'kb_english_notes',esc:enEsc,date:enToday,
+  arr:function(){return enNotes;},setArr:function(a){enNotes=a;},
+  list:function(id){return enNotes.filter(function(n){return n.template_id==id;}).sort(nwSort);},
+  payload:function(id,v,d){return {template_id:id,review_id:null,note_date:d,content:v};},
+  after:function(id){var ns=enNotes.filter(function(n){return n.template_id==id;}).sort(nwSort);
+   try{enStoreSetNote(id,enToday(),ns.length?(ns[0].content||ns[0].text||''):'');}catch(e){}}
+ };
+ if(scope==='sw')return {
+  table:'kb_sw_notes',esc:swEsc,date:swToday,
+  arr:function(){return swNotes;},setArr:function(a){swNotes=a;},
+  list:function(id){return swNotes.filter(function(n){return (n.template_id||n.sw_id)==id;}).sort(nwSort);},
+  payload:function(id,v,d){return {template_id:id,sw_id:id,note_date:d,date:d,content:v,text:v};},
+  after:function(){try{swSaveNotes();}catch(e){}}
+ };
+ return {
+  table:'kb_notes',esc:nwEsc,date:ts,
+  arr:function(){return notes;},setArr:function(a){notes=a;},
+  list:function(id){return notes.filter(function(n){return n.point_id==id;}).sort(nwSort);},
+  payload:function(id,v,d){return {point_id:id,review_id:null,note_date:d,content:v};},
+  after:function(){}
+ };
+}
+function noteWidgetHTML(scope,id,keep){
+ var cfg=nwCfg(scope),key=scope+'_'+id,ns=cfg.list(id);
+ var eid=noteEdit[key],cur=null;
+ if(eid)cur=ns.filter(function(n){return String(n.id)===String(eid);})[0]||null;
+ var val=(keep!==undefined&&keep!==null)?keep:(cur?(cur.content||cur.text||''):'');
+ var open=!!noteOpen[key];
+ var h='<div class="nw-widget">';
+ h+='<div class="nw-head">&#128221; 卡点备注 <span class="nw-count">共 '+ns.length+' 条</span><span class="nw-hint">写完点「保存备注」才会记录</span></div>';
+ h+='<textarea class="note-box" id="nwInput_'+key+'" placeholder="'+(cur?'正在修改这一条，改完点「保存修改」':'这里写容易卡壳、需要特别注意的地方（不会自动保存）')+'">'+cfg.esc(val)+'</textarea>';
+ h+='<div class="nw-btns">';
+ h+='<button class="sm" onclick="event.stopPropagation();noteSave(\''+scope+'\','+id+')">'+(cur?'&#128190; 保存修改':'&#128190; 保存备注')+'</button>';
+ h+='<button class="ghost sm" onclick="event.stopPropagation();noteNew(\''+scope+'\','+id+')">&#10133; 写新的一条</button>';
+ if(cur)h+='<button class="ghost sm" onclick="event.stopPropagation();noteCancel(\''+scope+'\','+id+')">取消修改</button>';
+ h+='</div>';
+ if(ns.length){
+  h+='<div class="nw-toggle" onclick="event.stopPropagation();noteToggle(\''+scope+'\','+id+')">'+(open?'&#9650; 收起历史备注':'&#9660; 展开历史备注（'+ns.length+' 条，可上下翻动）')+'</div>';
+  if(open){
+   h+='<div class="nw-list">';
+   ns.forEach(function(n){
+    var txt=n.content||n.text||'';
+    h+='<div class="nw-item"><div class="nw-row"><span class="nw-date">'+cfg.esc(n.note_date||n.date||'')+'</span><span class="nw-ops">'
+     +'<span onclick="event.stopPropagation();noteEditGo(\''+scope+'\','+id+',\''+n.id+'\')">&#9998; 修改</span>'
+     +'<span class="del" onclick="event.stopPropagation();noteDel(\''+scope+'\','+id+',\''+n.id+'\')">&#10005; 删除</span>'
+     +'</span></div><div class="nw-text">'+cfg.esc(txt)+'</div></div>';
+   });
+   h+='</div>';
+  }
+ }else{
+  h+='<div class="nw-empty">还没有卡点备注，写完点上面的「保存备注」</div>';
+ }
+ h+='</div>';
+ return h;
+}
+function noteWidgetRefresh(scope,id,force){
+ var key=scope+'_'+id,wrap=document.getElementById('nw_'+key);
+ if(!wrap)return;
+ var inp=document.getElementById('nwInput_'+key);
+ var keep=(force!==undefined)?force:(inp?inp.value:null);
+ wrap.innerHTML=noteWidgetHTML(scope,id,keep);
+}
+function noteSave(scope,id){
+ var key=scope+'_'+id;
+ if(noteBusy[key])return;
+ var cfg=nwCfg(scope),el=document.getElementById('nwInput_'+key);
+ var v=String(el?el.value:'').trim();
+ if(!v){toast('先写点内容再保存');return;}
+ noteBusy[key]=true;
+ var eid=noteEdit[key],d=cfg.date();
+ var done=function(m){noteBusy[key]=false;noteEdit[key]=null;cfg.after(id);noteWidgetRefresh(scope,id,'');toast(m);};
+ if(eid){
+  var n=cfg.list(id).filter(function(x){return String(x.id)===String(eid);})[0];
+  if(n){n.content=v;n.text=v;}
+  rest('/'+cfg.table+'?id=eq.'+eid,'PATCH',{content:v})
+   .then(function(){done('已修改备注');}).catch(function(){done('已修改（仅本地）');});
+ }else{
+  var body=cfg.payload(id,v,d),rec={};
+  Object.keys(body).forEach(function(k){rec[k]=body[k];});
+  rec.id=Date.now()*1000+Math.floor(Math.random()*1000);
+  cfg.arr().unshift(rec);
+  rest('/'+cfg.table+'?select=*','POST',body,{'Prefer':'return=representation'})
+   .then(function(r){if(r&&r[0]){Object.keys(r[0]).forEach(function(k){rec[k]=r[0][k];});}done('已保存备注');})
+   .catch(function(){done('已保存到本地');});
+ }
+}
+function noteEditGo(scope,id,nid){
+ var cfg=nwCfg(scope),key=scope+'_'+id;
+ var n=cfg.list(id).filter(function(x){return String(x.id)===String(nid);})[0];
+ if(!n)return;
+ noteEdit[key]=nid;noteOpen[key]=false;
+ noteWidgetRefresh(scope,id,n.content||n.text||'');
+ var el=document.getElementById('nwInput_'+key);
+ if(el){el.focus();try{el.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}}
+}
+function noteCancel(scope,id){noteEdit[scope+'_'+id]=null;noteWidgetRefresh(scope,id,'');}
+function noteNew(scope,id){noteEdit[scope+'_'+id]=null;noteWidgetRefresh(scope,id,'');
+ var el=document.getElementById('nwInput_'+scope+'_'+id);if(el)el.focus();}
+function noteToggle(scope,id){var key=scope+'_'+id;noteOpen[key]=!noteOpen[key];noteWidgetRefresh(scope,id);}
+function noteDel(scope,id,nid){
+ if(!window.confirm('确定删除这条卡点备注？'))return;
+ var cfg=nwCfg(scope),key=scope+'_'+id;
+ cfg.setArr(cfg.arr().filter(function(n){return String(n.id)!==String(nid);}));
+ if(String(noteEdit[key])===String(nid))noteEdit[key]=null;
+ rest('/'+cfg.table+'?id=eq.'+nid,'DELETE').catch(function(){});
+ cfg.after(id);noteWidgetRefresh(scope,id);toast('已删除');
+}
+/* v27 兼容：旧的自动保存入口一律不再写库 */
+function onNote(){/* 请点「保存备注」 */}
+function enNote(){/* 请点「保存备注」 */}
+function swNote(){/* 请点「保存备注」 */}
 function renderMapCells(){
  var grid=document.getElementById('mapGrid');if(!grid)return;
  var list=points.filter(function(p){return mapCh==0||p.chapter_id==mapCh;});
@@ -1084,10 +1212,7 @@ function renderDetail(id){
  }else{
   h+='<div class="empty">这个知识点还没有填写内容，点下方「编辑」添加具体内容</div>';
  }
- h+='<div style="font-size:14px;font-weight:600;margin:0 0 10px;padding-left:10px;border-left:3px solid var(--l3)">卡点备注 <span style="font-weight:400;font-size:12px;color:var(--sub)">按日期倒序</span></div>';
- h+='<textarea class="note-box" placeholder="这里写容易卡壳、需要特别注意的地方，输入后自动保存…" oninput="onNote('+p.id+',this.value)"></textarea>';
- if(!ns.length){h+='<div class="empty">还没有卡点备注，在上面输入框写，自动保存</div>';}
- else{ns.forEach(function(n){h+='<div style="border-top:1px dashed var(--line);padding:12px 0"><div style="font-family:monospace;font-size:12px;color:var(--sub)">'+n.note_date+'</div><div style="font-size:13.5px;line-height:1.7;margin-top:6px">'+esc(n.content)+'</div></div>';});}
+ h+='<div class="nw-wrap" id="nw_p3_'+p.id+'">'+noteWidgetHTML('p3',p.id)+'</div>';
  var isMobile=window.innerWidth<=680;
  var btns='<div class="'+(isMobile?'detail-bar':'lvl-btns')+'" style="'+(isMobile?'':'margin-top:18px')+'"><button class="l1" onclick="quickReview('+p.id+',1)">遗</button><button class="l2" onclick="quickReview('+p.id+',2)">糊</button><button class="l3" onclick="quickReview('+p.id+',3)">熟</button><button class="l4" onclick="quickReview('+p.id+',4)">背</button><button class="l5" onclick="quickReview('+p.id+',5)">卡</button><button class="ghost" onclick="openPointModal('+p.id+')">'+(isMobile?'编辑':'编辑')+'</button></div>';
  h+=isMobile?btns:'</div>'+btns;
@@ -1355,11 +1480,7 @@ function renderDuePage(){
   h+='<div class="info"><div class="nm">'+esc(p.name)+'</div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px">'+tagOf(p.category)+'<span class="tag">'+esc(chName(p.chapter_id))+'</span><span class="tag" style="color:'+color+'">L'+l+' '+lvlName(l)+'</span>'+'<span class="tag" style="color:var(--brand);cursor:pointer;border-color:var(--brand)" onclick="event.stopPropagation();nav(\'detail/'+p.id+'\')">&#128214; 详情</span>'+'<span class="tag" style="color:var(--sub)">'+esc(d||'未首背')+'</span>'+(pointNotes(p.id).length?'<span class="tag" style="color:var(--l3)">&#128221; '+pointNotes(p.id).length+' 条备注</span>':'')+'</div></div>';
   h+='<div class="acts" onclick="event.stopPropagation()">'+(dueBatch?'<span class="btn-text">选择</span>':'<span class="lvl-btns"><button class="l1" onclick="event.stopPropagation();quickReview('+p.id+',1)">遗</button><button class="l2" onclick="event.stopPropagation();quickReview('+p.id+',2)">糊</button><button class="l3" onclick="event.stopPropagation();quickReview('+p.id+',3)">熟</button><button class="l4" onclick="event.stopPropagation();quickReview('+p.id+',4)">背</button><button class="l5" onclick="event.stopPropagation();quickReview('+p.id+',5)">卡</button></span>')+'</div>';
   if(p.content&&String(p.content).trim())h+='<div class="prev" style="display:none">'+String(p.content).split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;}).map(function(l){return '<p>'+esc(l)+'</p>';}).join('')+'</div>';
-  var dn=pointNotes(p.id)[0];
-  h+='<div class="due-note" onclick="event.stopPropagation()">'
-   +'<div style="font-size:12px;color:var(--sub);margin:0 0 5px">&#128221; 卡点备注（输入后自动保存）</div>'
-   +'<textarea class="note-box" placeholder="这里写容易卡壳、需要特别注意的地方，输入后自动保存…" oninput="onNote('+p.id+',this.value)">'+(dn?esc(dn.content):'')+'</textarea>'
-   +(dn?'<div style="font-size:11.5px;color:var(--sub);margin-top:5px">最近一次：'+esc(dn.note_date)+'</div>':'')+'</div>';
+  h+='<div class="due-note" onclick="event.stopPropagation()"><div class="nw-wrap" id="nw_p2_'+p.id+'">'+noteWidgetHTML('p2',p.id)+'</div></div>';
   h+='</div>';
  });
  document.getElementById('page-detail').innerHTML=h;
@@ -1906,34 +2027,11 @@ function renderEnDetail(id){
  h+='<button class="l2" onclick="enMark('+d.order+',2)">&#128561; 忘了</button>';
  h+='</div>';
  // 卡点备注
- h+='<div style="font-size:14px;font-weight:600;margin:22px 0 10px;padding-left:10px;border-left:3px solid var(--l3)">卡点备注 <span style="font-weight:400;font-size:12px;color:var(--sub)">输入后自动保存</span></div>';
- var ns=enNotes.filter(function(n){return n.template_id==d.id;}).sort(function(a,b){return b.note_date.localeCompare(a.note_date);});
- h+='<textarea class="note-box" id="enNoteBox" placeholder="这里记容易写错、容易忘的表达…" oninput="enNote('+d.id+',this.value)">'+(ns[0]?ns[0].content:'')+'</textarea>';
- if(ns.length){
-  h+='<div class="note-list">';
-  ns.forEach(function(n){h+='<div class="nl-item"><span class="nl-date">'+n.note_date+'</span><span class="nl-text">'+enEsc(n.content)+'</span></div>';});
-  h+='</div>';
- }
+ h+='<div class="nw-wrap" id="nw_en_'+d.id+'">'+noteWidgetHTML('en',d.id)+'</div>';
  h+='</div>';
  document.getElementById('page-detail').innerHTML=h;
 }
-var enNoteTimer=null;
-function enNote(id,val){
- clearTimeout(enNoteTimer);
- var v=String(val==null?'':val).trim();
- var d=enToday();
- enNoteTimer=setTimeout(function(){
-  // 本地优先
-  enStoreSetNote(id,d,v);
-  var ns=enNotes.filter(function(n){return n.template_id==id;}).sort(function(a,b){return b.note_date.localeCompare(a.note_date);});
-  if(ns[0]){
-   if(!v){rest('/kb_english_notes?id=eq.'+ns[0].id,'DELETE').then(function(){enNotes=enNotes.filter(function(x){return x.id!=ns[0].id;});});return;}
-   rest('/kb_english_notes?id=eq.'+ns[0].id,'PATCH',{content:v});
-  }else if(v){
-   rest('/kb_english_notes?select=*','POST',{template_id:id,review_id:null,note_date:d,content:v}).then(function(r){if(r&&r[0])enNotes.unshift(r[0]);});
-  }
- },1200);
-}
+/* v27: 自动保存已移除，统一走 noteSave() */
 function enMark(order,level){
  var d=EN_DATA.filter(function(x){return x.order==order;})[0];if(!d||!d.id){toast('数据未加载完，请刷新');return;}
  var t=enToday();
@@ -2188,41 +2286,12 @@ function renderSwDetail(id){
  h+='</div>';
 
  // 卡点备注
- h+='<div style="font-size:14px;font-weight:600;margin:22px 0 10px;padding-left:10px;border-left:3px solid var(--l3)">卡点备注 <span style="font-weight:400;font-size:12px;color:var(--sub)">输入后自动保存</span></div>';
- var ns=swNoteOf(d.id);
- h+='<textarea class="note-box" id="swNoteBox" placeholder="记容易写错、容易忘的表达…" oninput="swNote('+d.id+',this.value)">'+(ns[0]?(ns[0].content||ns[0].text||''):'')+'</textarea>';
- if(ns.length){
-  h+='<div class="note-list">';
-  ns.forEach(function(n){h+='<div class="nl-item"><span class="nl-date">'+swEsc(n.note_date||n.date||'')+'</span><span class="nl-text">'+swEsc(n.content||n.text||'')+'</span></div>';});
-  h+='</div>';
- }
+ h+='<div class="nw-wrap" id="nw_sw_'+d.id+'">'+noteWidgetHTML('sw',d.id)+'</div>';
  h+='</div>';
  document.getElementById('page-detail').innerHTML=h;
 }
 
-var swNoteTimer=null;
-function swNote(id,val){
- clearTimeout(swNoteTimer);
- var v=String(val==null?'':val).trim();var d=swToday();
- var key='note_'+id;
- swNoteTimer=setTimeout(function(){
-  var ns=swNotes.filter(function(n){return (n.template_id||n.sw_id)==id;}).sort(function(a,b){return String(b.note_date||b.date||'').localeCompare(String(a.note_date||a.date||''));});
-  if(ns[0]){
-   ns[0].content=v;ns[0].text=v;
-   if(!v)swNotes=swNotes.filter(function(n){return (n.template_id||n.sw_id)!=id;});
-  }else if(v){
-   swNotes.push({template_id:id,sw_id:id,note_date:d,date:d,content:v,text:v});
-  }
-  swSaveNotes();
-  // 云端同步（失败不影响本地）
-  try{
-   if(!v){rest('/kb_sw_notes?template_id=eq.'+id,'DELETE');}
-   else if(ns[0]){rest('/kb_sw_notes?template_id=eq.'+id,'PATCH',{content:v,text:v});}
-   else{rest('/kb_sw_notes?select=*','POST',{template_id:id,sw_id:id,note_date:d,date:d,content:v,text:v});}
-  }catch(e){}
- },1200);
-}
-
+/* v27: 自动保存已移除，统一走 noteSave() */
 function swMark(id,level){
  var d=SW_DATA.filter(function(x){return x.id==id;})[0];if(!d){toast('数据未加载完，请刷新');return;}
  var t=swToday();
