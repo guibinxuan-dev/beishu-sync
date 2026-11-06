@@ -8,8 +8,8 @@
 <style>
 :root{--bg:#08090c;--card:rgba(20,23,30,.6);--card-solid:#13161c;--ink:#eaecf2;--sub:#858d9c;--line:rgba(255,255,255,.07);--brand:#7c9bff;--brand2:#b07cff;--accent:#3fd6ab;--shadow:0 10px 40px rgba(0,0,0,.4)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{scroll-behavior:smooth}
-body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","WenQuanYi Micro Hei",sans-serif;color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;background:radial-gradient(1000px 600px at 8% -10%,rgba(124,155,255,.16),transparent 62%),radial-gradient(900px 700px at 92% 4%,rgba(176,124,255,.13),transparent 62%),radial-gradient(800px 600px at 50% 108%,rgba(63,214,171,.09),transparent 62%),#08090c;background-attachment:fixed}
+html{scroll-behavior:smooth;overflow-x:hidden;overflow-x:clip}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","WenQuanYi Micro Hei",sans-serif;color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;min-height:100vh;background:radial-gradient(1000px 600px at 8% -10%,rgba(124,155,255,.16),transparent 62%),radial-gradient(900px 700px at 92% 4%,rgba(176,124,255,.13),transparent 62%),radial-gradient(800px 600px at 50% 108%,rgba(63,214,171,.09),transparent 62%),#08090c;background-attachment:fixed}
 body.light{--bg:#f4f6fa;--card:rgba(255,255,255,.78);--card-solid:#fff;--ink:#14181f;--sub:#6b7280;--line:rgba(20,24,31,.07);--shadow:0 10px 34px rgba(20,24,31,.07)}
 button{font-family:inherit;cursor:pointer;border:none;border-radius:14px;font-weight:600;font-size:14px;padding:11px 20px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;transition:.18s;box-shadow:0 5px 18px rgba(124,155,255,.3)}
 button:hover{transform:translateY(-2px);box-shadow:0 9px 26px rgba(124,155,255,.42)}
@@ -72,7 +72,10 @@ body.light .note-box{background:rgba(0,0,0,.012)}
 .nw-widget .note-box{margin-top:0}
 .nw-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
 .nw-toggle{margin-top:10px;font-size:12px;color:var(--brand);cursor:pointer;user-select:none;padding:6px 0}
-.nw-list{margin-top:6px;max-height:300px;overflow-y:auto;-webkit-overflow-scrolling:touch;border-top:1px dashed var(--line);padding-right:4px}
+.nw-list{margin-top:6px;max-height:300px;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;min-height:0;border-top:1px dashed var(--line);padding-right:4px}
+.nw-tip{font-size:11.5px;color:var(--sub);padding:6px 0 2px;line-height:1.6}
+.nw-more{font-size:12.5px;color:var(--brand);cursor:pointer;text-align:center;padding:10px;border:1px dashed var(--line);border-radius:10px;margin-top:8px;user-select:none;font-weight:600}
+.nw-more:hover{background:rgba(124,155,255,.08)}
 .nw-item{padding:10px 0;border-bottom:1px dashed rgba(255,255,255,.06)}
 .nw-item:last-child{border-bottom:none}
 .nw-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
@@ -208,6 +211,14 @@ body.light .list-item:hover{background:rgba(0,0,0,.012)}
 .list-item .sw{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
 footer{text-align:center;color:var(--sub);font-size:11.5px;padding:28px 0;letter-spacing:.6px}
 @media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.hero{padding:26px 22px 24px}.hero-num{font-size:56px}.card{padding:20px 18px}.topbar input{min-width:120px}.cat-grid{grid-template-columns:1fr}.lvl-btns button{width:30px;height:30px;font-size:11px}.point{align-items:flex-start}.point .info{flex:1 1 auto;min-width:0}.point .info .nm{white-space:normal;word-break:break-word}.point .acts{flex:0 0 auto;flex-wrap:wrap;width:auto;margin-top:0;margin-left:auto;justify-content:flex-end;max-width:46%}.point .acts button{padding:5px 9px;font-size:11px}.point .prev{margin:8px 0 0;font-size:12.5px}.lvl-btns button{width:32px;height:32px;font-size:11.5px}.detail-content{max-height:calc(100vh - 220px);overflow-y:auto;-webkit-overflow-scrolling:touch}.detail-bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;padding:12px 14px;padding-bottom:calc(12px + env(safe-area-inset-bottom));background:rgba(24,24,27,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);z-index:50}.detail-bar button{flex:1;padding:11px 0;font-size:15px}.detail-bar .ghost{flex:0 0 auto;padding:11px 16px}}
+/* v28 手机端：备注历史不再嵌套滚动，跟随整页上下滑动（iOS/WebView 手势可靠） */
+@media(max-width:680px){
+ .nw-list{max-height:none;overflow-y:visible;-webkit-overflow-scrolling:auto;overscroll-behavior:auto;touch-action:pan-y}
+ .nw-tip{font-size:12px}
+ .nw-ops span{padding:6px 12px;font-size:12px}
+ .nw-more{padding:13px;font-size:13px}
+ .wrap{padding-bottom:calc(130px + env(safe-area-inset-bottom))}
+}
 
 /* ========== 抽默写模块 ========== */
 .quiz-card{background:linear-gradient(135deg,rgba(224,168,46,.12),rgba(124,155,255,.06) 55%,rgba(192,132,252,.07)),var(--card);}
@@ -928,7 +939,7 @@ function dueBatchDel(){
  });
 }
 /* ============ v27 卡点备注：手动保存 / 可翻阅 / 可修改 / 可删除 ============ */
-var noteEdit={}, noteOpen={}, noteBusy={};
+var noteEdit={}, noteOpen={}, noteBusy={}, noteShow={};
 function nwEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function nwSort(a,b){
  var da=String(a.note_date||a.date||''),db=String(b.note_date||b.date||'');
@@ -974,10 +985,13 @@ function noteWidgetHTML(scope,id,keep){
  if(cur)h+='<button class="ghost sm" onclick="event.stopPropagation();noteCancel(\''+scope+'\','+id+')">取消修改</button>';
  h+='</div>';
  if(ns.length){
-  h+='<div class="nw-toggle" onclick="event.stopPropagation();noteToggle(\''+scope+'\','+id+')">'+(open?'&#9650; 收起历史备注':'&#9660; 展开历史备注（'+ns.length+' 条，可上下翻动）')+'</div>';
+  h+='<div class="nw-toggle" onclick="event.stopPropagation();noteToggle(\''+scope+'\','+id+')">'+(open?'&#9650; 收起历史备注':'&#9660; 展开历史备注（'+ns.length+' 条）')+'</div>';
   if(open){
+   var lim=noteShow[key]||15;
+   if(lim>ns.length)lim=ns.length;
+   h+='<div class="nw-tip">共 '+ns.length+' 条 · 当前显示 '+lim+' 条 · 手机请上下滑动页面查看</div>';
    h+='<div class="nw-list">';
-   ns.forEach(function(n){
+   ns.slice(0,lim).forEach(function(n){
     var txt=n.content||n.text||'';
     h+='<div class="nw-item"><div class="nw-row"><span class="nw-date">'+cfg.esc(n.note_date||n.date||'')+'</span><span class="nw-ops">'
      +'<span onclick="event.stopPropagation();noteEditGo(\''+scope+'\','+id+',\''+n.id+'\')">&#9998; 修改</span>'
@@ -985,6 +999,11 @@ function noteWidgetHTML(scope,id,keep){
      +'</span></div><div class="nw-text">'+cfg.esc(txt)+'</div></div>';
    });
    h+='</div>';
+   if(lim<ns.length){
+    h+='<div class="nw-more" onclick="event.stopPropagation();noteMore(\''+scope+'\','+id+')">&#9660; 加载更多（还有 '+(ns.length-lim)+' 条）</div>';
+   }else{
+    h+='<div class="nw-tip" style="text-align:center">— 已到底，共 '+ns.length+' 条 —</div>';
+   }
   }
  }else{
   h+='<div class="nw-empty">还没有卡点备注，写完点上面的「保存备注」</div>';
@@ -1035,7 +1054,8 @@ function noteEditGo(scope,id,nid){
 function noteCancel(scope,id){noteEdit[scope+'_'+id]=null;noteWidgetRefresh(scope,id,'');}
 function noteNew(scope,id){noteEdit[scope+'_'+id]=null;noteWidgetRefresh(scope,id,'');
  var el=document.getElementById('nwInput_'+scope+'_'+id);if(el)el.focus();}
-function noteToggle(scope,id){var key=scope+'_'+id;noteOpen[key]=!noteOpen[key];noteWidgetRefresh(scope,id);}
+function noteMore(scope,id){var key=scope+'_'+id;noteShow[key]=(noteShow[key]||15)+15;noteWidgetRefresh(scope,id);}
+function noteToggle(scope,id){var key=scope+'_'+id;noteOpen[key]=!noteOpen[key];if(!noteOpen[key])noteShow[key]=15;noteWidgetRefresh(scope,id);}
 function noteDel(scope,id,nid){
  if(!window.confirm('确定删除这条卡点备注？'))return;
  var cfg=nwCfg(scope),key=scope+'_'+id;
