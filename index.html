@@ -678,7 +678,7 @@ function renderEbPage(){
   h+=ebCurveSvg();
   h+='<div style="font-size:12.5px;color:var(--sub);margin:8px 0 14px;line-height:1.7">每个知识点首背后，按 1 / 2 / 4 / 7 / 15 / 30 天 6 个节点推进。节点越往后，记忆越牢。</div>';
   var _ov=ebOverdueList().length;
-  h+='<div class="card" style="padding:0;overflow:hidden"><div class="card-h"><span class="ic">&#128203;</span>各知识点节点进度 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+items.length+' 个已首背</span>'+(_ov?' <button class="ghost sm" style="margin-left:8px;color:#ef4444;border-color:#ef4444" onclick="ebRestartAll()">&#8635; 全部重新开始('+_ov+')</button>':'')+'</div>';
+  h+='<div class="card" style="padding:0;overflow:hidden"><div class="card-h" style="flex-wrap:wrap;gap:6px"><span class="ic">&#128203;</span>各知识点节点进度 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+items.length+' 个已首背</span>'+(_ov?' <button class="ghost sm" style="margin-left:8px;color:#7c4dff;border-color:#7c4dff;white-space:nowrap" onclick="ebContinueAll()">&#8627; 全部从当前节点继续('+_ov+')</button> <button class="ghost sm" style="color:#ef4444;border-color:#ef4444;white-space:nowrap" onclick="ebRestartAll()">&#8635; 全部重新开始('+_ov+')</button>':'')+'</div>';
   if(!items.length){h+='<div class="empty">还没有首背过知识点，先去「首背」几题</div>';}
   else{
     items.forEach(function(it){
@@ -688,9 +688,13 @@ function renderEbPage(){
         return '<span class="'+cls+'" title="第'+nd.node+'节点 · '+nd.day+'天 · '+nd.due+'">'+nd.day+'</span>';
       }).join('');
       var tail=plan.finished?'<span class="tag td" style="color:#16a34a">已巩固</span>':(plan.nextDue?'<span style="font-size:12px;color:var(--sub)">下次 '+plan.nextDue+' · 第 '+plan.nextNode+' 节点</span>':'<span style="font-size:12px;color:var(--sub)">等待排期</span>');
-      if(plan.overDue>0)tail+=' <button class="ghost sm" style="margin-left:6px;color:#ef4444;border-color:#ef4444;white-space:nowrap" onclick="event.stopPropagation();ebRestart('+it.p.id+')">&#8635; 从第1节点重排</button>';
+      if(plan.overDue>0){
+        var _ci=ebContinueInfo(it.p.id);
+        tail+=' <button class="ghost sm" style="margin-left:6px;color:#7c4dff;border-color:#7c4dff;white-space:nowrap" onclick="event.stopPropagation();ebContinue('+it.p.id+')">&#8627; 从当前节点继续'+(_ci?' · 第'+_ci.curNode+'节点':'')+'</button>';
+        tail+=' <button class="ghost sm" style="color:#ef4444;border-color:#ef4444;white-space:nowrap" onclick="event.stopPropagation();ebRestart('+it.p.id+')">&#8635; 从第1节点重排</button>';
+      }
       h+='<div style="padding:12px 16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px" onclick="nav(&quot;detail/'+it.p.id+'&quot;)">';
-      h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><b style="font-size:14.5px">'+esc(it.p.name)+'</b>'+tail+'</div>';
+      h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><b style="font-size:14.5px">'+esc(it.p.name)+'</b><span style="display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end">'+tail+'</span></div>';
       h+='<div style="display:flex;gap:6px;flex-wrap:wrap">'+dots+'</div>';
       h+='</div>';
     });
@@ -701,6 +705,116 @@ function renderEbPage(){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
   document.getElementById('page-detail').classList.add('on');
   window.scrollTo(0,0);
+}
+
+/* ===== v30：从当前节点继续（漏点一两天，不必回炉重造） =====
+   保留"连续已完成"的节点数 k，把整条时间线向前平移：
+     新的首背日 newFirst = 今天 - EB_NODES[k]
+   => 前 k 个节点仍是 done，第 k+1 个节点（漏掉的当前节点）落在今天并记为完成，
+      后面的节点按 1/2/4/7/15/30 天相对新首背日依次顺延，全部回到未来。
+   实现：重写该点的复习记录来锚定 first（不依赖 eb_start 新列）；
+        若 kb_points 有 eb_start 列则同步 PATCH，刷新后依然一致。 */
+function ebContinueInfo(pointId){
+ var plan=ebPlanOf(pointId);
+ if(!plan)return null;
+ var k=0;
+ for(var i=0;i<plan.nodes.length;i++){
+  if(plan.nodes[i].status==='done')k++;else break;
+ }
+ if(k>=EB_NODES.length)return null;          // 6 个节点全完成，无需继续
+ var t=ts();
+ // 让「当前节点」(0-based k) 正好落在今天，并记为已完成；
+ // 后面节点按原有的相对间隔顺延，全部回到未来，不再逾期。
+ var newFirst=addDaysStr(t,-EB_NODES[k]);
+ var dates=[],seen={};
+ var push=function(d){if(!seen[d]){seen[d]=1;dates.push(d);}};
+ push(newFirst);                             // 本轮首背日：锚定 first
+ for(var j=0;j<=k;j++)push(addDaysStr(newFirst,EB_NODES[j]));  // 前 k 个 + 今天的当前节点
+ return {plan:plan,k:k,doneAfter:k+1,newFirst:newFirst,dates:dates,
+         curNode:k+1,
+         nextNode:(k+2<=EB_NODES.length?k+2:null),
+         nextDue:(k+1<EB_NODES.length?addDaysStr(newFirst,EB_NODES[k+1]):null),
+         overDue:plan.overDue};
+}
+function ebContinueCore(pointId,level,done){
+ var info=ebContinueInfo(pointId);
+ if(!info){if(done)done(null);return;}
+ var _p=points.filter(function(x){return x.id==pointId;})[0];
+ var backup=reviews.filter(function(r){return r.point_id==pointId;}).map(function(r){
+  return {point_id:r.point_id,review_date:r.review_date,level:r.level};
+ });
+ var oldStart=_p?_p.eb_start:null;
+ var finish=function(rows,msg,ok){
+  reviews=reviews.filter(function(r){return r.point_id!=pointId;});
+  (rows||[]).forEach(function(r){reviews.push(r);});
+  if(!reviews.some(function(r){return r.point_id==pointId&&r.review_date===ts();})){
+   reviews.push({point_id:pointId,review_date:ts(),level:level||4});
+  }
+  if(ok){
+   if(_p){_p.eb_start=info.newFirst;_p.eb_stage=info.doneAfter;_p.eb_next=info.nextDue;}
+  }else if(_p){
+   if(oldStart)_p.eb_start=oldStart;else delete _p.eb_start;
+  }
+  if(msg)toast(msg);
+  if(done)done(ok?info:null);
+ };
+ // eb_start 列存在则更新；不存在(42703)直接忽略，first 由 rs[0]=newFirst 决定
+ rest('/kb_points?id=eq.'+pointId,'PATCH',{eb_start:info.newFirst})
+  .catch(function(){return null;})
+  .then(function(){return rest('/kb_reviews?point_id=eq.'+pointId,'DELETE');})
+  .then(function(){
+   return rest('/kb_reviews?select=*','POST',
+    info.dates.map(function(d){return {point_id:pointId,review_date:d,level:level||4};}),
+    {'Prefer':'return=representation'});
+  })
+  .then(function(rows){finish(rows,null,true);})
+  .catch(function(){
+   // 回滚：把 eb_start 与原复习记录一并恢复，避免数据/排期错乱
+   rest('/kb_points?id=eq.'+pointId,'PATCH',{eb_start:oldStart||null})
+    .catch(function(){return null;})
+    .then(function(){
+     if(!backup.length)return [];
+     return rest('/kb_reviews?select=*','POST',backup,{'Prefer':'return=representation'});
+    })
+    .then(function(rows){finish(rows,'从当前节点继续失败，已恢复原记录',false);})
+    .catch(function(){toast('操作失败，请刷新页面重试');});
+  });
+}
+function ebContinue(pointId){
+ var info=ebContinueInfo(pointId);
+ if(!info){toast('这个知识点无需顺延');return;}
+ var p=points.filter(function(x){return x.id==pointId;})[0];
+ var nm=p?('\u300c'+p.name+'\u300d'):'该知识点';
+ if(!confirm(nm+' 已完成 '+info.k+' 个节点，有 '+info.overDue+' 个节点逾期。\n\n'+
+   '点确定：把当前第 '+info.curNode+' 节点记为今天完成，\n'+
+   '前面已完成的 '+info.k+' 个节点保留，后面的节点按原间隔顺延。\n'+
+   (info.nextDue?('下次复习：'+info.nextDue+' · 第 '+info.nextNode+' 节点\n\n'):'点完后 6 个节点全部巩固。\n\n')+
+   '若想进度清零、从头再来，请改用「从第1节点重排」。'))return;
+ ebContinueCore(pointId,4,function(){
+  toast('已从当前节点继续 · '+info.doneAfter+'/6'+(info.nextDue?' · 下次 '+info.nextDue:' · 已巩固'));
+  var h=location.hash.replace(/^#/,'');var parts=h.split('/');
+  if(parts[0]==='eb')renderEbPage();
+  else if(parts[0]==='detail')renderDetail(parts[1]);
+  else if(parts[0]==='chapter')renderChapter(parts[1]);
+  else if(parts[0]==='day')renderDay(parts[1]);
+  else renderHome();
+ });
+}
+function ebContinueAll(){
+ var list=ebOverdueList();
+ if(!list.length){toast('没有逾期节点');return;}
+ if(!confirm('共 '+list.length+' 个知识点存在逾期节点。\n\n确定全部「从当前节点继续」？\n每个知识点把当前的逾期节点记为今天完成，后面节点顺延，进度不清零。'))return;
+ var i=0;
+ var step=function(){
+  if(i>=list.length){
+   toast('已全部从当前节点继续');
+   var h=location.hash.replace(/^#/,'');var parts=h.split('/');
+   if(parts[0]==='eb')renderEbPage();else renderHome();
+   return;
+  }
+  ebContinueCore(list[i].point.id,4,function(){i++;step();});
+ };
+ step();
 }
 
 /* ===== v21：艾宾浩斯节点逾期后，从第一个节点重新开始 =====
@@ -1388,9 +1502,10 @@ function quickReview(pointId,level){
  }
  if(!overDue&&_p&&_p.eb_next&&t>_p.eb_next)overDue=true;
 
+ var continued=false;
  var after=function(){
   if(level>=4)upsertMeta(pointId,t,level);
-  toast((overDue&&level>=4?'\u903e\u671f\uff0c\u5df2\u91cd\u65b0\u5f00\u59cb\u4e00\u8f6e \u00b7 ':'\u5df2\u8bb0\u5f55 ')+lvlName(level));
+  toast((continued?'\u903e\u671f\uff0c\u5df2\u4ece\u5f53\u524d\u8282\u70b9\u7ee7\u7eed \u00b7 ':(overDue&&level>=4?'\u903e\u671f\uff0c\u5df2\u91cd\u65b0\u5f00\u59cb\u4e00\u8f6e \u00b7 ':'\u5df2\u8bb0\u5f55 '))+lvlName(level));
   var hash=location.hash.replace(/^#/,'');
   var parts=hash.split('/');
   if(parts[0]==='chapter')renderChapter(parts[1]);
@@ -1404,8 +1519,11 @@ function quickReview(pointId,level){
  /* ===== 逾期且本次背熟：重新开始一轮 =====
     不依赖 eb_start 新列：直接清空该点旧复习记录，只保留今天这一条。
     这样 ebPlanOf 里 rs 只剩今天 -> first=今天 -> 节点 1/2/4/7/15/30 全部重新排。 */
- if(overDue&&level>=4){
-  ebRestartCore(pointId,level,after);
+ /* v30：漏点一天默认「从当前节点继续」，不再把进度清零；
+    想从头再来，去艾宾浩斯曲线页点「从第1节点重排」。 */
+ if(overDue&&level>=4&&ebContinueInfo(pointId)){
+  continued=true;
+  ebContinueCore(pointId,level,after);
   return;
  }
 
