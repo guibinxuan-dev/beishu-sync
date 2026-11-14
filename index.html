@@ -374,6 +374,38 @@ body.light .sw-bar .track{background:rgba(0,0,0,.07)}
 .eb-dot.today{background:#7c4dff;color:#fff;border-color:#7c4dff;box-shadow:0 0 0 3px rgba(124,77,255,.18)}
 .eb-dot.overdue{background:#fee2e2;color:#dc2626;border-color:#fca5a5}
 
+/* ===== v31：艾宾浩斯按章分组 + 行内背诵按钮 ===== */
+.eb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:12px}
+.eb-ch{display:block;padding:16px 17px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.035);cursor:pointer;transition:.18s;border-left:3px solid rgba(124,155,255,.55)}
+body.light .eb-ch{background:rgba(0,0,0,.015)}
+.eb-ch:hover{transform:translateY(-2px);border-color:rgba(124,155,255,.42);background:rgba(124,155,255,.08)}
+.eb-ch .nm{font-size:14px;font-weight:700;line-height:1.5;margin-bottom:8px;word-break:break-word}
+.eb-ch .st{display:flex;gap:9px;flex-wrap:wrap;font-size:11.5px;color:var(--sub);margin-bottom:9px}
+.eb-ch .st b{font-weight:800}
+.eb-bar{height:7px;border-radius:7px;background:rgba(255,255,255,.07);overflow:hidden}
+body.light .eb-bar{background:rgba(0,0,0,.07)}
+.eb-bar i{display:block;height:100%;border-radius:7px;background:linear-gradient(90deg,var(--brand),var(--brand2))}
+.eb-row{padding:14px 4px;border-bottom:1px dashed var(--line);transition:.18s;border-radius:10px}
+.eb-row:last-child{border-bottom:none}
+.eb-row:hover{background:rgba(255,255,255,.025)}
+.eb-row .top{display:flex;align-items:flex-start;gap:10px;flex-wrap:nowrap}
+.eb-row .info{flex:1 1 auto;min-width:0}
+.eb-row .nm{font-size:14px;font-weight:600;line-height:1.55;word-break:break-word;cursor:pointer}
+.eb-row .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:5px;font-size:11.5px;color:var(--sub)}
+.eb-row .acts{flex:0 0 auto;display:flex;gap:5px;align-items:center;flex-shrink:0}
+.eb-row .sub{margin-top:9px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.eb-filter{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.eb-filter button{padding:6px 13px;font-size:12.5px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--sub);box-shadow:none;font-weight:600}
+.eb-filter button:hover{transform:none;box-shadow:none;background:rgba(255,255,255,.08)}
+.eb-filter button.on{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-color:transparent}
+@media(max-width:680px){
+ .eb-grid{grid-template-columns:1fr}
+ .eb-row .top{flex-wrap:wrap}
+ .eb-row .info{flex:1 1 100%;min-width:0}
+ .eb-row .acts{width:100%;justify-content:flex-end;margin-top:2px}
+ .eb-row .lvl-btns button{width:34px;height:32px;font-size:12px}
+}
+
 /* ========== 作文练笔模块（ESSAY）========== */
 .es-wrap{max-width:100%}
 .es-sec{margin-bottom:18px}
@@ -656,51 +688,193 @@ function ebCurveSvg(){
 function renderEbCurveCard(){
   var today=ebTodayList().length;
   var over=ebOverdueList().length;
-  var h='<div class="card" style="cursor:pointer" onclick="nav(&quot;eb&quot;)"><div class="card-h"><span class="ic">&#129514;</span>艾宾浩斯曲线总览 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">按 1/2/4/7/15/30 天节点一路一路排</span><div class="ch-act"><span class="arrow">&#8594;</span></div></div>';
+  var h='<div class="card" style="cursor:pointer" onclick="nav(&quot;eb&quot;)"><div class="card-h"><span class="ic">&#129514;</span>艾宾浩斯曲线总览 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">按章查看复习进度 · 章内可直接点背</span><div class="ch-act"><span class="arrow">&#8594;</span></div></div>';
   h+=ebCurveSvg();
   h+='<div style="display:flex;gap:10px;margin-top:8px;font-size:12.5px;color:var(--sub)"><span>今天到期 <b style="color:#7c4dff">'+today+'</b> 个</span><span>逾期 <b style="color:#ef4444">'+over+'</b> 个</span><span>节点 1→2→4→7→15→30 天</span></div>';
   h+='<div style="font-size:12.5px;color:var(--sub);line-height:1.7;margin-top:6px">记忆在 1 天内遗忘最快，及时复习是关键。点曲线看每个知识点的节点进度。</div></div>';
   return h;
 }
-function renderEbPage(){
-  var el=document.getElementById('page-detail');
-  if(!el)return;
-  var items=[];
-  points.forEach(function(p){
+/* ===== v31：艾宾浩斯按章分组 + 章内行内背诵按钮 ===== */
+function ebChaptersSorted(){
+  return chapters.slice().sort(function(a,b){
+    var x=(a.sort_order==null?Number(a.id):Number(a.sort_order));
+    var y=(b.sort_order==null?Number(b.id):Number(b.sort_order));
+    if(isNaN(x))x=Number(a.id)||0;
+    if(isNaN(y))y=Number(b.id)||0;
+    return x-y;
+  });
+}
+function ebIsNone(id){return id==='none'||id==='0'||id===0;}
+function ebChPoints(id){
+  if(ebIsNone(id)){
+    var known={};chapters.forEach(function(c){known[c.id]=1;});
+    return points.filter(function(p){return p.chapter_id==null||!known[p.chapter_id];});
+  }
+  return points.filter(function(p){return Number(p.chapter_id)===Number(id);});
+}
+function ebChName(id){
+  if(ebIsNone(id))return '未分章';
+  var cs=chapters.filter(function(c){return Number(c.id)===Number(id);})[0];
+  return cs?cs.name:'该章节';
+}
+function ebStatOf(cps){
+  var started=[],today=0,over=0,finished=0,doneNodes=0,need=0;
+  (cps||[]).forEach(function(p){
     if(!firstDate(p.id))return;
     var plan=ebPlanOf(p.id);
     if(!plan)return;
-    items.push({p:p,plan:plan});
+    started.push({p:p,plan:plan});
+    var done=0;
+    plan.nodes.forEach(function(nd){if(nd.status==='done')done++;});
+    doneNodes+=done;
+    if(plan.todayDue>0)today++;
+    if(plan.overDue>0)over++;
+    if(plan.finished)finished++;
+    if(plan.todayDue>0||plan.overDue>0)need++;
   });
-  items.sort(function(a,b){return (b.plan.nextDue||'').localeCompare(a.plan.nextDue||'')||(a.plan.first||'').localeCompare(b.plan.first||'');});
-  var h='<div class="detail-h"><button class="ghost sm" onclick="back()">&#8592; 返回</button><h2>&#129514; 艾宾浩斯曲线 · 复习计划</h2></div>';
+  return {total:(cps||[]).length,started:started,today:today,over:over,finished:finished,need:need,
+          pct:started.length?Math.round(doneNodes/(started.length*EB_NODES.length)*100):0};
+}
+function ebGroups(){
+  var out=ebChaptersSorted().map(function(c){
+    return {id:c.id,name:c.name,stat:ebStatOf(points.filter(function(p){return Number(p.chapter_id)===Number(c.id);}))};
+  });
+  var known={};out.forEach(function(g){known[g.id]=1;});
+  var orph=points.filter(function(p){return p.chapter_id==null||!known[p.chapter_id];});
+  if(orph.length)out.push({id:'none',name:'未分章',stat:ebStatOf(orph)});
+  return out;
+}
+/* 所有 EB 相关操作完成后的统一重绘：支持 eb / eb/ch/ID 两种路由 */
+function ebRerender(){
+  var h=location.hash.replace(/^#/,'').split('/');
+  if(h[0]==='eb'){
+    if(h[1]==='ch'&&h[2])renderEbChapter(h[2]);else renderEbPage();
+  }
+  else if(h[0]==='chapter')renderChapter(h[1]);
+  else if(h[0]==='detail')renderDetail(h[1]);
+  else if(h[0]==='day')renderDay(h[1]);
+  else if(h[0]==='stat')renderStat(h[1]);
+  else renderHome();
+}
+function ebChCardHTML(g){
+  var s=g.stat;
+  return '<div class="eb-ch" onclick="nav(&quot;eb/ch/'+g.id+'&quot;)">'
+   +'<div class="nm">'+esc(g.name)+'</div>'
+   +'<div class="st"><span>已首背 <b>'+s.started.length+'/'+s.total+'</b></span>'
+   +'<span style="color:#7c4dff">今日 <b>'+s.today+'</b></span>'
+   +'<span style="color:#ef4444">逾期 <b>'+s.over+'</b></span>'
+   +'<span style="color:#16a34a">已巩固 <b>'+s.finished+'</b></span></div>'
+   +'<div class="eb-bar"><i style="width:'+s.pct+'%"></i></div>'
+   +'<div style="font-size:11.5px;color:var(--sub);margin-top:8px">节点进度 '+s.pct+'% · '+s.need+' 条现在要复习 &#8594;</div>'
+   +'</div>';
+}
+function renderEbPage(){
+  var el=document.getElementById('page-detail');if(!el)return;
+  var groups=ebGroups();
+  var tp=0,tst=0,tt=0,to=0;
+  groups.forEach(function(g){tp+=g.stat.total;tst+=g.stat.started.length;tt+=g.stat.today;to+=g.stat.over;});
+  var _ov=ebOverdueList().length;
+  var h='<div class="detail-h"><button class="ghost sm" onclick="back()">&#8592; 返回</button><h2>&#129514; 艾宾浩斯曲线 · 按章复习</h2></div>';
   h+='<div style="padding:14px">';
   h+=ebCurveSvg();
-  h+='<div style="font-size:12.5px;color:var(--sub);margin:8px 0 14px;line-height:1.7">每个知识点首背后，按 1 / 2 / 4 / 7 / 15 / 30 天 6 个节点推进。节点越往后，记忆越牢。</div>';
-  var _ov=ebOverdueList().length;
-  h+='<div class="card" style="padding:0;overflow:hidden"><div class="card-h" style="flex-wrap:wrap;gap:6px"><span class="ic">&#128203;</span>各知识点节点进度 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+items.length+' 个已首背</span>'+(_ov?' <button class="ghost sm" style="margin-left:8px;color:#7c4dff;border-color:#7c4dff;white-space:nowrap" onclick="ebContinueAll()">&#8627; 全部从当前节点继续('+_ov+')</button> <button class="ghost sm" style="color:#ef4444;border-color:#ef4444;white-space:nowrap" onclick="ebRestartAll()">&#8635; 全部重新开始('+_ov+')</button>':'')+'</div>';
-  if(!items.length){h+='<div class="empty">还没有首背过知识点，先去「首背」几题</div>';}
-  else{
-    items.forEach(function(it){
-      var plan=it.plan;
-      var dots=plan.nodes.map(function(nd){
-        var cls=nd.status==='done'?'eb-dot done':nd.status==='today'?'eb-dot today':nd.status==='overdue'?'eb-dot overdue':'eb-dot';
-        return '<span class="'+cls+'" title="第'+nd.node+'节点 · '+nd.day+'天 · '+nd.due+'">'+nd.day+'</span>';
-      }).join('');
-      var tail=plan.finished?'<span class="tag td" style="color:#16a34a">已巩固</span>':(plan.nextDue?'<span style="font-size:12px;color:var(--sub)">下次 '+plan.nextDue+' · 第 '+plan.nextNode+' 节点</span>':'<span style="font-size:12px;color:var(--sub)">等待排期</span>');
-      if(plan.overDue>0){
-        var _ci=ebContinueInfo(it.p.id);
-        tail+=' <button class="ghost sm" style="margin-left:6px;color:#7c4dff;border-color:#7c4dff;white-space:nowrap" onclick="event.stopPropagation();ebContinue('+it.p.id+')">&#8627; 从当前节点继续'+(_ci?' · 第'+_ci.curNode+'节点':'')+'</button>';
-        tail+=' <button class="ghost sm" style="color:#ef4444;border-color:#ef4444;white-space:nowrap" onclick="event.stopPropagation();ebRestart('+it.p.id+')">&#8635; 从第1节点重排</button>';
-      }
-      h+='<div style="padding:12px 16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px" onclick="nav(&quot;detail/'+it.p.id+'&quot;)">';
-      h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><b style="font-size:14.5px">'+esc(it.p.name)+'</b><span style="display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end">'+tail+'</span></div>';
-      h+='<div style="display:flex;gap:6px;flex-wrap:wrap">'+dots+'</div>';
-      h+='</div>';
-    });
+  h+='<div style="font-size:12.5px;color:var(--sub);margin:8px 0 14px;line-height:1.7">每个知识点首背后按 1 / 2 / 4 / 7 / 15 / 30 天 6 个节点推进。下面按章节分组，点进某一章就能看到该章每条的复习进度，并直接在右侧点「背」。</div>';
+  h+='<div class="card" style="padding:16px 18px"><div class="card-h" style="flex-wrap:wrap;gap:6px;margin-bottom:10px"><span class="ic">&#128203;</span>章节复习总览 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+groups.length+' 个章节 · '+tst+' 条已首背</span>'
+   +(_ov?'<div class="ch-act"><button class="ghost sm" style="color:#7c4dff;border-color:#7c4dff;white-space:nowrap" onclick="ebContinueAll()">&#8627; 全部从当前节点继续('+_ov+')</button> <button class="ghost sm" style="color:#ef4444;border-color:#ef4444;white-space:nowrap" onclick="ebRestartAll()">&#8635; 全部重新开始('+_ov+')</button></div>':'')
+   +'</div>';
+  h+='<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--sub)"><span>知识点共 <b style="color:var(--ink)">'+tp+'</b> 条</span><span>今天到期 <b style="color:#7c4dff">'+tt+'</b> 条</span><span>逾期 <b style="color:#ef4444">'+to+'</b> 条</span><span>节点 1→2→4→7→15→30 天</span></div>';
+  h+='</div>';
+  h+='<div class="eb-grid">'+groups.map(ebChCardHTML).join('')+'</div>';
+  h+='<div style="font-size:12px;color:var(--sub);margin-top:12px;line-height:1.7">章内列表按「逾期 → 今天到期 → 等待节点 → 已巩固 → 未首背」排序，最右侧 5 个按钮即 遗 / 糊 / 熟 / 背 / 卡，点完立刻刷新进度。</div>';
+  h+='<footer>数据存于 Supabase 多设备打开同一网址自动同步</footer>';
+  h+='</div>';
+  el.innerHTML=h;
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.getElementById('page-detail').classList.add('on');
+  window.scrollTo(0,0);
+}
+
+var ebChFilter='all',ebChCur=null;
+function setEbChFilter(f,id){ebChFilter=f;renderEbChapter(id);}
+function ebDotHTML(plan){
+  if(!plan)return '<span class="tag to">未首背</span>';
+  return plan.nodes.map(function(nd){
+    var cls=nd.status==='done'?'eb-dot done':nd.status==='today'?'eb-dot today':nd.status==='overdue'?'eb-dot overdue':'eb-dot';
+    return '<span class="'+cls+'" title="第'+nd.node+'节点 · '+nd.day+'天 · '+nd.due+'">'+nd.day+'</span>';
+  }).join('');
+}
+function ebRowHTML(o){
+  var p=o.p,plan=o.plan;
+  var l=Number(lastLevel(p.id))||0,color=colorOf(l);
+  var tail,statColor='var(--sub)';
+  if(!plan){tail='未首背 · 点右侧按钮直接开背';}
+  else if(plan.finished){tail='已巩固 6/6';statColor='#16a34a';}
+  else if(plan.overDue>0){tail='下次 '+plan.nextDue+' · 第 '+plan.nextNode+' 节点（逾期 '+plan.overDue+'）';statColor='#ef4444';}
+  else if(plan.todayDue>0){tail='今天到期 · 第 '+plan.nextNode+' 节点';statColor='#7c4dff';}
+  else{tail='下次 '+(plan.nextDue||'待排')+' · 第 '+(plan.nextNode||'-')+' 节点';}
+  var acts='<span class="lvl-btns" onclick="event.stopPropagation()">'
+   +'<button class="l1" onclick="event.stopPropagation();quickReview('+p.id+',1)">遗</button>'
+   +'<button class="l2" onclick="event.stopPropagation();quickReview('+p.id+',2)">糊</button>'
+   +'<button class="l3" onclick="event.stopPropagation();quickReview('+p.id+',3)">熟</button>'
+   +'<button class="l4" onclick="event.stopPropagation();quickReview('+p.id+',4)">背</button>'
+   +'<button class="l5" onclick="event.stopPropagation();quickReview('+p.id+',5)">卡</button></span>';
+  var extra='';
+  if(plan&&plan.overDue>0){
+    var ci=ebContinueInfo(p.id);
+    extra='<button class="ghost sm" style="margin-left:auto;color:#7c4dff;border-color:#7c4dff;white-space:nowrap" onclick="event.stopPropagation();ebContinue('+p.id+')">&#8627; 从当前节点继续'+(ci?' · 第'+ci.curNode+'节点':'')+'</button>'
+     +'<button class="ghost sm" style="color:#ef4444;border-color:#ef4444;white-space:nowrap" onclick="event.stopPropagation();ebRestart('+p.id+')">&#8635; 从第1节点重排</button>';
   }
+  return '<div class="eb-row" id="ebp_'+p.id+'">'
+   +'<div class="top"><div class="info">'
+   +'<div class="nm" onclick="nav(&quot;detail/'+p.id+'&quot;)">'+esc(p.name)+'</div>'
+   +'<div class="meta">'+tagOf(p.category)+'<span class="tag" style="color:'+color+'">L'+l+' '+lvlName(l)+'</span>'
+   +'<span class="tag">'+(plan?plan.currentNode+'/6 节点':'未首背')+'</span>'
+   +'<span style="color:'+statColor+'">'+tail+'</span></div></div>'
+   +'<div class="acts">'+acts+'</div></div>'
+   +'<div class="sub">'+ebDotHTML(plan)+extra+'</div>'
+   +'</div>';
+}
+function renderEbChapter(id){
+  var el=document.getElementById('page-detail');if(!el)return;
+  if(String(ebChCur)!==String(id)){ebChFilter='all';ebChCur=id;}  // 换章回到「全部」，同章重绘保留筛选
+  var cps=ebChPoints(id);
+  var stat=ebStatOf(cps);
+  var rows=cps.map(function(p){return {p:p,plan:(firstDate(p.id)?ebPlanOf(p.id):null)};});
+  var rank=function(o){
+    if(!o.plan)return 5;
+    if(o.plan.finished)return 4;
+    if(o.plan.overDue>0)return 0;
+    if(o.plan.todayDue>0)return 1;
+    return 2;
+  };
+  rows.sort(function(a,b){
+    var d=rank(a)-rank(b);if(d)return d;
+    var ad=a.plan?(a.plan.nextDue||a.plan.first||''):'',bd=b.plan?(b.plan.nextDue||b.plan.first||''):'';
+    return ad.localeCompare(bd)||(Number(a.p.id)-Number(b.p.id));
+  });
+  var fl=[['all','全部'],['need','现在要背'],['over','逾期'],['today','今天到期'],['done','已巩固'],['new','未首背']];
+  var shown=rows.filter(function(o){
+    var f=ebChFilter;
+    if(f==='need')return !!(o.plan&&(o.plan.overDue>0||o.plan.todayDue>0));
+    if(f==='over')return !!(o.plan&&o.plan.overDue>0);
+    if(f==='today')return !!(o.plan&&o.plan.todayDue>0);
+    if(f==='done')return !!(o.plan&&o.plan.finished);
+    if(f==='new')return !o.plan;
+    return true;
+  });
+  var h='<div class="back" onclick="nav(&quot;eb&quot;)">&#8592; 返回章节总览</div>';
+  h+='<div class="card"><div class="card-h" style="flex-wrap:wrap;gap:8px"><span class="ic">&#128214;</span>'+esc(ebChName(id))+' <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">本章复习进度</span>'
+   +(ebIsNone(id)?'':'<div class="ch-act"><button class="ghost sm" onclick="nav(&quot;chapter/'+id+'&quot;)">章节详情</button></div>')
+   +'</div>';
+  h+='<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--sub)"><span>已首背 <b style="color:var(--ink)">'+stat.started.length+'/'+stat.total+'</b></span><span>今天到期 <b style="color:#7c4dff">'+stat.today+'</b></span><span>逾期 <b style="color:#ef4444">'+stat.over+'</b></span><span>已巩固 <b style="color:#16a34a">'+stat.finished+'</b></span></div>';
+  h+='<div class="eb-bar" style="margin-top:12px"><i style="width:'+stat.pct+'%"></i></div><div style="font-size:11.5px;color:var(--sub);margin-top:6px">全章节点进度 '+stat.pct+'% · '+stat.need+' 条现在要复习</div></div>';
+  h+='<div class="eb-filter">'+fl.map(function(x){return '<button class="'+(ebChFilter===x[0]?'on':'')+'" onclick="setEbChFilter(\''+x[0]+'\',\''+id+'\')">'+x[1]+'</button>';}).join('')+'</div>';
+  h+='<div class="card" style="padding:8px 18px">';
+  if(!rows.length)h+='<div class="empty">本章还没有知识点</div>';
+  else if(!shown.length)h+='<div class="empty">这个筛选下没有知识点 · 点「全部」看本章全部条目</div>';
+  else h+=shown.map(ebRowHTML).join('');
   h+='</div>';
-  h+='</div>';
+  h+='<div class="card" style="padding:16px 18px;font-size:12.5px;color:var(--sub);line-height:1.8">&#128161; 右侧 5 个按钮：遗 / 糊 / 熟 / 背 / 卡，点完立刻写入并刷新本章进度，不用再点进详情页。逾期条目下方的紫色「从当前节点继续」保留已完成节点、把漏掉的节点记到今天；红色「从第1节点重排」才清零重来。</div>';
+  h+='<footer>数据存于 Supabase 多设备打开同一网址自动同步</footer>';
   el.innerHTML=h;
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
   document.getElementById('page-detail').classList.add('on');
@@ -792,12 +966,7 @@ function ebContinue(pointId){
    '若想进度清零、从头再来，请改用「从第1节点重排」。'))return;
  ebContinueCore(pointId,4,function(){
   toast('已从当前节点继续 · '+info.doneAfter+'/6'+(info.nextDue?' · 下次 '+info.nextDue:' · 已巩固'));
-  var h=location.hash.replace(/^#/,'');var parts=h.split('/');
-  if(parts[0]==='eb')renderEbPage();
-  else if(parts[0]==='detail')renderDetail(parts[1]);
-  else if(parts[0]==='chapter')renderChapter(parts[1]);
-  else if(parts[0]==='day')renderDay(parts[1]);
-  else renderHome();
+  ebRerender();
  });
 }
 function ebContinueAll(){
@@ -808,8 +977,7 @@ function ebContinueAll(){
  var step=function(){
   if(i>=list.length){
    toast('已全部从当前节点继续');
-   var h=location.hash.replace(/^#/,'');var parts=h.split('/');
-   if(parts[0]==='eb')renderEbPage();else renderHome();
+   ebRerender();
    return;
   }
   ebContinueCore(list[i].point.id,4,function(){i++;step();});
@@ -851,12 +1019,7 @@ function ebRestart(pointId){
  if(!confirm((p?('\u300c'+p.name+'\u300d'):'\u8be5\u77e5\u8bc6\u70b9')+'\u5df2\u6709 '+n+' \u4e2a\u590d\u4e60\u8282\u70b9\u903e\u671f\u3002\n\n\u70b9\u51fb\u786e\u5b9a\uff1a\u4ece\u4eca\u5929\u8d77\u91cd\u65b0\u5f00\u59cb\u4e00\u8f6e\uff0c\n\u8282\u70b9 1/2/4/7/15/30 \u5929\u5168\u90e8\u91cd\u65b0\u6392\u671f\u3002'))return;
  ebRestartCore(pointId,4,function(){
   toast('\u5df2\u91cd\u65b0\u5f00\u59cb \u00b7 \u8282\u70b9\u4ece\u4eca\u5929\u91cd\u6392');
-  var h=location.hash.replace(/^#/,'');var parts=h.split('/');
-  if(parts[0]==='eb')renderEbPage();
-  else if(parts[0]==='detail')renderDetail(parts[1]);
-  else if(parts[0]==='chapter')renderChapter(parts[1]);
-  else if(parts[0]==='day')renderDay(parts[1]);
-  else renderHome();
+  ebRerender();
  });
 }
 function ebRestartAll(){
@@ -867,8 +1030,7 @@ function ebRestartAll(){
  var step=function(){
   if(i>=list.length){
    toast('\u5df2\u5168\u90e8\u91cd\u65b0\u5f00\u59cb');
-   var h=location.hash.replace(/^#/,'');var parts=h.split('/');
-   if(parts[0]==='eb')renderEbPage();else renderHome();
+   ebRerender();
    return;
   }
   ebRestartCore(list[i].point.id,4,function(){i++;step();});
@@ -915,7 +1077,8 @@ function router(){
  }else if(parts[0]==='eb'){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
   document.getElementById('page-detail').classList.add('on');
-  renderEbPage();
+  if(parts[1]==='ch'&&parts[2])renderEbChapter(parts[2]);
+  else renderEbPage();
  }else if(parts[0]==='due'){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
   document.getElementById('page-detail').classList.add('on');
@@ -970,7 +1133,7 @@ function renderHome(){
  h+='<div class="card en-card" id="swCard"><div class="card-h"><span class="ic">&#9998;</span>考研英语 · 小作文 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">背熟才解锁 · 3 天一档</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;english/w&quot;)">去背诵</button></div></div><div class="empty">正在准备今日小作文…</div></div>';
  h+='<div class="card en-card" style="border-color:#7c9bff33"><div class="card-h"><span class="ic">&#128221;</span>作文练笔 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">大作文三段搭配 + 小作文整篇模板 · 填空成文</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;essay&quot;)">去练笔</button></div></div><div class="empty" style="cursor:pointer" onclick="nav(&quot;essay&quot;)">大作文选三段搭配 / 小作文选整篇模板，在模板上直接填空 →</div></div><div class="card en-card" id="enCard"><div class="card-h"><span class="ic">&#127757;</span>每日英语 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 片 · 应用验证</span></div><div class="empty">正在准备今日语料…</div></div>';
   var ebToday=ebTodayList().length,ebOver=ebOverdueList().length;
-  h+='<div class="card due-card" style="border-color:#7c4dff33"><div class="card-h"><span class="ic">&#128204;</span>今日艾宾浩斯到期 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+ebToday+' 个知识点按节点排队</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;due&quot;)">去复习</button></div></div><div class="due-summary" onclick="nav(&quot;eb&quot;)"><div class="due-num"><b id="dueNum" style="color:#7c4dff">'+ebToday+'</b><span>条今日到期 · '+ebOver+' 条逾期</span></div><div class="due-line"><div class="due-bar" style="--brand:#7c4dff"><i id="dueBar" style="width:'+(ebToday?100:0)+'%;background:#7c4dff"></i></div><span id="dueRate">按 1/2/4/7/15/30 天节奏推进</span></div></div></div>';
+  h+='<div class="card due-card" style="border-color:#7c4dff33"><div class="card-h"><span class="ic">&#128204;</span>今日艾宾浩斯到期 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">'+ebToday+' 个知识点按节点排队</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;eb&quot;)">按章复习</button><button class="ghost sm" onclick="nav(&quot;due&quot;)">去复习</button></div></div><div class="due-summary" onclick="nav(&quot;eb&quot;)"><div class="due-num"><b id="dueNum" style="color:#7c4dff">'+ebToday+'</b><span>条今日到期 · '+ebOver+' 条逾期</span></div><div class="due-line"><div class="due-bar" style="--brand:#7c4dff"><i id="dueBar" style="width:'+(ebToday?100:0)+'%;background:#7c4dff"></i></div><span id="dueRate">按 1/2/4/7/15/30 天节奏推进</span></div></div></div>';
   h+=renderEbCurveCard();
   h+='<div class="card quiz-card"><div class="card-h"><span class="ic">&#128221;</span>抽默写 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">每天 1 题 · 抽到即默 · 自己打分</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;quiz&quot;)">进入</button></div></div><div class="quiz-stat"><div><div>今日已默 <b id="quizDone">0</b> / 1 <span id="quizExtra" style="display:none;color:var(--brand)">+<span id="quizExtraN">0</span> 额外</span></div><div><span id="quizStreak">连续 0 天</span> · 共默 <span id="quizTotal">0</span> 次</div></div><button class="ghost" onclick="pickQuiz(false)">&#127919; 抽一题</button></div></div>';
  h+='<div class="card due-card"><div class="card-h"><span class="ic">&#128204;</span>今日待复习 <span style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px">点击进入清单</span><div class="ch-act"><button class="ghost sm" onclick="nav(&quot;due&quot;)">进入复习</button></div></div><div class="due-summary" onclick="nav(&quot;due&quot;)"><div class="due-num"><b id="dueNum">'+duec+'</b><span>条待复习</span></div><div class="due-line"><div class="due-bar"><i id="dueBar" style="width:0%"></i></div><span id="dueRate">0/0 已完成</span></div></div></div>';
@@ -1506,14 +1669,7 @@ function quickReview(pointId,level){
  var after=function(){
   if(level>=4)upsertMeta(pointId,t,level);
   toast((continued?'\u903e\u671f\uff0c\u5df2\u4ece\u5f53\u524d\u8282\u70b9\u7ee7\u7eed \u00b7 ':(overDue&&level>=4?'\u903e\u671f\uff0c\u5df2\u91cd\u65b0\u5f00\u59cb\u4e00\u8f6e \u00b7 ':'\u5df2\u8bb0\u5f55 '))+lvlName(level));
-  var hash=location.hash.replace(/^#/,'');
-  var parts=hash.split('/');
-  if(parts[0]==='chapter')renderChapter(parts[1]);
-  else if(parts[0]==='detail')renderDetail(parts[1]);
-  else if(parts[0]==='day')renderDay(parts[1]);
-  else if(parts[0]==='eb')renderEbPage();
-  else if(parts[0]==='stat')renderStat(parts[1]);
-  else renderHome();
+  ebRerender();
  };
 
  /* ===== 逾期且本次背熟：重新开始一轮 =====
