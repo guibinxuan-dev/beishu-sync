@@ -745,16 +745,23 @@ function ebGroups(){
   return out;
 }
 /* 所有 EB 相关操作完成后的统一重绘：支持 eb / eb/ch/ID 两种路由 */
+/* v36 通用就地重绘：任何写库操作完成后都按当前路由原地刷新，绝不回主界面。
+   对带内部草稿状态的页面（作文练笔/英语/抽默写）不重绘，避免清空正在填的内容。 */
 function ebRerender(){
-  var h=location.hash.replace(/^#/,'').split('/');
-  if(h[0]==='eb'){
-    if(h[1]==='ch'&&h[2])renderEbChapter(h[2]);else renderEbPage();
-  }
-  else if(h[0]==='chapter')renderChapter(h[1]);
-  else if(h[0]==='detail')renderDetail(h[1]);
-  else if(h[0]==='day')renderDay(h[1]);
-  else if(h[0]==='stat')renderStat(h[1]);
+ var h=location.hash.replace(/^#/,'').split('/');
+ var p0=h[0];
+ try{
+  if(p0==='eb'){ if(h[1]==='ch'&&h[2])renderEbChapter(h[2]); else renderEbPage(); }
+  else if(p0==='chapter'){ if(chOf(+h[1]))renderChapter(h[1]); else renderHome(); }
+  else if(p0==='detail')renderDetail(h[1]);
+  else if(p0==='day')renderDay(h[1]);
+  else if(p0==='stat')renderStat(h[1]||'today');
+  else if(p0==='due')renderDuePage();
+  else if(p0==='essay'){ /* 保留填空草稿，不重绘 */ }
+  else if(p0==='english'){ /* 保留背诵状态，不重绘 */ }
+  else if(p0==='quiz'){ /* 不打断答题 */ }
   else renderHome();
+ }catch(e){ console.error('ebRerender',e); }
 }
 function ebChCardHTML(g){
   var s=g.stat;
@@ -1147,7 +1154,7 @@ h+='<div class="card"><div class="card-h"><span class="ic">&#128214;</span>章�
   var cps=points.filter(function(p){return p.chapter_id==c.id;});
   var done=cps.filter(function(p){return firstDate(p.id);}).length;
   var pct=cps.length?Math.round(done/cps.length*100):0;
-  return '<div class="cat-card" onclick="nav(\'chapter/'+c.id+'\')"><h3>'+esc(c.name)+'</h3><div class="bar"><i style="width:'+pct+'%"></i></div><div class="cnt">'+done+' / '+cps.length+' 已首背 '+pct+'%</div><span class="arrow">&#8594;</span></div>';
+  return '<div class="cat-card" onclick="nav(\'chapter/'+c.id+'\')"><h3>'+esc(c.name)+'</h3><div class="bar"><i style="width:'+pct+'%"></i></div><div class="cnt">'+done+' / '+cps.length+' 已首背 '+pct+'%</div><button class="ghost sm" style="position:relative;z-index:2;margin-top:8px" onclick="event.stopPropagation();exportChapterDocx('+c.id+',this)">&#11015; 导出本章 Word</button><span class="arrow">&#8594;</span></div>';
  }).join('')+'</div></div>';
  h+='<div class="card"><div class="card-h"><span class="ic">&#128293;</span>掌握地图 <span id="mapTag" style="font-size:11.5px;color:var(--sub);font-weight:400;margin-left:2px"></span></div>';
  h+='<div class="tabs"><div class="tab'+(homeView==='map'?' on':'')+'" onclick="homeView=\'map\';renderHome()">知识点地图</div><div class="tab'+(homeView==='cal'?' on':'')+'" onclick="homeView=\'cal\';renderHome()">打卡日历</div></div>';
@@ -1468,7 +1475,7 @@ function renderChapter(id){
  var todo=cps.filter(function(p){return !firstDate(p.id);});
  var donec=cps.filter(function(p){return firstDate(p.id);}).length;
  var h='<div class="back" onclick="back()">&#8592; 返回</div>';
- h+='<div class="card"><div class="card-h" style="margin-bottom:14px"><span class="ic">&#128214;</span>'+esc(c.name)+'<div class="ch-act"><button class="ghost sm" onclick="batchNew('+cid+')">一键首背未背的</button><button class="ghost sm" onclick="chBatch=chBatch==='+cid+'?null:'+cid+';renderChapter('+cid+')">'+(chBatch==cid?'退出批量':'批量编辑')+'</button></div></div><div style="height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden;margin:12px 0 4px"><i style="display:block;height:100%;width:'+(cps.length?Math.round(donec/cps.length*100):0)+'%;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:8px"></i></div><div style="font-size:13px;color:var(--sub)">'+donec+' / '+cps.length+' 已首背'+(todo.length?' · 还有 '+todo.length+' 条待首背':'')+'</div></div>';
+ h+='<div class="card"><div class="card-h" style="margin-bottom:14px"><span class="ic">&#128214;</span>'+esc(c.name)+'<div class="ch-act"><button class="ghost sm" onclick="batchNew('+cid+')">一键首背未背的</button><button class="ghost sm" onclick="chBatch=chBatch==='+cid+'?null:'+cid+';renderChapter('+cid+')">'+(chBatch==cid?'退出批量':'批量编辑')+'</button><button class="ghost sm" onclick="exportChapterDocx('+cid+',this)">&#11015; 导出本章 Word</button></div></div><div style="height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden;margin:12px 0 4px"><i style="display:block;height:100%;width:'+(cps.length?Math.round(donec/cps.length*100):0)+'%;background:linear-gradient(90deg,var(--brand),var(--brand2));border-radius:8px"></i></div><div style="font-size:13px;color:var(--sub)">'+donec+' / '+cps.length+' 已首背'+(todo.length?' · 还有 '+todo.length+' 条待首背':'')+'</div></div>';
  if(chBatch==cid){
   var sch='<option value="">改章节 →</option>'+chapters.map(function(cc){return '<option value="'+cc.id+'">'+esc(cc.name)+'</option>';}).join('');
   var ca='<option value="">改题型 →</option><option>名词解释</option><option>简答</option><option>论述</option><option>其他</option>';
@@ -1700,7 +1707,7 @@ function delPoint(id){
  .then(function(){return rest('/kb_points?id=eq.'+id,'DELETE');})
  .then(function(){
   points=points.filter(function(p){return p.id!=id;});reviews=reviews.filter(function(r){return r.point_id!=id;});notes=notes.filter(function(n){return n.point_id!=id;});delete metas[id];
-  toast('已删除');chSel={};var h=location.hash.replace(/^#/,'');var parts=h.split('/');renderChapter(parts[1]||0);
+  toast('已删除 · 停留在当前页');chSel={};ebRerender();
  }).catch(function(){toast('删除失败');});
 }
 var curPoint=null;
@@ -2030,15 +2037,22 @@ function submitPoint(){
  var content=document.getElementById('fContent').innerHTML.trim();
  if(!name){toast('请填写知识点名称');return;}
  var body={chapter_id:chapter_id,name:name,category:category,content:content};
+ var btn=document.querySelector('.modal-acts button:last-child');
+ if(btn){btn.disabled=true;btn.textContent='保存中…';}
+ var restore=function(){if(btn){btn.disabled=false;btn.textContent='保存';}};
+ var ok=function(msg){restore();closeModal();toast(msg+' · 停留在当前页');ebRerender();};
+ var fail=function(e){restore();console.error('submitPoint',e);toast('保存失败，内容已保留，可重试');};
  if(curPoint){
-  Object.assign(curPoint,body);
-  rest('/kb_points?id=eq.'+curPoint.id,'PATCH',body).then(function(){toast('已更新');closeModal();var h=location.hash.replace(/^#/,'');renderChapter(h.split('/')[1]||0);}).catch(function(){toast('保存失败');});
+  rest('/kb_points?id=eq.'+curPoint.id,'PATCH',body).then(function(){
+   Object.assign(curPoint,body);ok('已更新');
+  },fail);
  }else{
   rest('/kb_points?select=*','POST',body).then(function(r){
    var np=r&&r[0];
-   if(np)return rest('/kb_reviews','POST',{point_id:np.id,review_date:ts(),level:4,note:'首背'}).then(function(){toast('已添加 视为首背');});
-   toast('已添加');
-  }).catch(function(){toast('添加失败');}).then(function(){closeModal();renderHome();});
+   if(np&&!points.some(function(x){return x.id==np.id;}))points.unshift(np);
+   if(np)return rest('/kb_reviews','POST',{point_id:np.id,review_date:ts(),level:4,note:'首背'}).catch(function(){return null;});
+   return null;
+  }).then(function(){ok('已添加');},fail);
  }
 }
 function closeModal(){document.getElementById('mask').classList.remove('on');curPoint=null;}
@@ -2989,6 +3003,169 @@ function esCopy(){
     try{document.execCommand('copy');toast('已复制');}catch(e){toast('复制失败');}
     document.body.removeChild(ta);
   }
+}
+
+
+/* ==================== v36 导出本章 Word（.docx） ====================
+   零外部依赖：手写 ZIP(store) + WordprocessingML，浏览器/手机离线可生成。
+   不在数据库留任何导出历史。 */
+/* DOCX_CORE_BEGIN */
+var DX_CRC=(function(){var t=[];for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function dxCrc32(buf){var c=0xFFFFFFFF;for(var i=0;i<buf.length;i++)c=DX_CRC[(c^buf[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function dxUtf8(s){
+ var out=[],i,c,c2,cp;s=String(s==null?'':s);
+ for(i=0;i<s.length;i++){
+  c=s.charCodeAt(i);
+  if(c<0x80)out.push(c);
+  else if(c<0x800)out.push(0xC0|(c>>6),0x80|(c&63));
+  else if(c>=0xD800&&c<=0xDBFF&&i+1<s.length){
+   c2=s.charCodeAt(i+1);cp=0x10000+((c-0xD800)<<10)+(c2-0xDC00);i++;
+   out.push(0xF0|(cp>>18),0x80|((cp>>12)&63),0x80|((cp>>6)&63),0x80|(cp&63));
+  }else out.push(0xE0|(c>>12),0x80|((c>>6)&63),0x80|(c&63));
+ }
+ return new Uint8Array(out);
+}
+function dxEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'');}
+function dxPlain(html){
+ var s=String(html==null?'':html);
+ s=s.replace(/<\s*br\s*\/?\s*>/gi,'\n').replace(/<\/\s*(p|div|li|h[1-6])\s*>/gi,'\n');
+ s=s.replace(/<[^>]*>/g,'');
+ s=s.replace(/&nbsp;/gi,' ').replace(/&amp;/gi,'&').replace(/&lt;/gi,'<').replace(/&gt;/gi,'>').replace(/&quot;/gi,'"').replace(/&#39;/gi,"'");
+ return s.replace(/\n{2,}/g,'\n').trim();
+}
+function dxZip(files){
+ var parts=[],central=[],offset=0,names=Object.keys(files);
+ names.forEach(function(name){
+  var nb=dxUtf8(name),data=dxUtf8(files[name]);
+  var crc=dxCrc32(data);
+  var lh=new Uint8Array(30+nb.length),lv=new DataView(lh.buffer);
+  lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);lv.setUint16(6,0x0800,true);
+  lv.setUint16(8,0,true);lv.setUint16(10,0,true);lv.setUint16(12,0,true);
+  lv.setUint32(14,crc,true);lv.setUint32(18,data.length,true);lv.setUint32(22,data.length,true);
+  lv.setUint16(26,nb.length,true);lv.setUint16(28,0,true);
+  lh.set(nb,30);
+  parts.push(lh,data);
+  var ch=new Uint8Array(46+nb.length),cv=new DataView(ch.buffer);
+  cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);
+  cv.setUint16(8,0x0800,true);cv.setUint16(10,0,true);cv.setUint16(12,0,true);cv.setUint16(14,0,true);
+  cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);
+  cv.setUint16(28,nb.length,true);cv.setUint16(30,0,true);cv.setUint16(32,0,true);
+  cv.setUint16(34,0,true);cv.setUint16(36,0,true);cv.setUint32(38,0,true);
+  cv.setUint32(42,offset,true);ch.set(nb,46);
+  central.push(ch);
+  offset+=lh.length+data.length;
+ });
+ var cdSize=0;central.forEach(function(c){cdSize+=c.length;});
+ var total=offset+cdSize+22,out=new Uint8Array(total),pos=0;
+ parts.forEach(function(b){out.set(b,pos);pos+=b.length;});
+ central.forEach(function(b){out.set(b,pos);pos+=b.length;});
+ var ev=new DataView(out.buffer);
+ ev.setUint32(pos,0x06054b50,true);ev.setUint16(pos+4,0,true);ev.setUint16(pos+6,0,true);
+ ev.setUint16(pos+8,names.length,true);ev.setUint16(pos+10,names.length,true);
+ ev.setUint32(pos+12,cdSize,true);ev.setUint32(pos+16,offset,true);ev.setUint16(pos+20,0,true);
+ return out;
+}
+function dxPara(text,kind){
+ var sz=22,bold=0,color=null,after=120;
+ if(kind==='h1'){sz=36;bold=1;after=200;}
+ else if(kind==='h2'){sz=28;bold=1;after=180;}
+ else if(kind==='h3'){sz=24;bold=1;after=120;}
+ else if(kind==='small'){sz=18;color='777777';after=100;}
+ var rpr='<w:rPr><w:rFonts w:ascii="Microsoft YaHei" w:eastAsia="Microsoft YaHei" w:hAnsi="Microsoft YaHei"/>'
+   +(bold?'<w:b/>':'')+(color?'<w:color w:val="'+color+'"/>':'')+'<w:sz w:val="'+sz+'"/><w:szCs w:val="'+sz+'"/></w:rPr>';
+ var lines=String(text==null?'':text).split('\n');
+ return '<w:p><w:pPr><w:spacing w:after="'+after+'" w:line="360" w:lineRule="auto"/></w:pPr>'
+   +lines.map(function(ln,i){return '<w:r>'+rpr+(i?'<w:br/>':'')+'<w:t xml:space="preserve">'+dxEsc(ln)+'</w:t></w:r>';}).join('')
+   +'</w:p>';
+}
+function dxDocx(blocks){
+ var body=(blocks||[]).map(function(b){return dxPara(b.text,b.t||'p');}).join('');
+ var doc='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+  +'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'
+  +body
+  +'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr>'
+  +'</w:body></w:document>';
+ return {
+  '[Content_Types].xml':'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+   +'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+   +'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+   +'<Default Extension="xml" ContentType="application/xml"/>'
+   +'<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
+   +'<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'
+   +'</Types>',
+  '_rels/.rels':'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+   +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+   +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>'
+   +'</Relationships>',
+  'word/_rels/document.xml.rels':'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+   +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+   +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+   +'</Relationships>',
+  'word/styles.xml':'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+   +'<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+   +'<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Microsoft YaHei" w:eastAsia="Microsoft YaHei" w:hAnsi="Microsoft YaHei"/><w:sz w:val="22"/></w:rPr></w:rPrDefault></w:docDefaults>'
+   +'<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>'
+   +'</w:styles>',
+  'word/document.xml':doc
+ };
+}
+/* DOCX_CORE_END */
+
+function dxSafeName(name){
+ return String(name||'').replace(/[\\/:*?"<>|（）()【】\[\]{}]/g,'').replace(/\s+/g,'_').replace(/^_+|_+$/g,'').slice(0,50)||'章节';
+}
+function exportChapterDocx(cid,btn){
+ var c=chapters.filter(function(x){return Number(x.id)===Number(cid);})[0];
+ if(!c){toast('章节不存在');return;}
+ var cps=points.filter(function(p){return Number(p.chapter_id)===Number(cid);});
+ if(!cps.length){toast('本章暂无知识点，无需导出');return;}
+ if(btn){btn.disabled=true;btn.dataset.oldTxt=btn.textContent;btn.textContent='生成中…';}
+ var restore=function(){if(btn){btn.disabled=false;btn.textContent=btn.dataset.oldTxt||'⬇ 导出本章 Word';}};
+ try{
+  var st=ebStatOf(cps);
+  var ids={};cps.forEach(function(p){ids[p.id]=1;});
+  var nts=notes.filter(function(n){return ids[n.point_id];}).sort(function(a,b){
+   return String(b.note_date||'').localeCompare(String(a.note_date||''))||(Number(b.id)||0)-(Number(a.id)||0);
+  });
+  var cat={};cps.forEach(function(p){var k=p.category||'简答';cat[k]=(cat[k]||0)+1;});
+  var B=[];
+  B.push({t:'h1',text:c.name});
+  B.push({t:'small',text:'背书地图 · 知识点正文 + 卡点备注 · 导出于 '+new Date().toLocaleString()});
+  B.push({t:'h2',text:'一、章节复习进度'});
+  B.push({t:'p',text:'知识点 '+st.total+' 条 · 已首背 '+st.started.length+' 条 · 未首背 '+(st.total-st.started.length)+' 条'});
+  B.push({t:'p',text:'今日到期 '+st.today+' 条 · 逾期 '+st.over+' 条 · 已巩固 '+st.finished+' 条 · 现在要复习 '+st.need+' 条'});
+  B.push({t:'p',text:'艾宾浩斯节点总进度 '+st.pct+'%（已首背条目的 6 个节点完成率）'});
+  B.push({t:'p',text:'题型分布：'+Object.keys(cat).map(function(k){return k+' '+cat[k]+' 条';}).join(' · ')});
+  B.push({t:'h2',text:'二、知识点正文'});
+  cps.forEach(function(p,i){
+   B.push({t:'h3',text:(i+1)+'. '+(p.name||'')});
+   B.push({t:'small',text:'题型：'+(p.category||'简答')+' · 当前等级 L'+lastLevel(p.id)+' · 首背 '+(firstDate(p.id)||'未首背')});
+   var txt=dxPlain(p.content||'');
+   if(txt)txt.split(/\n+/).forEach(function(ln){if(ln.trim())B.push({t:'p',text:ln.trim()});});
+   else B.push({t:'small',text:'（该知识点暂无内容）'});
+   var pn=nts.filter(function(n){return Number(n.point_id)===Number(p.id);});
+   if(pn.length){
+    B.push({t:'small',text:'卡点备注 '+pn.length+' 条：'});
+    pn.forEach(function(n){B.push({t:'p',text:'· ['+(n.note_date||'')+'] '+dxPlain(n.content||n.text||'')});});
+   }
+  });
+  B.push({t:'h2',text:'三、卡点备注汇总（按日期倒序）'});
+  if(!nts.length)B.push({t:'small',text:'暂无卡点备注'});
+  else nts.forEach(function(n){
+   var p=cps.filter(function(x){return Number(x.id)===Number(n.point_id);})[0];
+   B.push({t:'p',text:'['+(n.note_date||'')+'] '+(p?p.name:('知识点'+n.point_id))+'：'+dxPlain(n.content||n.text||'')});
+  });
+  B.push({t:'small',text:'— 背书地图导出 · 数据实时读取自 Supabase —'});
+  var bytes=dxZip(dxDocx(B));
+  var blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  var url=URL.createObjectURL(blob),a=document.createElement('a');
+  var fname='背书地图_'+dxSafeName(c.name)+'_知识点.docx';
+  a.href=url;a.download=fname;document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1500);
+  restore();toast('已导出：'+fname);
+ }catch(e){
+  restore();console.error('exportChapterDocx',e);toast('导出失败：'+(e&&e.message?e.message:e));
+ }
 }
 
 </script>
