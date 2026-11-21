@@ -543,20 +543,60 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 function clean(s){var d=document.createElement('div');d.innerHTML=s;return d.textContent||'';}
 function daysBetween(a,b){var x=new Date(a);x.setHours(0,0,0,0);return Math.round((new Date(b)-x)/86400000);}
 function addDaysStr(s,n){var x=new Date(s);x.setDate(x.getDate()+n);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());}
+/* v37 流畅度：数据版本 + 页面缓存标记。
+   写库成功 dataRev++，页面 DOM 打上渲染时的版本；数据没变时来回切换只切显示，不重建 DOM。 */
+var dataRev=0;
+function markPage(key){
+ var on=document.querySelector('.page.on');
+ if(!on)return;
+ on.dataset.rkey=key||(location.hash.replace(/^#/,'')||'home');
+ on.dataset.rev=String(dataRev);
+ on.dataset.plen=String(points.length);
+ on.dataset.rlen=String(reviews.length);
+ on.dataset.nlen=String(notes.length);
+}
 function rest(path,method,body,extra){
  var hd={'Content-Type':'application/json','apikey':APIKEY,'Authorization':'Bearer '+APIKEY};
  if(extra)Object.keys(extra).forEach(function(k){hd[k]=extra[k];});
  var init={method:method||'GET',headers:hd};
  if(body!==undefined)init.body=JSON.stringify(body);
+ var m=(method||'GET').toUpperCase();
  return fetch(SUPABASE_URL+'/rest/v1'+path,init).then(function(r){
   if(!r.ok){return r.text().then(function(t){throw new Error(t||('HTTP '+r.status));});}
-  if(r.status===204)return null;
-  var ct=r.headers.get('content-type')||'';return ct.indexOf('json')>-1?r.json():null;
+  var out=(r.status===204)?Promise.resolve(null)
+    :(((r.headers.get('content-type')||'').indexOf('json')>-1)?r.json():Promise.resolve(null));
+  return out.then(function(v){
+   if(m!=='GET')dataRev++;       // 任何写库成功 -> 页面缓存失效
+   return v;
+  });
  });
 }
 function chOf(id){return chapters.filter(function(c){return c.id==id;})[0]||null;}
-function pointReviews(id){return reviews.filter(function(r){return r.point_id==id;}).sort(function(a,b){return a.review_date.localeCompare(b.review_date);});}
-function pointNotes(id){return notes.filter(function(n){return n.point_id==id;}).sort(function(a,b){return b.note_date.localeCompare(a.note_date);});}
+var _prSrc=null,_prLen=-1,_prMap=null,_pnSrc=null,_pnLen=-1,_pnMap=null;
+/* v37：按 point_id 预分桶并只排一次。数组引用或长度变化（push/unshift/filter 重赋值）自动重建；
+   原地改对象属性（如 r.level=4）不影响分桶与排序，索引里是同一对象引用，读到的仍是新值。 */
+function pointReviews(id){
+ if(_prSrc!==reviews||_prLen!==reviews.length){
+  _prMap={};
+  reviews.forEach(function(r){var k=r.point_id;(_prMap[k]||(_prMap[k]=[])).push(r);});
+  Object.keys(_prMap).forEach(function(k){
+   _prMap[k].sort(function(a,b){return String(a.review_date||'').localeCompare(String(b.review_date||''));});
+  });
+  _prSrc=reviews;_prLen=reviews.length;
+ }
+ return _prMap[id]||[];
+}
+function pointNotes(id){
+ if(_pnSrc!==notes||_pnLen!==notes.length){
+  _pnMap={};
+  notes.forEach(function(n){var k=n.point_id;(_pnMap[k]||(_pnMap[k]=[])).push(n);});
+  Object.keys(_pnMap).forEach(function(k){
+   _pnMap[k].sort(function(a,b){return String(b.note_date||'').localeCompare(String(a.note_date||''));});
+  });
+  _pnSrc=notes;_pnLen=notes.length;
+ }
+ return _pnMap[id]||[];
+}
 function lastLevel(id){var rs=pointReviews(id);return rs.length?rs[rs.length-1].level:0;}
 function firstDate(id){var rs=pointReviews(id);return rs.length?rs[0].review_date:null;}
 function metaOf(id){return metas[id]||null;}
@@ -762,6 +802,7 @@ function ebRerender(){
   else if(p0==='quiz'){ /* 不打断答题 */ }
   else renderHome();
  }catch(e){ console.error('ebRerender',e); }
+ try{markPage();}catch(e){}
 }
 function ebChCardHTML(g){
   var s=g.stat;
@@ -1050,8 +1091,19 @@ function back(){if(location.hash&&location.hash.length>1){history.back();}else{l
 window.addEventListener('hashchange',router);
 function router(){
  var h=location.hash.replace(/^#/,'');
+ var key=h||'home';
+ var pages=document.querySelectorAll('.page');
+ var hit=null;
+ for(var _i=0;_i<pages.length;_i++){if(pages[_i].dataset.rkey===key){hit=pages[_i];break;}}
+ if(hit&&String(hit.dataset.rev)===String(dataRev)
+   &&hit.dataset.plen===String(points.length)
+   &&hit.dataset.rlen===String(reviews.length)
+   &&hit.dataset.nlen===String(notes.length)){
+  pages.forEach(function(p){p.classList.remove('on');});
+  hit.classList.add('on');window.scrollTo(0,0);return;   // 不重建 DOM，瞬间回退
+ }
  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
- if(!h){document.getElementById('page-home').classList.add('on');renderHome();window.scrollTo(0,0);return;}
+ if(!h){document.getElementById('page-home').classList.add('on');renderHome();markPage(key);window.scrollTo(0,0);return;}
  var parts=h.split('/');
  if(parts[0]==='english'){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
@@ -1059,13 +1111,13 @@ function router(){
   if(parts[1]==='w'){var swSub=parts[2]; if(swSub&&SW_DATA.some(function(x){return x.id==(+swSub);})){swCur=+swSub;swView='detail';} else {swView='home';} renderWriting();}
   else if(parts[1]){enCur=+parts[1];enView='detail';renderEnDetail(enCur);}
   else{enView='home';renderEnglish();}
-  window.scrollTo(0,0);return;
+  markPage(key);window.scrollTo(0,0);return;
  }
  if(parts[0]==='essay'){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
   document.getElementById('page-detail').classList.add('on');
   renderEssay();
-  window.scrollTo(0,0);return;
+  markPage(key);window.scrollTo(0,0);return;
  }
  if(parts[0]==='chapter'){
   document.getElementById('page-chapter').classList.add('on');
@@ -1100,6 +1152,7 @@ function router(){
   document.getElementById('page-home').classList.add('on');renderHome();
  }
  window.scrollTo(0,0);
+ markPage(key);
 }
 var homeView='map', mapCh='0', dueBatch=false;
 function renderHome(){
@@ -1168,10 +1221,11 @@ h+='<div class="card"><div class="card-h"><span class="ic">&#128214;</span>章�
  h+='</div>';
  h+='<footer>数据存于 Supabase 多设备打开同一网址自动同步 默认密码 beishu2024</footer>';
  document.getElementById('page-home').innerHTML=h;
- setTimeout(function(){try{enRenderHomeCard();}catch(e){console.error('enCard',e);}},0);
- setTimeout(function(){try{swRenderHomeCard();}catch(e){console.error('swCard',e);}},0);
- if(homeView==='map')setTimeout(renderMapCells,0);else setTimeout(renderHeatCells,0);
-	setTimeout(function(){try{quizRefreshHome();}catch(e){console.error("quizHome",e);}},0);
+ /* v37：同步填充，去掉"正在准备…"占位到实际内容之间的一帧等待 */
+ try{enRenderHomeCard();}catch(e){console.error('enCard',e);}
+ try{swRenderHomeCard();}catch(e){console.error('swCard',e);}
+ try{quizRefreshHome();}catch(e){console.error('quizHome',e);}
+ if(homeView==='map')renderMapCells();else renderHeatCells();
 }
 function renderDueBatchBar(){
  var sch='<option value="">改章节 →</option>'+chapters.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');
@@ -1420,6 +1474,7 @@ function renderMapCells(){
  var cols=Math.max(10,Math.min(24,Math.ceil(Math.sqrt(list.length*1.5))));
  grid.style.gridTemplateColumns='repeat('+cols+',1fr)';
  var faded=0;
+ var frag=document.createDocumentFragment();
  list.forEach(function(p){
   var el=document.createElement('div');el.className='map-cell';
   var c=fadeColor(p.id);var days=fadeDays(p.id);
@@ -1429,8 +1484,9 @@ function renderMapCells(){
   var l=lastLevel(p.id);
   el.title=p.name+' · '+esc(chName(p.chapter_id))+(l?lvlName(l)+' · ':'')+(days<0?'未首背':days===0?'今天背熟':days+' 天前 · 正在褪色');
   el.onclick=function(){nav('detail/'+p.id);};
-  grid.appendChild(el);
+  frag.appendChild(el);
  });
+ grid.appendChild(frag);          // v37：一次插入，不再逐格触发重排
  var begun=list.filter(function(p){return firstDate(p.id);}).length;
  var duec=list.filter(function(p){return firstDate(p.id)&&isDue(p.id);}).length;
  document.getElementById('mapTag').textContent='共 '+list.length+' 个 · 已首背 '+begun+' 个 · 待复习 '+duec+' 个 · 褪色 '+faded+' 个';
@@ -1440,25 +1496,27 @@ function renderHeatCells(){
  if(!grid)return;
  grid.innerHTML='';mon.innerHTML='';
  var start=new Date(today);start.setDate(today.getDate()-23 * 7);start.setDate(start.getDate()-start.getDay());start.setHours(0,0,0,0);
- var dayMap={};
- reviews.forEach(function(r){var k=r.review_date;if(!dayMap[k]||dayMap[k]<r.level)dayMap[k]=r.level;});
+ var dayMap={},dayCnt={};
+ reviews.forEach(function(r){var k=r.review_date;if(!dayMap[k]||dayMap[k]<r.level)dayMap[k]=r.level;dayCnt[k]=(dayCnt[k]||0)+1;});
  var ml=[];var lastM=-1;
  for(var w=0;w<24;w++){
   var d0=new Date(start);d0.setDate(start.getDate()+w*7);d0.setHours(0,0,0,0);
   var m=d0.getMonth();ml.push(m!==lastM?d0.toLocaleDateString('zh-CN',{month:'short'}):'');lastM=m;
  }
- ml.forEach(function(mm){mon.innerHTML+='<span>'+mm+'</span>';});
+ var mh='';ml.forEach(function(mm){mh+='<span>'+mm+'</span>';});mon.innerHTML=mh;
+ var cols='';
  for(var w2=0;w2<24;w2++){
   var col='<div class="heat-col">';
   for(var dow=0;dow<7;dow++){
    var d=new Date(start);d.setDate(start.getDate()+w2 * 7+dow);d.setHours(0,0,0,0);
    var k=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
    var l=dayMap[k]||0;
-   var cnt=reviews.filter(function(r){return r.review_date===k;}).length;
+   var cnt=dayCnt[k]||0;
    col+='<div class="heat-cell'+(l?'" data-l="'+l+'"':'"')+' data-date="'+k+'" data-cnt="'+cnt+'" data-lvl="'+(l?lvlName(l):'未背')+'"></div>';
   }
-  col+='</div>';grid.innerHTML+=col;
+  col+='</div>';cols+=col;
  }
+ grid.innerHTML=cols;           // v37：一次写入，原为 24 次 innerHTML+=
  var tip=document.getElementById('tip');
  document.querySelectorAll('.heat-cell').forEach(function(c){
   c.onmouseenter=function(){tip.innerHTML=c.dataset.date+' '+c.dataset.cnt+' 条 最高 '+c.dataset.lvl;tip.classList.add('on');};
